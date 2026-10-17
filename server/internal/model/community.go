@@ -48,7 +48,7 @@ type Post struct {
 	Title           string        `gorm:"size:140;not null"`
 	BodyMasked      string        `gorm:"type:text"`
 	Flair           *string       `gorm:"size:24"`
-	Media           MediaList     `gorm:"serializer:json;type:text"`
+	Media           MediaList     `gorm:"type:text"`
 	PIIFlags        int16         `gorm:"not null;default:0"`
 	Status          ContentStatus `gorm:"size:20;not null;index;default:visible"`
 	Score           int           `gorm:"not null;default:0"`

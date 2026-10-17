@@ -10,7 +10,7 @@ type Notification struct {
 	Base
 	PersonaID uuid.UUID        `gorm:"type:uuid;not null;index"`
 	Kind      NotificationKind `gorm:"size:16;not null"`
-	Payload   JSONMap          `gorm:"serializer:json;type:text"`
+	Payload   JSONMap          `gorm:"type:text"`
 	ReadAt    *time.Time
 }
 
@@ -33,7 +33,7 @@ type AuditLog struct {
 	Verb       string     `gorm:"size:48;not null;index"`
 	TargetType string     `gorm:"size:32"`
 	TargetID   *uuid.UUID `gorm:"type:uuid;index"`
-	Meta       JSONMap    `gorm:"serializer:json;type:text"`
+	Meta       JSONMap    `gorm:"type:text"`
 }
 
 type SecurityEvent struct {
@@ -41,7 +41,7 @@ type SecurityEvent struct {
 	Kind   SecurityEventKind `gorm:"size:20;not null;index"`
 	UserID *uuid.UUID        `gorm:"type:uuid;index"`
 	IPHash []byte
-	Meta   JSONMap `gorm:"serializer:json;type:text"`
+	Meta   JSONMap `gorm:"type:text"`
 }
 
 type AIUsage struct {
@@ -61,7 +61,7 @@ type AnalyticsEvent struct {
 	SessionHash string  `gorm:"size:64;not null;index"`
 	Platform    string  `gorm:"size:10"`
 	AppVersion  string  `gorm:"size:16"`
-	Props       JSONMap `gorm:"serializer:json;type:text"`
+	Props       JSONMap `gorm:"type:text"`
 }
 
 func init() {

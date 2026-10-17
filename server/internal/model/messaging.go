@@ -55,7 +55,7 @@ type Message struct {
 	SenderPersonaID *uuid.UUID    `gorm:"type:uuid;index"`
 	Kind            MessageKind   `gorm:"size:12;not null"`
 	BodyMasked      string        `gorm:"type:text"`
-	Media           MediaList     `gorm:"serializer:json;type:text"`
+	Media           MediaList     `gorm:"type:text"`
 	ReplyToID       *uuid.UUID    `gorm:"type:uuid"`
 	PIIFlags        int16         `gorm:"not null;default:0"`
 	Status          ContentStatus `gorm:"size:20;not null;default:visible"`

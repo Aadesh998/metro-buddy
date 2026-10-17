@@ -37,6 +37,10 @@ func (h *Handlers) Register(authed *echo.Group, persona echo.MiddlewareFunc) {
 	authed.PATCH("/me/persona", h.patchPersona, persona)
 	authed.PUT("/me/persona/alias", h.changeAlias, persona)
 	authed.GET("/personas/:id", h.getPublicPersona, persona)
+	authed.GET("/vibes", h.vibeCatalog)
+	authed.GET("/me/vibes", h.myVibes, persona)
+	authed.PUT("/me/vibes", h.setVibes, persona)
+	authed.PUT("/me/intents", h.setIntents, persona)
 }
 
 type meResponse struct {

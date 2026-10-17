@@ -21,7 +21,7 @@ type Show struct {
 	CityID        *uuid.UUID `gorm:"type:uuid;index"`
 	Title         string     `gorm:"size:60;not null"`
 	Description   string     `gorm:"size:300"`
-	TopicTags     StringList `gorm:"serializer:json;type:text"`
+	TopicTags     StringList `gorm:"type:text"`
 	ScheduleRRule *string    `gorm:"size:120"`
 	FollowerCount int        `gorm:"not null;default:0"`
 }

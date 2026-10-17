@@ -15,7 +15,7 @@ type CommutePlan struct {
 	DepartWindowStart int16  `gorm:"not null"`
 	DepartWindowEnd   int16  `gorm:"not null"`
 	Weekdays          int16  `gorm:"not null"`
-	PathStationIDs    IDList `gorm:"serializer:json;type:text"`
+	PathStationIDs    IDList `gorm:"type:text"`
 	Active            bool   `gorm:"not null;default:true;index"`
 }
 
@@ -27,8 +27,8 @@ type TravelIntent struct {
 	ToStationID    uuid.UUID    `gorm:"type:uuid;not null"`
 	DepartAt       time.Time    `gorm:"not null;index"`
 	ExpiresAt      time.Time    `gorm:"not null;index"`
-	PathStationIDs IDList       `gorm:"serializer:json;type:text"`
-	LineIDs        IDList       `gorm:"serializer:json;type:text"`
+	PathStationIDs IDList       `gorm:"type:text"`
+	LineIDs        IDList       `gorm:"type:text"`
 	Mood           TravelMood   `gorm:"size:8;not null;default:either"`
 	Status         IntentStatus `gorm:"size:10;not null;index;default:active"`
 }
@@ -47,7 +47,7 @@ type Match struct {
 	PersonaAID           uuid.UUID       `gorm:"type:uuid;not null;index"`
 	PersonaBID           uuid.UUID       `gorm:"type:uuid;not null;index"`
 	Score                float64         `gorm:"not null"`
-	Why                  MatchWhy        `gorm:"serializer:json;type:text"`
+	Why                  MatchWhy        `gorm:"type:text"`
 	OverlapFromStationID uuid.UUID       `gorm:"type:uuid;not null"`
 	OverlapToStationID   uuid.UUID       `gorm:"type:uuid;not null"`
 	AStatus              MatchSideStatus `gorm:"size:10;not null;default:pending"`

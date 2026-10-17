@@ -45,7 +45,7 @@ type personaRow struct {
 	Alias      string
 	AvatarSeed string
 	Bio        string
-	Intents    model.StringList `gorm:"serializer:json"`
+	Intents    model.StringList
 	IsHost     bool
 	VerifiedAt *string
 	DeletedAt  *string

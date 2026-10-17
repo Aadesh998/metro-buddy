@@ -34,7 +34,7 @@ type Persona struct {
 	AliasChangedAt *time.Time
 	HomeStationID  *uuid.UUID `gorm:"type:uuid"`
 	WorkStationID  *uuid.UUID `gorm:"type:uuid"`
-	Intents        StringList `gorm:"serializer:json;type:text"`
+	Intents        StringList `gorm:"type:text"`
 	IsHost         bool       `gorm:"not null;default:false"`
 }
 
@@ -91,8 +91,8 @@ type UserSettings struct {
 	// Minutes after local midnight (IST).
 	QuietHoursStart *int16
 	QuietHoursEnd   *int16
-	DMFrom          DMPolicy        `gorm:"size:12;not null;default:requests"`
-	NotifPrefs      map[string]bool `gorm:"serializer:json;type:text"`
+	DMFrom          DMPolicy `gorm:"size:12;not null;default:requests"`
+	NotifPrefs      BoolMap  `gorm:"type:text"`
 	UpdatedAt       time.Time
 }
 

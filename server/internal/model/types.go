@@ -6,6 +6,7 @@ import "github.com/google/uuid"
 type StringList []string
 type IDList []uuid.UUID
 type JSONMap map[string]any
+type BoolMap map[string]bool
 
 type UserStatus string
 
