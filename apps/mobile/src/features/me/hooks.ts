@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { get } from '@/api/client';
 import type { Me, OwnPersona, Vibe } from '@/api/types';
+import { setLocale } from '@/i18n';
 
 export const meKeys = {
   me: ['me'] as const,
@@ -11,7 +12,15 @@ export const meKeys = {
 };
 
 export function useMe(enabled = true) {
-  return useQuery({ queryKey: meKeys.me, queryFn: () => get<Me>('/v1/me'), enabled });
+  return useQuery({
+    queryKey: meKeys.me,
+    queryFn: () =>
+      get<Me>('/v1/me').then((m) => {
+        setLocale(m.locale);
+        return m;
+      }),
+    enabled,
+  });
 }
 
 export function useMyPersona(enabled = true) {

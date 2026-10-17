@@ -62,7 +62,8 @@
         {
           "microphonePermission": "Metro Buddy uses the microphone only while you are on air in a Vent Studio show."
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,
