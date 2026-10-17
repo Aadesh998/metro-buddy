@@ -17,7 +17,9 @@ import (
 	"metro-buddy/server/internal/config"
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/identity"
+	"metro-buddy/server/internal/jobs"
 	"metro-buddy/server/internal/model"
+	"metro-buddy/server/internal/pii"
 	"metro-buddy/server/internal/ratelimit"
 	"metro-buddy/server/internal/secure"
 	"metro-buddy/server/internal/sms"
@@ -40,6 +42,8 @@ type App struct {
 	Limiter *ratelimit.Limiter
 	Tokens  *auth.Tokens
 	OTP     *auth.OTP
+	PII     *pii.Pipeline
+	Jobs    *jobs.Runner
 }
 
 func New(d *Deps) (*App, error) {
@@ -66,6 +70,8 @@ func New(d *Deps) (*App, error) {
 		Pepper: d.Cfg.PhonePepper, CodeKey: d.Cfg.JWTSecret,
 		DevCode: d.Cfg.OTPDevCode, AllowDev: d.Cfg.IsDev(),
 	}
+	a.PII = &pii.Pipeline{DB: d.DB, Box: box, Audit: a.Audit}
+	a.Jobs = &jobs.Runner{Redis: d.Redis, Log: d.Log}
 	a.Echo = a.routes()
 	return a, nil
 }
@@ -128,4 +134,9 @@ func (a *App) health(c echo.Context) error {
 		code = http.StatusServiceUnavailable
 	}
 	return c.JSON(code, status)
+}
+
+// StartJobs runs background work; kept out of New so tests drive jobs explicitly.
+func (a *App) StartJobs(ctx context.Context) {
+	a.Jobs.Every(ctx, "pii_vault_purge", time.Hour, a.PII.Purge)
 }

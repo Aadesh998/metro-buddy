@@ -52,6 +52,8 @@ func run(log *slog.Logger) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	a.StartJobs(ctx)
+
 	errc := make(chan error, 1)
 	go func() {
 		log.Info("server listening", "port", cfg.Port, "env", cfg.Env)

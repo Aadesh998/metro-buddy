@@ -66,7 +66,7 @@ var (
 	urlRe       = regexp.MustCompile(`(?i)\b(?:https?://|www\.)[^\s<>"]+|\b[a-z0-9][a-z0-9-]{0,62}(?:\.[a-z0-9-]{1,63})*\.(?:com|in|net|org|io|me|co|ly|gg|app|xyz|info|link|site|online|club|live|tv|us|uk)(?:/[^\s<>"]*)?\b`)
 	emailRe     = regexp.MustCompile(`(?i)\b[a-z0-9][a-z0-9._%+\-]*@[a-z0-9.\-]+\.[a-z]{2,}\b`)
 	// Spelled-out separators: "riya at gmail dot com", "riya(at)gmail(dot)com".
-	emailObfRe = regexp.MustCompile(`(?i)\b[a-z0-9][a-z0-9._%+\-]*\s*(?:\(at\)|\[at\]|\{at\}|\s+at\s+)\s*(?:gmail|yahoo|outlook|hotmail|icloud|rediffmail|rediff|proton|protonmail|live|ymail)\s*(?:\(dot\)|\[dot\]|\{dot\}|\s+dot\s+|\.)\s*(?:com|in|co\.in|me)\b`)
+	emailObfRe  = regexp.MustCompile(`(?i)\b[a-z0-9][a-z0-9._%+\-]*\s*(?:\(at\)|\[at\]|\{at\}|\s+at\s+)\s*(?:gmail|yahoo|outlook|hotmail|icloud|rediffmail|rediff|proton|protonmail|live|ymail)\s*(?:\(dot\)|\[dot\]|\{dot\}|\s+dot\s+|\.)\s*(?:com|in|co\.in|me)\b`)
 	upiRe       = regexp.MustCompile(`(?i)\b[a-z0-9][a-z0-9._\-]{1,}@[a-z]{2,}\b`)
 	platformRe  = regexp.MustCompile(`(?i)\b(` + socialPlatforms + `)\b(\s*(?:id|handle|username|user|acc|account|pe|par|me)?\s*(?:[:\-=]|is|hai|->|=>)?\s*)@?([a-z0-9_][a-z0-9_.]{1,29})`)
 	atHandleRe  = regexp.MustCompile(`(?i)(^|[^a-z0-9_.@\]])@([a-z0-9_][a-z0-9_.]{1,29})`)
