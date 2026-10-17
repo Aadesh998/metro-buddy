@@ -84,7 +84,9 @@
             "node_modules/@expo-google-fonts/poppins/800ExtraBold/Poppins_800ExtraBold.ttf"
           ]
         }
-      ]
+      ],
+      "@react-native-google-signin/google-signin",
+      "./plugins/withReleaseSigning"
     ],
     "experiments": {
       "typedRoutes": true,

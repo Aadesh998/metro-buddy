@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { Platform } from 'react-native';
 
 import { api, ApiError, refreshSession, toSession } from '@/api/client';
+import { googleIdToken, googleSignOut } from '@/features/auth/google';
 import { clearOutbox } from '@/features/chat/outbox';
 import { unregisterPush } from '@/lib/push';
 import { queryClient } from '@/lib/query';
@@ -12,8 +13,10 @@ type Status = 'loading' | 'signedOut' | 'signedIn';
 
 type AuthCtx = {
   status: Status;
-  requestOtp: (phone: string) => Promise<void>;
-  verifyOtp: (phone: string, code: string) => Promise<{ isNewUser: boolean }>;
+  signUpWithEmail: (email: string, password: string) => Promise<{ isNewUser: boolean }>;
+  logInWithEmail: (email: string, password: string) => Promise<{ isNewUser: boolean }>;
+  // Resolves null when the user closes the Google account picker.
+  signInWithGoogle: () => Promise<{ isNewUser: boolean } | null>;
   logout: () => Promise<void>;
 };
 
@@ -62,19 +65,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const requestOtp = useCallback(async (phone: string) => {
-    await api('POST', '/v1/auth/otp/request', { phone }, { auth: false });
-  }, []);
-
-  const verifyOtp = useCallback(async (phone: string, code: string) => {
+  const startSession = useCallback(async (path: string, body: Record<string, unknown>) => {
     const res = await api<{ session: Parameters<typeof toSession>[0]; is_new_user: boolean }>(
       'POST',
-      '/v1/auth/otp/verify',
-      {
-        phone,
-        code,
-        device: { platform: Platform.OS === 'ios' ? 'ios' : 'android', app_version: Constants.expoConfig?.version ?? '' },
-      },
+      path,
+      { ...body, device: { platform: Platform.OS === 'ios' ? 'ios' : 'android', app_version: Constants.expoConfig?.version ?? '' } },
       { auth: false },
     );
     await setSession(toSession(res.session));
@@ -82,9 +77,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { isNewUser: res.is_new_user };
   }, []);
 
+  const signUpWithEmail = useCallback(
+    (email: string, password: string) => startSession('/v1/auth/email/signup', { email, password }),
+    [startSession],
+  );
+
+  const logInWithEmail = useCallback(
+    (email: string, password: string) => startSession('/v1/auth/email/login', { email, password }),
+    [startSession],
+  );
+
+  const signInWithGoogle = useCallback(async () => {
+    const idToken = await googleIdToken();
+    if (!idToken) return null;
+    return startSession('/v1/auth/google', { id_token: idToken });
+  }, [startSession]);
+
   const logout = useCallback(async () => {
     await unregisterPush();
     await clearOutbox();
+    await googleSignOut();
     const s = getSession();
     if (s?.refreshToken) {
       await api('POST', '/v1/auth/logout', { refresh_token: s.refreshToken }, { auth: false }).catch(() => {});
@@ -92,6 +104,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await setSession(null);
   }, []);
 
-  const value = useMemo(() => ({ status, requestOtp, verifyOtp, logout }), [status, requestOtp, verifyOtp, logout]);
+  const value = useMemo(
+    () => ({ status, signUpWithEmail, logInWithEmail, signInWithGoogle, logout }),
+    [status, signUpWithEmail, logInWithEmail, signInWithGoogle, logout],
+  );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

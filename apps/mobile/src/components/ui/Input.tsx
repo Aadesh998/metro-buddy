@@ -12,6 +12,7 @@ export const Input = forwardRef<TextInputInstance, TextInputProps & { label?: st
         {label ? <Text variant="label">{label}</Text> : null}
         <FontTextInput
           ref={ref}
+          accessibilityLabel={label}
           placeholderTextColor={colors.faint}
           className={`min-h-12 rounded-xl border bg-surface px-4 py-3 text-base text-ink ${error ? 'border-danger' : 'border-line'} ${className}`}
           {...rest}

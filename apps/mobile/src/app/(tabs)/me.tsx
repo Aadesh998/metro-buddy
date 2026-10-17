@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { ChevronRight, Database, Eye, Gavel, LifeBuoy, LogOut, ShieldBan, UserPen } from 'lucide-react-native';
 import type { ReactNode } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { patch } from '@/api/client';
@@ -14,6 +14,7 @@ import { Text } from '@/components/ui/Text';
 import { useMyPersona } from '@/features/me/hooks';
 import { setLocale, useT, type Locale } from '@/i18n';
 import { useAuth } from '@/lib/auth';
+import { confirm } from '@/lib/confirm';
 import { setFont, useFontChoice } from '@/lib/fonts';
 import { colors } from '@/lib/theme';
 
@@ -89,10 +90,7 @@ export default function MeTab() {
             label={t('me.logout')}
             danger
             onPress={() =>
-              Alert.alert(t('me.logoutTitle'), t('me.logoutBody'), [
-                { text: t('common.cancel'), style: 'cancel' },
-                { text: t('me.logout'), style: 'destructive', onPress: () => logout() },
-              ])
+              confirm(t('me.logoutTitle'), t('me.logoutBody'), t('me.logout'), () => logout())
             }
           />
         </View>
