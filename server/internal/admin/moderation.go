@@ -19,6 +19,7 @@ func (h *Handlers) registerModeration(g *echo.Group, lead echo.MiddlewareFunc) {
 	g.GET("/cases/:id", h.getCase)
 	g.POST("/cases/:id/claim", h.claimCase)
 	g.POST("/cases/:id/actions", h.actOnCase)
+	g.POST("/cases/:id/triage", h.retriage)
 	g.POST("/cases/:id/dismiss", h.dismissCase)
 	g.POST("/cases/:id/escalate", h.escalateCase)
 	g.GET("/appeals", h.listAppeals)
@@ -558,4 +559,17 @@ func (h *Handlers) lookupPersona(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, map[string]any{"persona": s, "cases": dtos})
+}
+
+// retriage queues a fresh AI suggestion, e.g. after more reports came in.
+func (h *Handlers) retriage(c echo.Context) error {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return httpx.NotFound()
+	}
+	if h.Triage == nil {
+		return httpx.E(http.StatusServiceUnavailable, "ai_disabled", "AI triage isn't configured")
+	}
+	h.Triage(id)
+	return c.NoContent(http.StatusAccepted)
 }

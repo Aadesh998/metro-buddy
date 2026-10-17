@@ -72,6 +72,7 @@ type App struct {
 	Notify  *notify.Service
 	Travel  *travel.Service
 	Studio  *studio.Service
+	Triage  *safety.Triage
 	Jobs    *jobs.Runner
 }
 
@@ -203,7 +204,9 @@ func (a *App) routes() *echo.Echo {
 	a.Privacy.Register(authed)
 	(&safety.Appeals{DB: a.DB, Box: a.Box, Limiter: a.Limiter}).Register(authed)
 	social := authed.Group("", auth.RequirePersona)
-	a.Safety = &safety.Handlers{DB: a.DB, Audit: a.Audit, Limiter: a.Limiter}
+	a.Triage = &safety.Triage{DB: a.DB, Redis: a.Redis, AI: a.AI, Log: a.Log}
+	a.Safety = &safety.Handlers{DB: a.DB, Audit: a.Audit, Limiter: a.Limiter, OnCase: a.Triage.Enqueue}
+	a.Admin.Triage = a.Triage.Enqueue
 	a.Safety.Register(social)
 	a.Bowls = &bowls.Handlers{DB: a.DB, PII: a.PII, Media: a.Media, Limiter: a.Limiter}
 	a.Bowls.Register(social)
@@ -258,6 +261,7 @@ func (a *App) health(c echo.Context) error {
 func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "pii_vault_purge", time.Hour, a.PII.Purge)
 	go a.PII.Second.Run(ctx)
+	go a.Triage.Run(ctx)
 	a.Jobs.Every(ctx, "hot_rank", 5*time.Minute, a.Bowls.RefreshHotRanks)
 	a.Jobs.Every(ctx, "daily_prompts", 30*time.Minute, a.Bowls.PostDailyPrompts)
 	a.Jobs.Every(ctx, "exports", time.Minute, a.Privacy.RunExports)

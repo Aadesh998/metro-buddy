@@ -95,12 +95,21 @@ export function CasePage({ id, me }: { id: string; me: Admin }) {
             {d.target.media?.length ? <p className="mt-3 text-xs text-muted">{d.target.media.length} image(s) attached</p> : null}
             <p className="mt-4 text-xs text-faint">Shown masked. Use the PII vault (leads only) if a legal request needs the original.</p>
           </Card>
-          {c.ai_severity ? (
-            <Card className="border-sky/40 p-5">
-              <p className="mb-1 text-xs uppercase tracking-wide text-sky">AI suggestion (not a decision) · {c.ai_severity}</p>
-              <p className="text-sm text-muted">{c.ai_rationale}</p>
-            </Card>
-          ) : null}
+          <Card className="border-sky/40 p-5">
+            <div className="mb-1 flex items-center justify-between">
+              <p className="text-xs uppercase tracking-wide text-sky">AI suggestion (not a decision){c.ai_severity ? ` · ${c.ai_severity}` : ''}</p>
+              <button
+                className="text-xs text-accent"
+                onClick={async () => {
+                  await api('POST', `/cases/${id}/triage`).catch(() => {})
+                  setTimeout(load, 4000)
+                }}
+              >
+                {c.ai_severity ? 'Ask again' : 'Ask AI'}
+              </button>
+            </div>
+            <p className="text-sm text-muted">{c.ai_rationale ?? 'No suggestion yet. The author may have turned off AI processing.'}</p>
+          </Card>
           <Card className="p-5">
             <p className="mb-3 text-sm font-semibold">{d.reports.length} report(s)</p>
             <ul className="space-y-2 text-sm">
