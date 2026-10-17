@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { AlertCircle, Clock, EyeOff, MapPin } from 'lucide-react-native';
+import { AlertCircle, Clock, EyeOff, MapPin, Sparkles } from 'lucide-react-native';
 import { memo } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -18,13 +18,30 @@ export const MessageBubble = memo(function MessageBubble({
   seen,
   onLongPress,
   onRetry,
+  onPickOpener,
 }: {
   m: Message;
   showSender: boolean;
   seen?: boolean;
   onLongPress: (m: Message) => void;
   onRetry: (m: Message) => void;
+  onPickOpener?: (text: string) => void;
 }) {
+  if (m.kind === 'icebreaker') {
+    return (
+      <View className="mx-4 my-2 gap-2 rounded-2xl border border-accent/30 bg-accent/5 p-4">
+        <View className="flex-row items-center gap-2">
+          <Sparkles size={16} color={colors.accent} />
+          <Text variant="label">Need an opener? Tap one to use it</Text>
+        </View>
+        {m.body.split('\n').map((line) => (
+          <Pressable key={line} onPress={() => onPickOpener?.(line)} className="rounded-xl bg-raised px-3 py-2.5 active:opacity-70" accessibilityRole="button">
+            <Text className="text-sm">{line}</Text>
+          </Pressable>
+        ))}
+      </View>
+    );
+  }
   if (m.kind === 'system') {
     return (
       <View className="my-2 items-center px-8">

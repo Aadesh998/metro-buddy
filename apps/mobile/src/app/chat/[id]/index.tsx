@@ -149,6 +149,7 @@ export default function ChatScreen() {
                 seen={item.id === seenId}
                 onLongPress={onLongPress}
                 onRetry={(m) => send(m.body)}
+                onPickOpener={setText}
               />
             )}
             onEndReached={() => msgs.hasNextPage && !msgs.isFetchingNextPage && msgs.fetchNextPage()}

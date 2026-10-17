@@ -216,7 +216,10 @@ func (a *App) routes() *echo.Echo {
 	a.Chat.Register(social)
 	a.Notify.Register(authed)
 	a.Travel = &travel.Service{DB: a.DB, Redis: a.Redis, Metro: a.Metro, Chat: a.Chat, Notify: a.Notify, Limiter: a.Limiter,
-		Audit: a.Audit, Box: a.Box, SMS: a.SMS, BaseURL: a.Cfg.PublicBaseURL}
+		Audit: a.Audit, Box: a.Box, SMS: a.SMS, BaseURL: a.Cfg.PublicBaseURL, AI: a.AI, Log: a.Log}
+	if !a.Cfg.IsTest() {
+		a.Travel.Async = func(f func()) { go f() }
+	}
 	a.Travel.Register(social, authed)
 	e.GET("/trip/:token", a.Travel.SharePage)
 	if a.Live == nil {

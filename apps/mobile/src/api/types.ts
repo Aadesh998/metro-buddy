@@ -128,7 +128,7 @@ export type Comment = {
 
 export type FeedPage = { items: Post[]; next_cursor: string; pinned?: Post | null };
 
-export type MessageKind = 'text' | 'image' | 'system' | 'meet_point';
+export type MessageKind = 'text' | 'image' | 'system' | 'meet_point' | 'icebreaker';
 
 export type Message = {
   id: UUID;

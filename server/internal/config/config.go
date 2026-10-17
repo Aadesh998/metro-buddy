@@ -48,6 +48,7 @@ type Config struct {
 
 func (c *Config) IsProd() bool { return c.Env == "production" }
 func (c *Config) IsDev() bool  { return c.Env == "development" }
+func (c *Config) IsTest() bool { return c.Env == "test" }
 
 func Load() (*Config, error) {
 	c := &Config{

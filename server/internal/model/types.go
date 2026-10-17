@@ -147,10 +147,11 @@ const (
 type MessageKind string
 
 const (
-	MsgText      MessageKind = "text"
-	MsgImage     MessageKind = "image"
-	MsgSystem    MessageKind = "system"
-	MsgMeetPoint MessageKind = "meet_point"
+	MsgText       MessageKind = "text"
+	MsgImage      MessageKind = "image"
+	MsgSystem     MessageKind = "system"
+	MsgMeetPoint  MessageKind = "meet_point"
+	MsgIcebreaker MessageKind = "icebreaker"
 )
 
 type RevealLevel string

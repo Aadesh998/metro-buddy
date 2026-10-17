@@ -128,6 +128,23 @@ func (s *Service) SystemMessage(ctx context.Context, tx *gorm.DB, convID uuid.UU
 	return &m, nil
 }
 
+// PostSystem adds a system message outside any request and delivers it to every member.
+func (s *Service) PostSystem(ctx context.Context, convID uuid.UUID, kind model.MessageKind, body string) error {
+	tx := s.DB.WithContext(ctx)
+	var conv model.Conversation
+	if err := tx.First(&conv, "id = ?", convID).Error; err != nil {
+		return err
+	}
+	msg, err := s.SystemMessage(ctx, tx, convID, kind, body)
+	if err != nil {
+		return err
+	}
+	var members []uuid.UUID
+	tx.Model(&model.ConversationMember{}).Where("conversation_id = ? AND left_at IS NULL", convID).Pluck("persona_id", &members)
+	s.fanOut(ctx, &conv, *msg, members)
+	return nil
+}
+
 type MessageDTO struct {
 	ID             uuid.UUID            `json:"id"`
 	ConversationID uuid.UUID            `json:"conversation_id"`

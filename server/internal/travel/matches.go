@@ -460,6 +460,16 @@ func (s *Service) afterAccept(ctx context.Context, actor uuid.UUID, m *model.Mat
 	}
 	s.Chat.Hub.Publish(ctx, []uuid.UUID{m.PersonaAID, m.PersonaBID}, "conversation.new", map[string]any{"id": conv.ID, "kind": conv.Kind})
 	s.Chat.Hub.Publish(ctx, []uuid.UUID{m.PersonaAID, m.PersonaBID}, "match.new", map[string]any{"match_id": m.ID})
+	run := func() {
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+		defer cancel()
+		s.PostIcebreakers(ctx, m, conv.ID, actor)
+	}
+	if s.Async != nil {
+		s.Async(run)
+	} else {
+		run()
+	}
 }
 
 func (s *Service) declineMatch(c echo.Context) error {

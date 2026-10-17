@@ -4,6 +4,7 @@ package travel
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
+	"metro-buddy/server/internal/ai"
 	"metro-buddy/server/internal/audit"
 	"metro-buddy/server/internal/chat"
 	"metro-buddy/server/internal/httpx"
@@ -44,7 +46,11 @@ type Service struct {
 	Box     *secure.Box
 	SMS     sms.Sender
 	BaseURL string
-	Now     func() time.Time
+	AI      *ai.Client
+	Log     *slog.Logger
+	// Async runs slow follow-up work (icebreakers) off the request; nil runs it inline.
+	Async func(func())
+	Now   func() time.Time
 }
 
 func (s *Service) now() time.Time {
