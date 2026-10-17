@@ -13,6 +13,8 @@ apps/mobile/play-service-account.json
 *.jks
 *.p12
 *.pem
+# Apple's public App Attest root certificate, embedded in the server binary
+!server/internal/attest/apple_app_attestation_root.pem
 # Firebase config holds an API key; each developer/CI provides its own copy
 google-services.json
 GoogleService-Info.plist
