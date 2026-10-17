@@ -64,6 +64,15 @@ type AnalyticsEvent struct {
 	Props       JSONMap `gorm:"type:text"`
 }
 
+type ExportJob struct {
+	Base
+	UserID    uuid.UUID `gorm:"type:uuid;not null;index"`
+	Status    string    `gorm:"size:10;not null;default:pending"`
+	Key       *string   `gorm:"size:200"`
+	ExpiresAt *time.Time
+}
+
 func init() {
+	register(&ExportJob{})
 	register(&Notification{}, &AdminUser{}, &AuditLog{}, &SecurityEvent{}, &AIUsage{}, &AnalyticsEvent{})
 }

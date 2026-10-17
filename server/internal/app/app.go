@@ -24,6 +24,7 @@ import (
 	"metro-buddy/server/internal/metro"
 	"metro-buddy/server/internal/model"
 	"metro-buddy/server/internal/pii"
+	"metro-buddy/server/internal/privacy"
 	"metro-buddy/server/internal/ratelimit"
 	"metro-buddy/server/internal/safety"
 	"metro-buddy/server/internal/secure"
@@ -53,6 +54,7 @@ type App struct {
 	Safety  *safety.Handlers
 	Bowls   *bowls.Handlers
 	Media   *media.Service
+	Privacy *privacy.Service
 	Jobs    *jobs.Runner
 }
 
@@ -154,6 +156,8 @@ func (a *App) routes() *echo.Echo {
 
 	authed := v1.Group("", a.Tokens.Middleware())
 	(&identity.Handlers{DB: a.DB, PII: a.PII, Visible: safety.Visible(a.DB)}).Register(authed, auth.RequirePersona)
+	a.Privacy = &privacy.Service{DB: a.DB, Box: a.Box, Store: a.Media.Store, Tokens: a.Tokens, Audit: a.Audit, Log: a.Log}
+	a.Privacy.Register(authed)
 	social := authed.Group("", auth.RequirePersona)
 	a.Safety = &safety.Handlers{DB: a.DB, Audit: a.Audit, Limiter: a.Limiter}
 	a.Safety.Register(social)
@@ -188,4 +192,6 @@ func (a *App) StartJobs(ctx context.Context) {
 	go a.PII.Second.Run(ctx)
 	a.Jobs.Every(ctx, "hot_rank", 5*time.Minute, a.Bowls.RefreshHotRanks)
 	a.Jobs.Every(ctx, "daily_prompts", 30*time.Minute, a.Bowls.PostDailyPrompts)
+	a.Jobs.Every(ctx, "exports", time.Minute, a.Privacy.RunExports)
+	a.Jobs.Every(ctx, "account_purge", time.Hour, a.Privacy.PurgeDeleted)
 }
