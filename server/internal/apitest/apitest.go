@@ -19,6 +19,7 @@ import (
 	"metro-buddy/server/internal/config"
 	"metro-buddy/server/internal/identity"
 	"metro-buddy/server/internal/model"
+	"metro-buddy/server/internal/notify"
 	"metro-buddy/server/internal/seed"
 	"metro-buddy/server/internal/testutil"
 )
@@ -49,12 +50,41 @@ func (s *SMS) Code(e164 string) string {
 	return s.OTPs[e164]
 }
 
+type Pushes struct {
+	mu   sync.Mutex
+	Sent []notify.PushMessage
+	// Tokens listed here report DeviceNotRegistered.
+	Dead map[string]bool
+}
+
+func (p *Pushes) Send(_ context.Context, msgs []notify.PushMessage) ([]notify.PushTicket, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	out := make([]notify.PushTicket, len(msgs))
+	for i, m := range msgs {
+		p.Sent = append(p.Sent, m)
+		out[i].Status = "ok"
+		if p.Dead[m.To] {
+			out[i].Status = "error"
+			out[i].Details.Error = "DeviceNotRegistered"
+		}
+	}
+	return out, nil
+}
+
+func (p *Pushes) Count() int {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return len(p.Sent)
+}
+
 type Env struct {
-	T     *testing.T
-	App   *app.App
-	SMS   *SMS
-	Redis *miniredis.Miniredis
-	ipSeq int
+	T      *testing.T
+	App    *app.App
+	SMS    *SMS
+	Pushes *Pushes
+	Redis  *miniredis.Miniredis
+	ipSeq  int
 }
 
 func New(t *testing.T) *Env {
@@ -69,11 +99,12 @@ func New(t *testing.T) *Env {
 	}
 	rdb, mr := testutil.Redis(t)
 	s := &SMS{OTPs: map[string]string{}}
-	a, err := app.New(&app.Deps{Cfg: cfg, DB: testutil.DB(t), Redis: rdb, Log: slog.New(slog.NewTextHandler(tWriter{t}, &slog.HandlerOptions{Level: slog.LevelWarn})), SMS: s})
+	pushes := &Pushes{Dead: map[string]bool{}}
+	a, err := app.New(&app.Deps{Cfg: cfg, DB: testutil.DB(t), Redis: rdb, Log: slog.New(slog.NewTextHandler(tWriter{t}, &slog.HandlerOptions{Level: slog.LevelWarn})), SMS: s, Pusher: pushes})
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &Env{T: t, App: a, SMS: s, Redis: mr}
+	return &Env{T: t, App: a, SMS: s, Redis: mr, Pushes: pushes}
 }
 
 type Resp struct {

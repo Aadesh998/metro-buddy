@@ -47,7 +47,7 @@ T056,P2,F23,Realtime messaging,Mobile,"WS client with reconnect/backoff, offline
 T057,P2,F20,DM requests,Mobile,"Chats tab: requests, conversations list, chat screen",Unread counts accurate,Must,3,"T053,T056",Todo,,,,,Not tested,,,,
 T058,P2,F21,Group chats,Mobile,Group create/manage screens,Admin can remove members,Must,2,T054,Todo,,,,,Not tested,,,,
 T059,P2,F22,Live discussion rooms,Mobile,Live rooms list + room screen,Join live room from bowl,Should,2,T055,Todo,,,,,Not tested,,,,
-T060,P2,F60,Push notifications,Backend,"Push service: device tokens, Expo push, categories, quiet hours",No push during quiet hours except SOS,Must,1,T051,Todo,,,,,Not tested,,,,
+T060,P2,F60,Push notifications,Backend,"Push service: device tokens, Expo push, categories, quiet hours",No push during quiet hours except SOS,Must,1,T051,Done,,2026-10-17,2026-10-17,"Expo push sender, push-token registration, per-kind prefs + IST quiet hours (SOS bypass, high priority), DeviceNotRegistered cleanup, no message bodies in push, muted/online suppression, /v1/me/settings, inbox store + 60d purge; tested",Not tested,,,,
 T061,P2,F61,In-app inbox,Mobile,Notification inbox + permission prompt flow,Deep link opens target screen,Should,1,T060,Todo,,,,,Not tested,,,,
 T062,P2,F71,Analytics,Backend,Analytics events endpoint (PII-free schema),"No persona/user ids in raw events, only hashed session",Should,1,T006,Todo,,,,,Not tested,,,,
 T070,P3,F40,Commute plans,Backend,Commute plans API + route path cache (station sequence),Path stored on save,Must,1,T016,Todo,,,,,Not tested,,,,

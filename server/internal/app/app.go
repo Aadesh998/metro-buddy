@@ -25,6 +25,7 @@ import (
 	"metro-buddy/server/internal/media"
 	"metro-buddy/server/internal/metro"
 	"metro-buddy/server/internal/model"
+	"metro-buddy/server/internal/notify"
 	"metro-buddy/server/internal/pii"
 	"metro-buddy/server/internal/privacy"
 	"metro-buddy/server/internal/ratelimit"
@@ -41,7 +42,8 @@ type Deps struct {
 	Redis *redis.Client
 	Log   *slog.Logger
 	// Overridable in tests.
-	SMS sms.Sender
+	SMS    sms.Sender
+	Pusher notify.Pusher
 }
 
 type App struct {
@@ -62,6 +64,7 @@ type App struct {
 	Admin   *admin.Handlers
 	Hub     *realtime.Hub
 	Chat    *chat.Service
+	Notify  *notify.Service
 	Jobs    *jobs.Runner
 }
 
@@ -99,6 +102,10 @@ func New(d *Deps) (*App, error) {
 	a.Hub = &realtime.Hub{Redis: d.Redis, Log: d.Log, SessionActive: a.Tokens.FamilyActive}
 	if d.Cfg.IsDev() {
 		a.Hub.Origin = []string{"localhost:8081", "localhost:19006", "localhost:4173"}
+	}
+	a.Notify = &notify.Service{DB: d.DB, Hub: a.Hub, Log: d.Log, Pusher: d.Pusher}
+	if a.Notify.Pusher == nil {
+		a.Notify.Pusher = notify.Expo{AccessToken: d.Cfg.ExpoPushToken}
 	}
 	a.Echo = a.routes()
 	return a, nil
@@ -196,6 +203,8 @@ func (a *App) routes() *echo.Echo {
 	a.Media.DevRoutes(e)
 	a.Chat = &chat.Service{DB: a.DB, PII: a.PII, Media: a.Media, Hub: a.Hub, Limiter: a.Limiter}
 	a.Chat.Register(social)
+	a.Notify.Register(authed)
+	a.wireNotifications()
 	receipts := &chat.Receipts{Service: a.Chat, Redis: a.Redis}
 	a.Hub.OnInbound = receipts.HandleInbound
 	a.Hub.OnPresence = receipts.OnPresence
@@ -236,4 +245,5 @@ func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "grievance_overdue", 15*time.Minute, a.Admin.AlertOverdue)
 	a.Jobs.Every(ctx, "dm_request_expiry", time.Hour, a.Chat.ExpireRequests)
 	a.Jobs.Every(ctx, "room_close", time.Minute, a.Chat.CloseExpiredRooms)
+	a.Jobs.Every(ctx, "inbox_purge", 6*time.Hour, a.Notify.Purge)
 }
