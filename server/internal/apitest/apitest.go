@@ -17,6 +17,7 @@ import (
 	"metro-buddy/server/internal/app"
 	"metro-buddy/server/internal/auth"
 	"metro-buddy/server/internal/config"
+	"metro-buddy/server/internal/identity"
 	"metro-buddy/server/internal/model"
 	"metro-buddy/server/internal/testutil"
 )
@@ -179,9 +180,28 @@ type User struct {
 }
 
 // NewUser logs in a fresh phone number and creates a persona in cityID.
-func (e *Env) NewUser(phone string, cityID uuid.UUID) User {
+// Onboard confirms age 18+ and grants every consent.
+func (e *Env) Onboard(s Session) {
+	e.T.Helper()
+	e.Do(http.MethodPut, "/v1/me/age", s.AccessToken, map[string]string{"birth_date": "1995-06-15"}).Want(http.StatusOK)
+	items := []map[string]any{}
+	for _, p := range model.ConsentPurposes {
+		items = append(items, map[string]any{"purpose": p, "granted": true})
+	}
+	e.Do(http.MethodPost, "/v1/me/consents", s.AccessToken, map[string]any{"policy_version": identity.PolicyVersion, "items": items}).Want(http.StatusOK)
+}
+
+// LoginOnboarded logs in and completes the age gate and consents.
+func (e *Env) LoginOnboarded(phone string) Session {
 	e.T.Helper()
 	s := e.Login(phone)
+	e.Onboard(s)
+	return s
+}
+
+func (e *Env) NewUser(phone string, cityID uuid.UUID) User {
+	e.T.Helper()
+	s := e.LoginOnboarded(phone)
 	var sug struct {
 		Suggestions []struct {
 			Alias      string `json:"alias"`

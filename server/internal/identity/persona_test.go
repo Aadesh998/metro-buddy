@@ -42,7 +42,7 @@ func TestPersonaRequiredBeforeSocialRoutes(t *testing.T) {
 func TestCreatePersonaMasksBioAndRejectsFreeTextAlias(t *testing.T) {
 	env := apitest.New(t)
 	city := env.City("DEL")
-	s := env.Login("9876543210")
+	s := env.LoginOnboarded("9876543210")
 	env.Do(http.MethodPost, "/v1/me/persona", s.AccessToken, map[string]any{
 		"city_id": city, "alias": "Riya Sharma 23", "avatar_seed": "abcdefabcdef",
 	}).Want(http.StatusUnprocessableEntity)
@@ -66,9 +66,9 @@ func TestAliasUniquePerCity(t *testing.T) {
 	body := func(city any) map[string]any {
 		return map[string]any{"city_id": city, "alias": "Neon Kite 42", "avatar_seed": "abcdefabcdef"}
 	}
-	env.Do(http.MethodPost, "/v1/me/persona", env.Login("9000000001").AccessToken, body(del)).Want(http.StatusOK)
-	env.Do(http.MethodPost, "/v1/me/persona", env.Login("9000000002").AccessToken, body(del)).Want(http.StatusConflict)
-	env.Do(http.MethodPost, "/v1/me/persona", env.Login("9000000003").AccessToken, body(mum)).Want(http.StatusOK)
+	env.Do(http.MethodPost, "/v1/me/persona", env.LoginOnboarded("9000000001").AccessToken, body(del)).Want(http.StatusOK)
+	env.Do(http.MethodPost, "/v1/me/persona", env.LoginOnboarded("9000000002").AccessToken, body(del)).Want(http.StatusConflict)
+	env.Do(http.MethodPost, "/v1/me/persona", env.LoginOnboarded("9000000003").AccessToken, body(mum)).Want(http.StatusOK)
 }
 
 func TestAliasChangeEvery30DaysKeepsHistoryAndReservesOldAlias(t *testing.T) {
@@ -89,7 +89,7 @@ func TestAliasChangeEvery30DaysKeepsHistoryAndReservesOldAlias(t *testing.T) {
 	if len(hist) != 2 || hist[0].Alias != old || hist[1].Alias != "Brave Otter 11" {
 		t.Fatalf("history %+v", hist)
 	}
-	other := env.Login("9123456789")
+	other := env.LoginOnboarded("9123456789")
 	env.Do(http.MethodPost, "/v1/me/persona", other.AccessToken, map[string]any{
 		"city_id": city, "alias": old, "avatar_seed": "abcdefabcdef",
 	}).Want(http.StatusConflict)

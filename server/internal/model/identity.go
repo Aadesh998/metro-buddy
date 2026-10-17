@@ -21,6 +21,8 @@ type User struct {
 	LastActiveAt        *time.Time `gorm:"index"`
 	SuspendedUntil      *time.Time
 	DeletionRequestedAt *time.Time `gorm:"index"`
+	// Set once the user is 18+ and has granted core-service consent.
+	OnboardedAt *time.Time
 }
 
 type Persona struct {
