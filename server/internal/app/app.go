@@ -114,7 +114,7 @@ func (a *App) routes() *echo.Echo {
 	(&auth.Handlers{DB: a.DB, OTP: a.OTP, Tokens: a.Tokens, Limiter: a.Limiter}).Register(v1)
 
 	authed := v1.Group("", a.Tokens.Middleware())
-	(&identity.Handlers{DB: a.DB}).Register(authed)
+	(&identity.Handlers{DB: a.DB, PII: a.PII}).Register(authed, auth.RequirePersona)
 
 	return e
 }

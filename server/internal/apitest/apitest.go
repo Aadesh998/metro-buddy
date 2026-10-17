@@ -12,10 +12,12 @@ import (
 	"testing"
 
 	"github.com/alicebob/miniredis/v2"
+	"github.com/google/uuid"
 
 	"metro-buddy/server/internal/app"
 	"metro-buddy/server/internal/auth"
 	"metro-buddy/server/internal/config"
+	"metro-buddy/server/internal/model"
 	"metro-buddy/server/internal/testutil"
 )
 
@@ -159,4 +161,40 @@ func mustE164(phone string) string {
 func itoa(n int) string {
 	b, _ := json.Marshal(n)
 	return string(b)
+}
+
+func (e *Env) City(code string) uuid.UUID {
+	e.T.Helper()
+	c := model.City{Name: "City " + code, Code: code, IsLive: true}
+	if err := e.App.DB.Create(&c).Error; err != nil {
+		e.T.Fatal(err)
+	}
+	return c.ID
+}
+
+type User struct {
+	Session
+	PersonaID uuid.UUID
+	Alias     string
+}
+
+// NewUser logs in a fresh phone number and creates a persona in cityID.
+func (e *Env) NewUser(phone string, cityID uuid.UUID) User {
+	e.T.Helper()
+	s := e.Login(phone)
+	var sug struct {
+		Suggestions []struct {
+			Alias      string `json:"alias"`
+			AvatarSeed string `json:"avatar_seed"`
+		}
+	}
+	e.Do(http.MethodPost, "/v1/me/persona/suggestions", s.AccessToken, map[string]any{"city_id": cityID}).Want(http.StatusOK).JSON(&sug)
+	var p struct {
+		ID    uuid.UUID
+		Alias string
+	}
+	e.Do(http.MethodPost, "/v1/me/persona", s.AccessToken, map[string]any{
+		"city_id": cityID, "alias": sug.Suggestions[0].Alias, "avatar_seed": sug.Suggestions[0].AvatarSeed,
+	}).Want(http.StatusOK).JSON(&p)
+	return User{Session: s, PersonaID: p.ID, Alias: p.Alias}
 }
