@@ -104,7 +104,8 @@
     "extra": {
       "eas": {
         "projectId": "2e17b258-9574-4937-9915-f4d3f7481ab7"
-      }
+      },
+      "googleWebClientId": "755787673141-9rmlme1lqao2450r5m7bl59rq7l794kl.apps.googleusercontent.com"
     },
     "owner": "kaadesh"
   }

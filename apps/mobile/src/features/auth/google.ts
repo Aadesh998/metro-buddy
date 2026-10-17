@@ -1,6 +1,8 @@
+import Constants from 'expo-constants';
 import { GoogleSignin, isErrorWithCode, isSuccessResponse, statusCodes } from '@react-native-google-signin/google-signin';
 
-const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+// Public OAuth client ID (not a secret); an env var can override it for other Firebase projects.
+const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || (Constants.expoConfig?.extra?.googleWebClientId as string | undefined);
 
 export const googleAvailable = !!webClientId;
 
