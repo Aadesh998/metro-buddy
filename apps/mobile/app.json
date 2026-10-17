@@ -83,7 +83,14 @@
     },
     "updates": {
       "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0
-    }
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/2e17b258-9574-4937-9915-f4d3f7481ab7"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2e17b258-9574-4937-9915-f4d3f7481ab7"
+      }
+    },
+    "owner": "kaadesh"
   }
 }
