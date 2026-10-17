@@ -1,4 +1,4 @@
-.PHONY: install build build-server build-admin build-mobile check check-server check-admin check-mobile dev-server dev-admin dev-mobile
+.PHONY: install build build-server build-admin build-mobile check check-server check-admin check-mobile dev-server dev-admin dev-mobile db-up
 
 install:
 	cd admin && npm ci
@@ -28,10 +28,13 @@ check-mobile:
 	cd apps/mobile && npm run typecheck && npm run lint && npm run audit
 
 dev-server:
-	cd server && go run ./cmd/server
+	cd server && set -a && . ../.env && set +a && go run ./cmd/server
 
 dev-admin:
 	cd admin && npm run dev
 
 dev-mobile:
 	cd apps/mobile && npx expo start
+
+db-up:
+	docker compose -p metro-buddy up -d --wait

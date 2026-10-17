@@ -10,40 +10,54 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"metro-buddy/server/internal/app"
+	"metro-buddy/server/internal/config"
+	"metro-buddy/server/internal/db"
+	"metro-buddy/server/internal/redisx"
 )
 
 func main() {
-	e := echo.New()
-	e.HideBanner = true
-	e.HidePort = true
-	e.Use(middleware.Recover())
-
-	e.GET("/healthz", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
-	})
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	if err := run(log); err != nil {
+		log.Error("fatal", "err", err)
+		os.Exit(1)
 	}
+}
+
+func run(log *slog.Logger) error {
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+	gdb, err := db.Open(cfg.DatabaseURL)
+	if err != nil {
+		return err
+	}
+	rdb, err := redisx.New(cfg.RedisURL)
+	if err != nil {
+		return err
+	}
+	defer rdb.Close()
+
+	e := app.NewServer(&app.Deps{Cfg: cfg, DB: gdb, Redis: rdb, Log: log})
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	errc := make(chan error, 1)
 	go func() {
-		slog.Info("server listening", "port", port)
-		if err := e.Start(":" + port); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("server failed", "err", err)
-			os.Exit(1)
+		log.Info("server listening", "port", cfg.Port, "env", cfg.Env)
+		if err := e.Start(":" + cfg.Port); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errc <- err
 		}
 	}()
 
-	<-ctx.Done()
+	select {
+	case err := <-errc:
+		return err
+	case <-ctx.Done():
+	}
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := e.Shutdown(shutdownCtx); err != nil {
-		slog.Error("shutdown failed", "err", err)
-	}
+	return e.Shutdown(shutdownCtx)
 }
