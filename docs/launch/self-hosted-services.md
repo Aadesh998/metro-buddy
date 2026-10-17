@@ -84,15 +84,17 @@ WebRTC audio needs UDP ports, which Railway doesn't offer, so LiveKit runs on a 
 
 Recording is never enabled: the server stops any egress it's told about.
 
-## Test APK
+## Local APK builds
 
-`MetroBuddy-staging.apk` is built locally (no Expo account needed):
+Everything local lives in the git-ignored `.local/` folder: `toolchain/` (JDK 17, Android SDK, Gradle cache), `secrets/` (release signing key and its password, admin and test credentials), `builds/` (APKs) and `logs/`.
 
 ```bash
-cd apps/mobile && npx expo prebuild -p android --no-install
-cd android && JAVA_HOME=<jdk 17> ANDROID_HOME=~/Android/Sdk \
-  EXPO_PUBLIC_API_URL=https://api-staging-b0d3.up.railway.app NODE_ENV=production \
-  ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
+scripts/build-apk.sh production     # or: staging
 ```
 
-It is signed with the debug key, so it's for testing only: Play Store builds (EAS) use a different key, and phones must uninstall the test APK before installing a store build.
+The APK lands in `.local/builds/`. It needs:
+
+- `apps/mobile/google-services.json`, downloaded from Firebase (git-ignored: it contains a Firebase API key).
+- `.local/secrets/release.keystore` and `release.keystore.password`. **Back these up.** Every update must be signed with the same key, and Google sign-in is registered to its SHA-1 (`4D:33:D1:60:1F:77:24:9A:BF:51:E0:47:66:73:C9:CA:AD:67:D2:B1`).
+
+For adb on the command line: `source scripts/android-env.sh`.
