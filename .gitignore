@@ -4,3 +4,17 @@
 .DS_Store
 .~lock.*#
 apps/mobile/play-service-account.json
+
+# Local-only files: builds, keys, credentials, toolchains, logs (see scripts/android-env.sh)
+.local/
+*.apk
+*.aab
+*.keystore
+*.jks
+*.p12
+*.pem
+# Firebase config holds an API key; each developer/CI provides its own copy
+google-services.json
+GoogleService-Info.plist
+*firebase-adminsdk*.json
+service-account*.json
