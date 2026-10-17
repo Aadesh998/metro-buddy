@@ -27,6 +27,7 @@ import (
 	"metro-buddy/server/internal/pii"
 	"metro-buddy/server/internal/privacy"
 	"metro-buddy/server/internal/ratelimit"
+	"metro-buddy/server/internal/realtime"
 	"metro-buddy/server/internal/safety"
 	"metro-buddy/server/internal/secure"
 	"metro-buddy/server/internal/sms"
@@ -58,6 +59,7 @@ type App struct {
 	Media   *media.Service
 	Privacy *privacy.Service
 	Admin   *admin.Handlers
+	Hub     *realtime.Hub
 	Jobs    *jobs.Runner
 }
 
@@ -90,7 +92,12 @@ func New(d *Deps) (*App, error) {
 		Second: &pii.SecondPass{DB: d.DB, Redis: d.Redis, AI: a.AI, Log: d.Log}}
 	a.Metro = &metro.Service{DB: d.DB}
 	a.Media = newMedia(d.Cfg)
+
 	a.Jobs = &jobs.Runner{Redis: d.Redis, Log: d.Log}
+	a.Hub = &realtime.Hub{Redis: d.Redis, Log: d.Log, SessionActive: a.Tokens.FamilyActive}
+	if d.Cfg.IsDev() {
+		a.Hub.Origin = []string{"localhost:8081", "localhost:19006", "localhost:4173"}
+	}
 	a.Echo = a.routes()
 	return a, nil
 }
@@ -185,6 +192,9 @@ func (a *App) routes() *echo.Echo {
 	a.Bowls.Register(social)
 	social.POST("/uploads", a.Media.CreateUpload, a.Limiter.Middleware(ratelimit.Rule{Name: "uploads", Limit: 30, Window: time.Hour, ByTier: true}))
 	a.Media.DevRoutes(e)
+	social.POST("/ws/ticket", func(c echo.Context) error { return a.Hub.IssueTicket(c, auth.SessionFamily(c)) },
+		a.Limiter.Middleware(ratelimit.Rule{Name: "ws_ticket", Limit: 60, Window: time.Minute}))
+	e.GET("/ws", a.Hub.Serve(context.Background()))
 	social.POST("/pii/preview", pii.PreviewHandler, a.Limiter.Middleware(ratelimit.Rule{Name: "pii_preview", Limit: 120, Window: time.Minute}))
 
 	return e
