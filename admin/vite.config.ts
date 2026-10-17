@@ -5,4 +5,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   base: '/admin/',
   plugins: [react(), tailwindcss()],
+  server: {
+    proxy: { '/admin/api': 'http://localhost:8080' },
+  },
 })

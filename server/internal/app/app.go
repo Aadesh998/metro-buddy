@@ -12,6 +12,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
+	"metro-buddy/server/internal/admin"
 	"metro-buddy/server/internal/ai"
 	"metro-buddy/server/internal/audit"
 	"metro-buddy/server/internal/auth"
@@ -56,6 +57,7 @@ type App struct {
 	Bowls   *bowls.Handlers
 	Media   *media.Service
 	Privacy *privacy.Service
+	Admin   *admin.Handlers
 	Jobs    *jobs.Runner
 }
 
@@ -153,6 +155,10 @@ func (a *App) routes() *echo.Echo {
 	if err := (&web.Handlers{DB: a.DB, Box: a.Box, Limiter: a.Limiter, Base: a.Cfg.PublicBaseURL}).Register(e); err != nil {
 		panic(err)
 	}
+
+	a.Admin = &admin.Handlers{DB: a.DB, Box: a.Box, Audit: a.Audit, Limiter: a.Limiter, PII: a.PII,
+		Secret: a.Cfg.JWTSecret, SecureCookie: a.Cfg.IsProd()}
+	a.Admin.Register(e)
 
 	v1 := e.Group("/v1", func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {

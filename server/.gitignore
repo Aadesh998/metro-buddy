@@ -1,2 +1,4 @@
 bin/
 /server
+/internal/admin/dist/*
+!/internal/admin/dist/.gitkeep
