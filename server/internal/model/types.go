@@ -367,6 +367,7 @@ const (
 	NotifEpisodeLive  NotificationKind = "episode_live"
 	NotifModNotice    NotificationKind = "mod_notice"
 	NotifSOS          NotificationKind = "sos"
+	NotifHostDecision NotificationKind = "host_decision"
 )
 
 type AdminRole string

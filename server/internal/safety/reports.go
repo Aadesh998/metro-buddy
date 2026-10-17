@@ -26,7 +26,9 @@ type Handlers struct {
 	Limiter *ratelimit.Limiter
 	// OnCase fires after a case is created or escalated (AI triage, admin alerts).
 	OnCase func(caseID uuid.UUID)
-	Now    func() time.Time
+	// OnReport fires after every report commits (studio report-spike auto-mute).
+	OnReport func(ctx context.Context, ct model.ContentType, target uuid.UUID)
+	Now      func() time.Time
 }
 
 func (h *Handlers) now() time.Time {
@@ -248,6 +250,9 @@ func (h *Handlers) report(c echo.Context) error {
 	}
 	if h.OnCase != nil {
 		h.OnCase(caseID)
+	}
+	if h.OnReport != nil {
+		h.OnReport(c.Request().Context(), req.TargetType, req.TargetID)
 	}
 	return c.JSON(http.StatusCreated, map[string]any{"received": true, "show_support": req.Reason == "self_harm"})
 }

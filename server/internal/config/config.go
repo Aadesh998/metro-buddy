@@ -76,9 +76,9 @@ func Load() (*Config, error) {
 
 		ExpoPushToken: os.Getenv("EXPO_ACCESS_TOKEN"),
 
-		LiveKitURL:       os.Getenv("LIVEKIT_URL"),
-		LiveKitAPIKey:    os.Getenv("LIVEKIT_API_KEY"),
-		LiveKitAPISecret: os.Getenv("LIVEKIT_API_SECRET"),
+		LiveKitURL:       get("LIVEKIT_URL", "ws://localhost:7880"),
+		LiveKitAPIKey:    get("LIVEKIT_API_KEY", "devkey"),
+		LiveKitAPISecret: get("LIVEKIT_API_SECRET", "secret"),
 
 		AdminBootstrapEmail: os.Getenv("ADMIN_BOOTSTRAP_EMAIL"),
 	}

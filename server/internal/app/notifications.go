@@ -64,7 +64,10 @@ func (a *App) wireNotifications() {
 			notify.Content{Title: "New reply", Body: "Someone replied to you", Link: "metrobuddy://post/" + postID.String()}, true)
 	}
 	a.Admin.NotifyPersona = func(persona uuid.UUID, kind model.NotificationKind, payload model.JSONMap) {
-		a.Notify.Notify(context.Background(), persona, kind, payload,
-			notify.Content{Title: "A note from Metro Buddy", Body: "There's an update about your account. Tap for details.", Link: "metrobuddy://notices"}, true)
+		content := notify.Content{Title: "A note from Metro Buddy", Body: "There's an update about your account. Tap for details.", Link: "metrobuddy://notices"}
+		if kind == model.NotifHostDecision {
+			content = notify.Content{Title: "Vent Studio", Body: "Your host application was reviewed. Tap to see the decision.", Link: "metrobuddy://studio"}
+		}
+		a.Notify.Notify(context.Background(), persona, kind, payload, content, true)
 	}
 }

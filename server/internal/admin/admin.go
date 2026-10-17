@@ -2,6 +2,7 @@
 package admin
 
 import (
+	"context"
 	"embed"
 	"io/fs"
 	"net/http"
@@ -40,6 +41,7 @@ type Handlers struct {
 	RevokeSessions func(tx *gorm.DB, userID uuid.UUID) error
 	NotifyPersona  func(persona uuid.UUID, kind model.NotificationKind, payload model.JSONMap)
 	OnHostApproved func(persona uuid.UUID)
+	EndEpisode     func(ctx context.Context, id uuid.UUID) error
 	Triage         func(caseID uuid.UUID)
 	OnOverdue      func(n int)
 }

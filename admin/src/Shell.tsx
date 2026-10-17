@@ -34,7 +34,7 @@ export function Shell({ me, onLogout }: { me: Admin; onLogout: () => void }) {
   if (path.startsWith('/cases/')) page = <CasePage id={path.slice(7)} me={me} />
   else if (path === '/appeals') page = <AppealsPage />
   else if (path === '/grievances') page = <GrievancesPage />
-  else if (path === '/hosts') page = <HostsPage />
+  else if (path === '/hosts') page = <HostsPage me={me} />
   else if (path === '/bowls') page = <BowlsPage me={me} />
   else if (path === '/vault') page = <VaultPage />
   else if (path === '/metrics') page = <MetricsPage />

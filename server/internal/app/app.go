@@ -34,6 +34,7 @@ import (
 	"metro-buddy/server/internal/safety"
 	"metro-buddy/server/internal/secure"
 	"metro-buddy/server/internal/sms"
+	"metro-buddy/server/internal/studio"
 	"metro-buddy/server/internal/travel"
 	"metro-buddy/server/internal/web"
 )
@@ -46,6 +47,7 @@ type Deps struct {
 	// Overridable in tests.
 	SMS    sms.Sender
 	Pusher notify.Pusher
+	Live   studio.Live
 }
 
 type App struct {
@@ -68,6 +70,7 @@ type App struct {
 	Chat    *chat.Service
 	Notify  *notify.Service
 	Travel  *travel.Service
+	Studio  *studio.Service
 	Jobs    *jobs.Runner
 }
 
@@ -179,7 +182,8 @@ func (a *App) routes() *echo.Echo {
 		Secret: a.Cfg.JWTSecret, SecureCookie: a.Cfg.IsProd(),
 		RevokeSessions: func(tx *gorm.DB, userID uuid.UUID) error {
 			return a.Tokens.RevokeAllForUser(context.Background(), tx, userID)
-		}}
+		},
+		EndEpisode: func(ctx context.Context, id uuid.UUID) error { return a.Studio.ForceEnd(ctx, id) }}
 	a.Admin.Register(e)
 
 	v1 := e.Group("/v1", func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -211,6 +215,12 @@ func (a *App) routes() *echo.Echo {
 		Audit: a.Audit, Box: a.Box, SMS: a.SMS, BaseURL: a.Cfg.PublicBaseURL}
 	a.Travel.Register(social, authed)
 	e.GET("/trip/:token", a.Travel.SharePage)
+	if a.Live == nil {
+		a.Live = studio.NewLiveKit(a.Cfg.LiveKitURL, a.Cfg.LiveKitAPIKey, a.Cfg.LiveKitAPISecret)
+	}
+	a.Studio = &studio.Service{DB: a.DB, Live: a.Live, Hub: a.Hub, Notify: a.Notify, PII: a.PII, Audit: a.Audit, Limiter: a.Limiter, Log: a.Log}
+	a.Studio.Register(social, e)
+	a.Safety.OnReport = a.Studio.OnReport
 	authed.POST("/events", (&analytics.Handlers{DB: a.DB, Pepper: a.Cfg.IPPepper}).Track,
 		a.Limiter.Middleware(ratelimit.Rule{Name: "events", Limit: 120, Window: time.Minute}))
 	a.wireNotifications()
@@ -258,4 +268,7 @@ func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "plan_intents", time.Minute, a.Travel.SpawnPlanIntents)
 	a.Jobs.Every(ctx, "match_expiry", 5*time.Minute, a.Travel.ExpireMatches)
 	a.Jobs.Every(ctx, "trip_lifecycle", time.Minute, a.Travel.TripLifecycle)
+	a.Jobs.Every(ctx, "episode_reminders", time.Minute, a.Studio.SendReminders)
+	a.Jobs.Every(ctx, "on_air_cap", 2*time.Second, a.Studio.EnforceOnAirCap)
+	a.Jobs.Every(ctx, "stale_episodes", 10*time.Minute, a.Studio.EndStale)
 }

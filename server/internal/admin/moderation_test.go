@@ -136,3 +136,35 @@ func TestGrievanceDeskAckResolveAndOverdueAlert(t *testing.T) {
 		t.Fatalf("%d %s", rec.Code, rec.Body)
 	}
 }
+
+func TestHostApplicationApprovalFlipsHostFlag(t *testing.T) {
+	env := apitest.New(t)
+	c := console{env}
+	u := env.NewUser("9000000001", env.City("DEL"))
+	env.Do(http.MethodPost, "/v1/shows", u.AccessToken, map[string]any{"title": "Too early"}).Want(http.StatusForbidden)
+	env.Do(http.MethodPost, "/v1/studio/host-application", u.AccessToken, map[string]any{
+		"tagline": "Metro confessions", "pitch": "A weekly hour of anonymous stories from the Blue Line crowd.",
+	}).Want(http.StatusCreated)
+	mod := cookieOf(c.login(t, c.newAdmin(t, "mod@m.in", model.AdminModerator), ""))
+	lead := cookieOf(c.login(t, c.newAdmin(t, "lead@m.in", model.AdminTSLead), ""))
+	var list struct{ Items []struct{ ID uuid.UUID } }
+	decode(t, c.do(http.MethodGet, "/admin/api/hosts", mod, "", "").Body.Bytes(), &list)
+	if len(list.Items) != 1 {
+		t.Fatalf("%+v", list)
+	}
+	path := "/admin/api/hosts/" + list.Items[0].ID.String() + "/decision"
+	if rec := c.do(http.MethodPost, path, mod, `{"decision":"approve"}`, "application/json"); rec.Code != http.StatusForbidden {
+		t.Fatalf("moderator approved host: %d", rec.Code)
+	}
+	if rec := c.do(http.MethodPost, path, lead, `{"decision":"approve"}`, "application/json"); rec.Code != http.StatusOK {
+		t.Fatalf("%d %s", rec.Code, rec.Body)
+	}
+	var me struct {
+		IsHost bool `json:"is_host"`
+	}
+	env.Do(http.MethodGet, "/v1/me/persona", u.AccessToken, nil).Want(http.StatusOK).JSON(&me)
+	if !me.IsHost {
+		t.Fatal("persona not marked host")
+	}
+	env.Do(http.MethodPost, "/v1/shows", u.AccessToken, map[string]any{"title": "Metro confessions"}).Want(http.StatusOK)
+}

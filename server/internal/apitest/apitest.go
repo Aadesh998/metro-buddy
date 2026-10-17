@@ -84,6 +84,7 @@ type Env struct {
 	SMS    *SMS
 	Pushes *Pushes
 	Redis  *miniredis.Miniredis
+	Live   *Live
 	ipSeq  int
 }
 
@@ -100,11 +101,12 @@ func New(t *testing.T) *Env {
 	rdb, mr := testutil.Redis(t)
 	s := &SMS{OTPs: map[string]string{}}
 	pushes := &Pushes{Dead: map[string]bool{}}
-	a, err := app.New(&app.Deps{Cfg: cfg, DB: testutil.DB(t), Redis: rdb, Log: slog.New(slog.NewTextHandler(tWriter{t}, &slog.HandlerOptions{Level: slog.LevelWarn})), SMS: s, Pusher: pushes})
+	live := &Live{Publish: map[string]bool{}}
+	a, err := app.New(&app.Deps{Cfg: cfg, DB: testutil.DB(t), Redis: rdb, Log: slog.New(slog.NewTextHandler(tWriter{t}, &slog.HandlerOptions{Level: slog.LevelWarn})), SMS: s, Pusher: pushes, Live: live})
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &Env{T: t, App: a, SMS: s, Redis: mr, Pushes: pushes}
+	return &Env{T: t, App: a, SMS: s, Redis: mr, Pushes: pushes, Live: live}
 }
 
 type Resp struct {
