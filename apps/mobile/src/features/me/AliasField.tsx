@@ -27,6 +27,8 @@ export function useAliasCheck(alias: string, cityId?: string, current?: string) 
     queryFn: () => post<{ available: boolean }>('/v1/me/persona/alias-check', { city_id: cityId, alias: name }),
     enabled: !skip && name.length >= 3,
     retry: false,
+    // The hint under the field explains the problem; no toast as well.
+    meta: { silent: true },
     staleTime: 30_000,
   });
   let status: AliasStatus = 'checking';

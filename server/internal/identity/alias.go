@@ -106,24 +106,24 @@ var (
 func AliasProblem(a string) string {
 	switch {
 	case a != strings.TrimSpace(a) || strings.Contains(a, "  "):
-		return "remove extra spaces"
+		return "Remove extra spaces"
 	case !customRe.MatchString(a):
-		return "use 3 to 20 letters or numbers; spaces, dots and underscores are fine"
+		return "Use 3 to 20 letters or numbers; spaces, dots and underscores are fine"
 	case len(digitRe.FindAllString(a, -1)) > 3:
-		return "use at most 3 numbers so it can't look like a phone number"
+		return "Use at most 3 numbers so it can't look like a phone number"
 	}
 	if r := pii.Mask(a, pii.Options{}); r.Flags != 0 {
-		return "that looks like contact details"
+		return "That looks like contact details"
 	}
 	key := AliasKey(a)
 	for _, w := range reservedWords {
 		if strings.Contains(key, w) {
-			return "that name is reserved"
+			return "That name is reserved"
 		}
 	}
 	for _, w := range blockedWords {
 		if strings.Contains(key, w) {
-			return "pick a kinder name"
+			return "Pick a kinder name"
 		}
 	}
 	return ""
