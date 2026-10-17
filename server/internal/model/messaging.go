@@ -62,6 +62,15 @@ type Message struct {
 	CreatedAt       time.Time     `gorm:"not null;index:idx_msg_conv_id,priority:2"`
 	EditedAt        *time.Time
 	ExpiresAt       *time.Time `gorm:"index"`
+	// View-once photos: each recipient may open it a single time; the file is deleted after.
+	ViewOnce bool `gorm:"not null;default:false"`
+}
+
+// MessageView records that a member opened a view-once photo.
+type MessageView struct {
+	MessageID uuid.UUID `gorm:"type:uuid;primaryKey"`
+	PersonaID uuid.UUID `gorm:"type:uuid;primaryKey"`
+	ViewedAt  time.Time `gorm:"not null"`
 }
 
 type RevealEvent struct {
@@ -82,5 +91,5 @@ type RevealProfile struct {
 }
 
 func init() {
-	register(&Conversation{}, &ConversationMember{}, &DMRequest{}, &Message{}, &RevealEvent{}, &RevealProfile{})
+	register(&Conversation{}, &ConversationMember{}, &DMRequest{}, &Message{}, &RevealEvent{}, &RevealProfile{}, &MessageView{})
 }

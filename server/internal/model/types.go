@@ -152,6 +152,7 @@ const (
 	MsgSystem     MessageKind = "system"
 	MsgMeetPoint  MessageKind = "meet_point"
 	MsgIcebreaker MessageKind = "icebreaker"
+	MsgSticker    MessageKind = "sticker"
 )
 
 type RevealLevel string

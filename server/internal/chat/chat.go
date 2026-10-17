@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
@@ -74,6 +75,8 @@ func (s *Service) Register(g *echo.Group) {
 	g.GET("/conversations/:id/messages", s.history)
 	g.POST("/conversations/:id/messages", s.send, send)
 	g.DELETE("/messages/:id", s.deleteMessage)
+	g.PATCH("/messages/:id", s.editMessage, send)
+	g.POST("/messages/:id/view", s.viewOnce)
 	s.registerReceipts(g)
 	s.registerRequests(g)
 	s.registerGroups(g)
@@ -164,7 +167,11 @@ type MessageDTO struct {
 	PIIHidden      bool                 `json:"pii_hidden"`
 	CreatedAt      time.Time            `json:"created_at"`
 	ExpiresAt      *time.Time           `json:"expires_at"`
-	ShowSupport    bool                 `json:"show_support,omitempty"`
+	EditedAt       *time.Time           `json:"edited_at"`
+	// View-once photos never carry a URL here; recipients open them through POST /messages/:id/view.
+	ViewOnce    bool `json:"view_once"`
+	ViewedByMe  bool `json:"viewed_by_me"`
+	ShowSupport bool `json:"show_support,omitempty"`
 }
 
 func (s *Service) messageDTOs(ctx context.Context, tx *gorm.DB, viewer uuid.UUID, msgs []model.Message) ([]MessageDTO, error) {
@@ -178,10 +185,17 @@ func (s *Service) messageDTOs(ctx context.Context, tx *gorm.DB, viewer uuid.UUID
 	if err != nil {
 		return nil, err
 	}
+	viewed := s.viewedByMe(tx, viewer, msgs)
 	out := make([]MessageDTO, len(msgs))
 	for i, m := range msgs {
 		d := MessageDTO{ID: m.ID, ConversationID: m.ConversationID, Kind: m.Kind, Body: m.BodyMasked, ReplyToID: m.ReplyToID,
-			PIIHidden: m.PIIFlags != 0, CreatedAt: m.CreatedAt, ExpiresAt: m.ExpiresAt, Media: s.Media.DTOs(ctx, m.Media)}
+			PIIHidden: m.PIIFlags != 0, CreatedAt: m.CreatedAt, ExpiresAt: m.ExpiresAt, EditedAt: m.EditedAt, ViewOnce: m.ViewOnce}
+		if m.ViewOnce {
+			d.Media = viewOncePlaceholders(m.Media)
+			d.ViewedByMe = viewed[m.ID]
+		} else {
+			d.Media = s.Media.DTOs(ctx, m.Media)
+		}
 		if m.SenderPersonaID != nil {
 			r := refs[*m.SenderPersonaID]
 			d.Sender, d.IsMine = &r, *m.SenderPersonaID == viewer
@@ -469,6 +483,8 @@ type sendRequest struct {
 	Body      string     `json:"body" validate:"max=4000"`
 	ReplyToID *uuid.UUID `json:"reply_to_id"`
 	MediaKey  string     `json:"media_key" validate:"max=200"`
+	ViewOnce  bool       `json:"view_once"`
+	Sticker   string     `json:"sticker" validate:"max=40"`
 }
 
 // validClientID accepts only UUIDv7 ids stamped near now, so a client can't backdate messages.
@@ -510,8 +526,14 @@ func (s *Service) send(c echo.Context) error {
 	if !s.validClientID(req.ID) {
 		return ErrBadClientID
 	}
-	if req.Body == "" && req.MediaKey == "" {
+	if req.Body == "" && req.MediaKey == "" && req.Sticker == "" {
 		return httpx.Unprocessable("empty_message", "say something")
+	}
+	if req.Sticker != "" && (req.Body != "" || req.MediaKey != "" || !slices.Contains(Stickers, req.Sticker)) {
+		return httpx.Unprocessable("invalid_sticker", "unknown sticker")
+	}
+	if req.ViewOnce && req.MediaKey == "" {
+		return httpx.Unprocessable("view_once_needs_photo", "only photos can be view once")
 	}
 	conv, me, err := member(tx, convID, p.PersonaID)
 	if err != nil {
@@ -538,6 +560,10 @@ func (s *Service) send(c echo.Context) error {
 		Media: medias, Status: model.ContentVisible, CreatedAt: now}
 	if len(medias) > 0 {
 		msg.Kind = model.MsgImage
+		msg.ViewOnce = req.ViewOnce
+	}
+	if req.Sticker != "" {
+		msg.Kind, msg.BodyMasked = model.MsgSticker, req.Sticker
 	}
 	if conv.DisappearAfterSec != nil {
 		exp := now.Add(time.Duration(*conv.DisappearAfterSec) * time.Second)
