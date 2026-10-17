@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 
-import { ApiError, get, post } from '@/api/client';
+import { ApiError, get, patch, post } from '@/api/client';
 import type { Conversation, DMRequest, Message, Room } from '@/api/types';
 import { toast } from '@/components/ui/Toast';
 import { uploadImage } from '@/features/bowls/upload';
@@ -125,11 +125,36 @@ export function useSend(conversationId: string) {
 export function useSendImage(conversationId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (asset: { uri: string; mimeType?: string; fileSize?: number }) => {
+    mutationFn: async ({ asset, viewOnce }: { asset: { uri: string; mimeType?: string; fileSize?: number }; viewOnce: boolean }) => {
       const key = await uploadImage(asset);
-      return post<Message>(`/v1/conversations/${conversationId}/messages`, { id: uuidv7(), media_key: key });
+      return post<Message>(`/v1/conversations/${conversationId}/messages`, { id: uuidv7(), media_key: key, view_once: viewOnce });
     },
     onSuccess: (m) => upsertMessage(qc, m),
+  });
+}
+
+export function useSendSticker(conversationId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (sticker: string) => post<Message>(`/v1/conversations/${conversationId}/messages`, { id: uuidv7(), sticker }),
+    onSuccess: (m) => upsertMessage(qc, m),
+  });
+}
+
+export function useEditMessage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: string }) => patch<Message>(`/v1/messages/${id}`, { body }),
+    onSuccess: (m) => upsertMessage(qc, m),
+  });
+}
+
+// Opening a view-once photo marks it viewed for me; the link only works for a minute.
+export function useOpenViewOnce() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (m: Message) => post<{ url: string }>(`/v1/messages/${m.id}/view`).then((r) => ({ m, url: r.url })),
+    onSettled: (_r, _e, m) => patchMessage(qc, m.conversation_id, m.id, (x) => ({ ...x, viewed_by_me: true })),
   });
 }
 

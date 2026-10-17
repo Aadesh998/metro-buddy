@@ -128,7 +128,7 @@ export type Comment = {
 
 export type FeedPage = { items: Post[]; next_cursor: string; pinned?: Post | null };
 
-export type MessageKind = 'text' | 'image' | 'system' | 'meet_point' | 'icebreaker';
+export type MessageKind = 'text' | 'image' | 'system' | 'meet_point' | 'icebreaker' | 'sticker';
 
 export type Message = {
   id: UUID;
@@ -143,6 +143,9 @@ export type Message = {
   pii_hidden: boolean;
   created_at: string;
   expires_at: string | null;
+  edited_at?: string | null;
+  view_once?: boolean;
+  viewed_by_me?: boolean;
   show_support?: boolean;
   // Client-only state for optimistic sends.
   local?: 'sending' | 'failed';

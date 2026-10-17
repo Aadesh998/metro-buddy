@@ -8,6 +8,7 @@ import { Avatar } from '@/components/Avatar';
 import { Text } from '@/components/ui/Text';
 import { dateLocale, useT } from '@/i18n';
 import { colors } from '@/lib/theme';
+import { StickerArt } from './ExpressionPanel';
 
 function time(iso: string) {
   return new Date(iso).toLocaleTimeString(dateLocale(), { hour: 'numeric', minute: '2-digit' });
@@ -20,6 +21,7 @@ export const MessageBubble = memo(function MessageBubble({
   onLongPress,
   onRetry,
   onPickOpener,
+  onOpenViewOnce,
 }: {
   m: Message;
   showSender: boolean;
@@ -27,6 +29,7 @@ export const MessageBubble = memo(function MessageBubble({
   onLongPress: (m: Message) => void;
   onRetry: (m: Message) => void;
   onPickOpener?: (text: string) => void;
+  onOpenViewOnce?: (m: Message) => void;
 }) {
   const { t } = useT();
   if (m.kind === 'icebreaker') {
@@ -62,6 +65,17 @@ export const MessageBubble = memo(function MessageBubble({
     );
   }
   const mine = m.is_mine;
+  if (m.kind === 'sticker' && !m.deleted) {
+    return (
+      <View className={`my-1 flex-row px-3 ${mine ? 'justify-end' : 'justify-start'}`}>
+        {!mine ? <View className="mr-2 w-7">{showSender && m.sender ? <Avatar seed={m.sender.avatar_seed} size={28} /> : null}</View> : null}
+        <Pressable onLongPress={() => onLongPress(m)} delayLongPress={300} className="items-end gap-0.5">
+          <StickerArt id={m.body} />
+          <Text className="text-[10px] text-faint">{time(m.created_at)}</Text>
+        </Pressable>
+      </View>
+    );
+  }
   return (
     <View className={`my-0.5 flex-row px-3 ${mine ? 'justify-end' : 'justify-start'}`}>
       {!mine ? <View className="mr-2 w-7">{showSender && m.sender ? <Avatar seed={m.sender.avatar_seed} size={28} /> : null}</View> : null}
@@ -72,7 +86,25 @@ export const MessageBubble = memo(function MessageBubble({
             <Text className={`italic ${mine ? 'text-accent-ink/70' : 'text-muted'}`}>{t('chat.messageRemoved')}</Text>
           ) : (
             <>
-              {m.media.map((im, i) =>
+              {m.view_once ? (
+                <Pressable
+                  onPress={() => !mine && !m.viewed_by_me && m.media.length > 0 && onOpenViewOnce?.(m)}
+                  disabled={mine || m.viewed_by_me || m.media.length === 0}
+                  className="flex-row items-center gap-2 py-1"
+                  accessibilityRole="button"
+                >
+                  <View className={`h-7 w-7 items-center justify-center rounded-full border-2 ${mine ? 'border-accent-ink' : 'border-accent'}`}>
+                    <Text className={`text-xs font-bold ${mine ? 'text-accent-ink' : 'text-accent'}`}>1</Text>
+                  </View>
+                  <View>
+                    <Text className={`text-sm font-semibold ${mine ? 'text-accent-ink' : 'text-ink'}`}>{t('chat.viewOnce')}</Text>
+                    <Text className={`text-xs ${mine ? 'text-accent-ink/70' : 'text-muted'}`}>
+                      {m.viewed_by_me || m.media.length === 0 ? t('chat.opened') : mine ? t('chat.viewOnceNote') : t('chat.tapToView')}
+                    </Text>
+                  </View>
+                </Pressable>
+              ) : null}
+              {(m.view_once ? [] : m.media).map((im, i) =>
                 im.url && !im.pending ? (
                   <Image key={i} source={{ uri: im.url, cacheKey: im.id }} cachePolicy="memory-disk" recyclingKey={im.id} style={{ width: 220, aspectRatio: im.w / im.h, borderRadius: 12, marginBottom: 4 }} />
                 ) : (
@@ -87,6 +119,7 @@ export const MessageBubble = memo(function MessageBubble({
           <View className="mt-0.5 flex-row items-center justify-end gap-1">
             {m.pii_hidden ? <EyeOff size={10} color={mine ? colors.accentInk : colors.faint} /> : null}
             {m.local === 'sending' ? <Clock size={10} color={colors.accentInk} /> : null}
+            {m.edited_at ? <Text className={`text-[10px] ${mine ? 'text-accent-ink/60' : 'text-faint'}`}>{t('chat.edited')}</Text> : null}
             {m.expires_at ? <Timer size={10} color={mine ? colors.accentInk : colors.faint} accessibilityLabel={t('chat.bubble.disappearing')} /> : null}
             <Text className={`text-[10px] ${mine ? 'text-accent-ink/60' : 'text-faint'}`}>{time(m.created_at)}</Text>
           </View>
