@@ -16,7 +16,7 @@ MinIO itself no longer publishes free container images, so RustFS is used; Garag
 
 ## Storage (RustFS)
 
-Already set up in the `staging` environment:
+Set up in both environments: services `storage` (staging) and `prod-storage` (production), each with its own volume and keys.
 
 - Service `storage` from image `rustfs/rustfs:latest`, volume mounted at `/data`, public domain on port 9000.
 - Variables on `storage`: `RUSTFS_ACCESS_KEY`, `RUSTFS_SECRET_KEY` (random).
@@ -28,7 +28,7 @@ The API creates the bucket on boot. The bucket stays private: phones only get sh
 
 `services/nsfw` is a small Flask service: `POST /score` with image bytes returns `{"nsfw": 0..1}`. The API blocks above 0.85, sends 0.4–0.85 to moderators, and clears below 0.4.
 
-- Service `nsfw` deployed with `railway up services/nsfw --path-as-root --service nsfw`. No public domain; the API reaches it at `http://${{nsfw.RAILWAY_PRIVATE_DOMAIN}}:8000/score` with `NSFW_TOKEN=${{nsfw.NSFW_TOKEN}}`.
+- Services `nsfw` (staging) and `prod-nsfw` (production), deployed with `railway up services/nsfw --path-as-root --service nsfw`. No public domain; the API reaches it at `http://${{nsfw.RAILWAY_PRIVATE_DOMAIN}}:8000/score` with `NSFW_TOKEN=${{nsfw.NSFW_TOKEN}}`.
 - Images are scored in memory and never stored.
 
 ## SMS (SMS Gateway for Android)
@@ -83,3 +83,16 @@ WebRTC audio needs UDP ports, which Railway doesn't offer, so LiveKit runs on a 
 5. On Railway (`api`): `LIVEKIT_URL=wss://livekit.metrobuddy.in`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` (the pair from step 3).
 
 Recording is never enabled: the server stops any egress it's told about.
+
+## Test APK
+
+`MetroBuddy-staging.apk` is built locally (no Expo account needed):
+
+```bash
+cd apps/mobile && npx expo prebuild -p android --no-install
+cd android && JAVA_HOME=<jdk 17> ANDROID_HOME=~/Android/Sdk \
+  EXPO_PUBLIC_API_URL=https://api-staging-b0d3.up.railway.app NODE_ENV=production \
+  ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
+```
+
+It is signed with the debug key, so it's for testing only: Play Store builds (EAS) use a different key, and phones must uninstall the test APK before installing a store build.
