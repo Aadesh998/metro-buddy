@@ -104,7 +104,7 @@ function Discover() {
           !q ? (
             <View className="gap-3">
               {(me.data?.trust_tier ?? 0) >= 2 ? <Button title={t('bowls.startBowl')} kind="secondary" onPress={() => router.push('/bowl/new')} /> : null}
-              <Text variant="caption" className="mb-2 uppercase tracking-wider">
+              <Text variant="eyebrow" className="mb-2">
                 {t('bowls.suggested')}
               </Text>
             </View>

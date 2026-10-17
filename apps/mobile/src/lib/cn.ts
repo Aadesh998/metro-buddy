@@ -4,7 +4,7 @@ import { extendTailwindMerge } from 'tailwind-merge';
 export const cn = extendTailwindMerge({
   extend: {
     theme: {
-      colors: ['bg', 'surface', 'raised', 'line', 'ink', 'muted', 'faint', 'accent', 'accent-ink', 'mint', 'danger', 'sky'],
+      colors: ['bg', 'surface', 'raised', 'line', 'ink', 'muted', 'faint', 'accent', 'accent-ink', 'mint', 'danger', 'sky', 'brand', 'brand-soft'],
     },
   },
 });

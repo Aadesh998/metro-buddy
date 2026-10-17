@@ -169,7 +169,7 @@ export default function Compose() {
         ) : null}
 
         <View className="gap-2">
-          <Text variant="caption" className="uppercase tracking-wider">
+          <Text variant="eyebrow">
             {t('bowls.compose.flair')}
           </Text>
           <View className="flex-row flex-wrap gap-2">

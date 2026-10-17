@@ -59,11 +59,11 @@ export default function Rooms() {
         }
       />
       <ScrollView contentContainerClassName="gap-3 px-4 pb-10">
-        <Text variant="caption" className="mt-2 uppercase tracking-wider">
+        <Text variant="eyebrow" className="mt-2">
           {t('chat.rooms.liveNow')}
         </Text>
         {(live.data ?? []).length === 0 ? <Text className="text-muted">{t('chat.rooms.nothingLive')}</Text> : live.data!.map((r) => <RoomCard key={r.id} r={r} />)}
-        <Text variant="caption" className="mt-4 uppercase tracking-wider">
+        <Text variant="eyebrow" className="mt-4">
           {t('chat.rooms.comingUp')}
         </Text>
         {later.length === 0 ? (

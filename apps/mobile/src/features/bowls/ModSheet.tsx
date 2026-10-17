@@ -71,7 +71,7 @@ export function ModSheet({ bowlId, pinnedId, owner, post, onClose }: { bowlId: s
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <Pressable className="flex-1 bg-black/60" onPress={onClose} accessibilityLabel={t('common.close')} />
       <View className="gap-1 rounded-t-3xl bg-surface px-3 pt-4" style={{ paddingBottom: insets.bottom + 12 }}>
-        <Text variant="caption" className="px-3 pb-2 uppercase tracking-wider">
+        <Text variant="eyebrow" className="px-3 pb-2">
           {t('bowls.sheet.title')}
         </Text>
         {actions.map((a) => (

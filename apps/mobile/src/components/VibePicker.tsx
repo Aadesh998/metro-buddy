@@ -41,7 +41,7 @@ export function VibePicker({ selected, onChange, locale: localeProp }: { selecte
         .map((cat) => [cat, groups[cat]] as const)
         .map(([cat, vibes]) => (
         <View key={cat} className="gap-2">
-          <Text variant="caption" className="uppercase tracking-wider">
+          <Text variant="eyebrow">
             {t(`onboarding.vibeCategories.${cat}`)}
           </Text>
           <View className="flex-row flex-wrap gap-2">

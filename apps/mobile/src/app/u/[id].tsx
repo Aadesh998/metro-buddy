@@ -69,7 +69,7 @@ export default function PersonaProfile() {
           <Counts id={p.id} />
           <PersonaActions persona={p} />
           <View className="mt-2 w-full gap-2">
-            <Text variant="caption" className="uppercase tracking-wider">
+            <Text variant="eyebrow">
               {t('bowls.profile.vibes')}
             </Text>
             <View className="flex-row flex-wrap gap-2">
