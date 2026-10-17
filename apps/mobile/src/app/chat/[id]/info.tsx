@@ -3,11 +3,12 @@ import * as Clipboard from 'expo-clipboard';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Alert, Pressable, Share, Switch, View } from 'react-native';
 
-import { del, patch, post } from '@/api/client';
+import { del, patch, post, put } from '@/api/client';
 import type { PersonaRef } from '@/api/types';
 import { PersonaRow } from '@/components/PersonaBadge';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
 import { Screen } from '@/components/ui/Screen';
 import { Text } from '@/components/ui/Text';
 import { toast } from '@/components/ui/Toast';
@@ -32,6 +33,7 @@ export default function ChatInfo() {
     },
   });
   const rotate = useMutation({ mutationFn: () => post(`/v1/conversations/${id}/invite`), onSuccess: refresh });
+  const timer = useMutation({ mutationFn: (seconds: number) => put(`/v1/conversations/${id}/disappearing`, { seconds }), onSuccess: refresh, onError: (e) => toast(e.message) });
 
   if (!c) return null;
   const admin = c.my_role !== 'member';
@@ -95,6 +97,23 @@ export default function ChatInfo() {
         <Text>Mute notifications</Text>
         <Switch value={muted} onValueChange={(v) => mute.mutate(v)} trackColor={{ true: colors.accent, false: colors.line }} thumbColor={colors.ink} />
       </View>
+
+      {c.kind !== 'discussion' && (c.kind !== 'group' || admin) ? (
+        <View className="gap-3 rounded-2xl border border-line bg-surface p-4">
+          <Text>Disappearing messages</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {[
+              [0, 'Off'],
+              [3600, '1 hour'],
+              [86400, '24 hours'],
+              [604800, '7 days'],
+            ].map(([sec, label]) => (
+              <Chip key={sec} label={String(label)} selected={(c.disappear_after_sec ?? 0) === sec} onPress={() => timer.mutate(Number(sec))} />
+            ))}
+          </View>
+          <Text variant="caption">New messages are deleted from our servers after this time. Anyone can still screenshot, so share wisely.</Text>
+        </View>
+      ) : null}
 
       <View className="gap-2">
         <Text variant="label">

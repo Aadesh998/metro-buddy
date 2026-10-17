@@ -272,6 +272,7 @@ func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "grievance_overdue", 15*time.Minute, a.Admin.AlertOverdue)
 	a.Jobs.Every(ctx, "dm_request_expiry", time.Hour, a.Chat.ExpireRequests)
 	a.Jobs.Every(ctx, "room_close", time.Minute, a.Chat.CloseExpiredRooms)
+	a.Jobs.Every(ctx, "message_expiry", time.Minute, a.Chat.PurgeExpired)
 	a.Jobs.Every(ctx, "inbox_purge", 6*time.Hour, a.Notify.Purge)
 	a.Jobs.Every(ctx, "plan_intents", time.Minute, a.Travel.SpawnPlanIntents)
 	a.Jobs.Every(ctx, "match_expiry", 5*time.Minute, a.Travel.ExpireMatches)

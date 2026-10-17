@@ -64,6 +64,7 @@ func (s *Service) Register(g *echo.Group) {
 	g.GET("/conversations", s.list)
 	g.GET("/conversations/:id", s.get)
 	g.PATCH("/conversations/:id", s.patch)
+	g.PUT("/conversations/:id/disappearing", s.setDisappearing)
 	g.POST("/conversations/:id/leave", s.leave)
 	g.GET("/conversations/:id/messages", s.history)
 	g.POST("/conversations/:id/messages", s.send, send)

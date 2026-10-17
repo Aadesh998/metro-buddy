@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { AlertCircle, Clock, EyeOff, MapPin, Sparkles } from 'lucide-react-native';
+import { AlertCircle, Clock, EyeOff, MapPin, Sparkles, Timer } from 'lucide-react-native';
 import { memo } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -85,6 +85,7 @@ export const MessageBubble = memo(function MessageBubble({
           <View className="mt-0.5 flex-row items-center justify-end gap-1">
             {m.pii_hidden ? <EyeOff size={10} color={mine ? colors.accentInk : colors.faint} /> : null}
             {m.local === 'sending' ? <Clock size={10} color={colors.accentInk} /> : null}
+            {m.expires_at ? <Timer size={10} color={mine ? colors.accentInk : colors.faint} accessibilityLabel="Disappearing message" /> : null}
             <Text className={`text-[10px] ${mine ? 'text-accent-ink/60' : 'text-faint'}`}>{time(m.created_at)}</Text>
           </View>
         </View>

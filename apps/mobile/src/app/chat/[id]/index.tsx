@@ -18,6 +18,7 @@ import { MessageBubble } from '@/features/chat/MessageBubble';
 import { activeConversation, useOnline, useReceipts, useSupportSignal, useTyping } from '@/features/chat/store';
 import { useSafetySheet } from '@/features/safety/SafetySheet';
 import { send as frame } from '@/lib/realtime';
+import { useNow } from '@/lib/clock';
 import { colors } from '@/lib/theme';
 import { until } from '@/lib/time';
 
@@ -68,7 +69,8 @@ export default function ChatScreen() {
   const [supportSeen, setSupportSeen] = useState(support);
   const [text, setText] = useState('');
   const lastTyping = useRef(0);
-  const items = useMemo(() => msgs.data?.pages.flatMap((p) => p.items) ?? [], [msgs.data]);
+  const now = useNow(15_000);
+  const items = useMemo(() => (msgs.data?.pages.flatMap((p) => p.items) ?? []).filter((m) => !m.expires_at || Date.parse(m.expires_at) > now), [msgs.data, now]);
   const c = conv.data;
   const isGroup = c ? c.kind !== 'dm' && c.kind !== 'travel' : false;
 
