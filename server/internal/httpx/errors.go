@@ -24,14 +24,18 @@ func (e *Error) Error() string { return e.Code + ": " + e.Message }
 func E(status int, code, msg string) *Error { return &Error{Status: status, Code: code, Message: msg} }
 
 func BadRequest(msg string) *Error { return E(http.StatusBadRequest, "bad_request", msg) }
-func Unauthorized() *Error         { return E(http.StatusUnauthorized, "unauthorized", "authentication required") }
-func Forbidden(msg string) *Error  { return E(http.StatusForbidden, "forbidden", msg) }
-func NotFound() *Error             { return E(http.StatusNotFound, "not_found", "not found") }
-func Conflict(msg string) *Error   { return E(http.StatusConflict, "conflict", msg) }
+func Unauthorized() *Error {
+	return E(http.StatusUnauthorized, "unauthorized", "authentication required")
+}
+func Forbidden(msg string) *Error { return E(http.StatusForbidden, "forbidden", msg) }
+func NotFound() *Error            { return E(http.StatusNotFound, "not_found", "not found") }
+func Conflict(msg string) *Error  { return E(http.StatusConflict, "conflict", msg) }
 func Unprocessable(code, msg string) *Error {
 	return E(http.StatusUnprocessableEntity, code, msg)
 }
-func TooMany() *Error { return E(http.StatusTooManyRequests, "rate_limited", "too many requests, slow down") }
+func TooMany() *Error {
+	return E(http.StatusTooManyRequests, "rate_limited", "too many requests, slow down")
+}
 
 type envelope struct {
 	Error     *Error `json:"error"`

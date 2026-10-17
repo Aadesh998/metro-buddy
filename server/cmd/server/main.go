@@ -43,7 +43,11 @@ func run(log *slog.Logger) error {
 	}
 	defer rdb.Close()
 
-	e := app.NewServer(&app.Deps{Cfg: cfg, DB: gdb, Redis: rdb, Log: log})
+	a, err := app.New(&app.Deps{Cfg: cfg, DB: gdb, Redis: rdb, Log: log})
+	if err != nil {
+		return err
+	}
+	e := a.Echo
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

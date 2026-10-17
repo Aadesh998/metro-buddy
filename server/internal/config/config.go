@@ -26,6 +26,10 @@ type Config struct {
 	MSG91SOSFlow  string
 	OTPDevCode    string
 
+	TwilioSID   string
+	TwilioToken string
+	TwilioFrom  string
+
 	R2AccountID   string
 	R2AccessKey   string
 	R2SecretKey   string
@@ -58,6 +62,9 @@ func Load() (*Config, error) {
 		MSG91Template: os.Getenv("MSG91_OTP_TEMPLATE_ID"),
 		MSG91SOSFlow:  os.Getenv("MSG91_SOS_FLOW_ID"),
 		OTPDevCode:    os.Getenv("OTP_DEV_CODE"),
+		TwilioSID:     os.Getenv("TWILIO_ACCOUNT_SID"),
+		TwilioToken:   os.Getenv("TWILIO_AUTH_TOKEN"),
+		TwilioFrom:    os.Getenv("TWILIO_FROM"),
 
 		R2AccountID:  os.Getenv("R2_ACCOUNT_ID"),
 		R2AccessKey:  os.Getenv("R2_ACCESS_KEY_ID"),
