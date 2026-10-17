@@ -50,6 +50,13 @@ export default {
     studio: 'Studio',
     me: 'Me',
   },
+  intents: {
+    vent: 'Vent it out',
+    listen: 'Listen & support',
+    travel_buddy: 'Find a travel buddy',
+    friends: 'Make friends',
+    discuss: 'Join discussions',
+  },
   language: {
     title: 'Language',
     en: 'English',

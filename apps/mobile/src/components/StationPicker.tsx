@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Station } from '@/api/types';
 import { Text } from '@/components/ui/Text';
 import { searchStations, useStations } from '@/features/metro/hooks';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 
 export function LineDots({ station }: { station: Station }) {
@@ -32,6 +33,7 @@ export function StationPicker({
   onClose: () => void;
   onPick: (s: Station) => void;
 }) {
+  const { t } = useT();
   const { data = [], isPending } = useStations(cityId);
   const [q, setQ] = useState('');
   const results = useMemo(() => searchStations(data, q), [data, q]);
@@ -41,7 +43,7 @@ export function StationPicker({
       <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
         <View className="flex-row items-center justify-between px-5 pb-3 pt-2">
           <Text variant="heading">{title}</Text>
-          <Pressable onPress={onClose} accessibilityLabel="Close" hitSlop={12}>
+          <Pressable onPress={onClose} accessibilityLabel={t('common.close')} hitSlop={12}>
             <X color={colors.muted} size={22} />
           </Pressable>
         </View>
@@ -50,7 +52,7 @@ export function StationPicker({
           <TextInput
             value={q}
             onChangeText={setQ}
-            placeholder="Search stations"
+            placeholder={t('onboarding.stationPicker.search')}
             placeholderTextColor={colors.faint}
             className="flex-1 text-base text-ink"
             autoFocus
@@ -58,13 +60,13 @@ export function StationPicker({
           />
         </View>
         {isPending ? (
-          <Text className="px-5 py-6 text-muted">Loading stations…</Text>
+          <Text className="px-5 py-6 text-muted">{t('onboarding.stationPicker.loading')}</Text>
         ) : (
           <FlashList
             data={results}
             keyExtractor={(s) => s.id}
             keyboardShouldPersistTaps="handled"
-            ListEmptyComponent={<Text className="px-5 py-6 text-muted">No station matches “{q}”.</Text>}
+            ListEmptyComponent={<Text className="px-5 py-6 text-muted">{t('onboarding.stationPicker.noMatch', { q })}</Text>}
             renderItem={({ item }) => (
               <Pressable
                 onPress={() => {
@@ -84,7 +86,7 @@ export function StationPicker({
                     ))}
                   </View>
                 </View>
-                {item.is_interchange ? <Text variant="caption">Interchange</Text> : null}
+                {item.is_interchange ? <Text variant="caption">{t('onboarding.stationPicker.interchange')}</Text> : null}
               </Pressable>
             )}
           />

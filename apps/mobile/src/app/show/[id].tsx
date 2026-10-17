@@ -16,12 +16,14 @@ import { Text } from '@/components/ui/Text';
 import { useSafetySheet } from '@/features/safety/SafetySheet';
 import { EpisodeCard } from '@/features/studio/EpisodeCard';
 import { studioKeys, useFollow, useShow, useTopicIdeas } from '@/features/studio/hooks';
+import { dateLocale, useT } from '@/i18n';
 import { useNow } from '@/lib/clock';
 import { colors } from '@/lib/theme';
 
 const DAY = 86_400_000;
 
 function Scheduler({ show, now }: { show: Show; now: number }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const [title, setTitle] = useState('');
   const [day, setDay] = useState(0);
@@ -46,11 +48,11 @@ function Scheduler({ show, now }: { show: Show; now: number }) {
   const step = (d: number) => setMinutes((m) => Math.min(24 * 60 - 15, Math.max(0, m + d)));
   return (
     <View className="gap-3 rounded-2xl border border-line bg-surface p-4">
-      <Text variant="heading">Schedule an episode</Text>
-      <Input value={title} onChangeText={(t) => setTitle(t.slice(0, 80))} placeholder="Tonight’s topic" />
+      <Text variant="heading">{t('studio.show.scheduleTitle')}</Text>
+      <Input value={title} onChangeText={(v) => setTitle(v.slice(0, 80))} placeholder={t('studio.show.topicPlaceholder')} />
       {showIdeas ? (
         <View className="gap-2">
-          <Text variant="caption">{ideas.data?.from_ai ? 'Ideas based on what the city is talking about this week' : 'Ideas from this week’s busiest bowls'}</Text>
+          <Text variant="caption">{ideas.data?.from_ai ? t('studio.show.ideasAi') : t('studio.show.ideasBowls')}</Text>
           {(ideas.data?.ideas ?? []).map((i) => (
             <Pressable key={i.topic} onPress={() => setTitle(i.topic.slice(0, 80))} className="gap-0.5 rounded-xl bg-raised p-3 active:opacity-70">
               <Text variant="label">{i.topic}</Text>
@@ -61,41 +63,43 @@ function Scheduler({ show, now }: { show: Show; now: number }) {
       ) : (
         <Pressable onPress={() => setShowIdeas(true)} className="flex-row items-center gap-1.5 self-start" hitSlop={8}>
           <Lightbulb size={15} color={colors.accent} />
-          <Text className="text-sm font-medium text-accent">Need a topic idea?</Text>
+          <Text className="text-sm font-medium text-accent">{t('studio.show.needIdea')}</Text>
         </Pressable>
       )}
       <View className="flex-row flex-wrap gap-2">
         {[0, 1, 2, 3, 4, 5, 6].map((d) => (
           <Chip
             key={d}
-            label={d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : new Date(now + d * DAY).toLocaleDateString([], { weekday: 'short' })}
+            label={d === 0 ? t('studio.show.today') : d === 1 ? t('studio.show.tomorrow') : new Date(now + d * DAY).toLocaleDateString(dateLocale(), { weekday: 'short' })}
             selected={day === d}
             onPress={() => setDay(d)}
           />
         ))}
       </View>
       <View className="flex-row items-center justify-center gap-6">
-        <Pressable onPress={() => step(-15)} hitSlop={10} accessibilityLabel="15 minutes earlier" className="h-10 w-10 items-center justify-center rounded-full bg-raised">
+        <Pressable onPress={() => step(-15)} hitSlop={10} accessibilityLabel={t('studio.show.earlier')} className="h-10 w-10 items-center justify-center rounded-full bg-raised">
           <Minus size={18} color={colors.ink} />
         </Pressable>
-        <Text className="w-28 text-center font-mono text-2xl font-bold">{at.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</Text>
-        <Pressable onPress={() => step(15)} hitSlop={10} accessibilityLabel="15 minutes later" className="h-10 w-10 items-center justify-center rounded-full bg-raised">
+        <Text className="w-28 text-center font-mono text-2xl font-bold">{at.toLocaleTimeString(dateLocale(), { hour: 'numeric', minute: '2-digit' })}</Text>
+        <Pressable onPress={() => step(15)} hitSlop={10} accessibilityLabel={t('studio.show.later')} className="h-10 w-10 items-center justify-center rounded-full bg-raised">
           <Plus size={18} color={colors.ink} />
         </Pressable>
       </View>
-      {past ? <Text className="text-center text-xs text-danger">That time has already passed.</Text> : null}
-      <Text variant="caption">Followers get a nudge 10 minutes before. You can go live up to 15 minutes early.</Text>
-      <Button title="Schedule" disabled={title.trim().length < 3 || past} loading={create.isPending} onPress={() => create.mutate()} />
+      {past ? <Text className="text-center text-xs text-danger">{t('studio.show.passed')}</Text> : null}
+      <Text variant="caption">{t('studio.show.hint')}</Text>
+      <Button title={t('studio.show.schedule')} disabled={title.trim().length < 3 || past} loading={create.isPending} onPress={() => create.mutate()} />
     </View>
   );
 }
 
 function FollowButton({ show }: { show: Show }) {
+  const { t } = useT();
   const follow = useFollow(show);
-  return <Button title={show.following ? 'Following' : 'Follow'} kind={show.following ? 'secondary' : 'primary'} loading={follow.isPending} onPress={() => follow.mutate()} />;
+  return <Button title={show.following ? t('common.following') : t('common.follow')} kind={show.following ? 'secondary' : 'primary'} loading={follow.isPending} onPress={() => follow.mutate()} />;
 }
 
 export default function ShowScreen() {
+  const { t, tp } = useT();
   const { id } = useLocalSearchParams<{ id: string }>();
   const show = useShow(id);
   const safety = useSafetySheet();
@@ -107,7 +111,7 @@ export default function ShowScreen() {
         title={s?.title}
         right={
           s && !s.is_mine ? (
-            <Pressable onPress={() => safety.open({ type: 'persona', id: s.host.id, personaId: s.host.id, alias: s.host.alias })} hitSlop={12} accessibilityLabel="Safety options">
+            <Pressable onPress={() => safety.open({ type: 'persona', id: s.host.id, personaId: s.host.id, alias: s.host.alias })} hitSlop={12} accessibilityLabel={t('common.safetyOptions')}>
               <MoreHorizontal color={colors.ink} size={22} />
             </Pressable>
           ) : null
@@ -116,19 +120,20 @@ export default function ShowScreen() {
       {s ? (
         <ScrollView contentContainerClassName="gap-5 p-4">
           <Pressable onPress={() => router.push(`/u/${s.host.id}`)}>
-            <PersonaRow p={s.host} subtitle="Host" />
+            <PersonaRow p={s.host} subtitle={t('studio.host')} />
           </Pressable>
           {s.description ? <Text className="text-muted">{s.description}</Text> : null}
           <View className="flex-row flex-wrap gap-2">
-            {s.topic_tags.map((t) => (
-              <Chip key={t} label={t} />
+            {s.topic_tags.map((tag) => (
+              <Chip key={tag} label={tag} />
             ))}
           </View>
           <Text variant="caption">
-            {s.follower_count} following{s.schedule ? ` · usually ${s.schedule}` : ''}
+            {tp('studio.followers', s.follower_count)}
+            {s.schedule ? t('studio.show.usually', { schedule: s.schedule }) : ''}
           </Text>
           {!s.is_mine ? <FollowButton show={s} /> : null}
-          {s.next_episode ? <EpisodeCard ep={s.next_episode} now={now} /> : <Text className="text-muted">Nothing scheduled yet.</Text>}
+          {s.next_episode ? <EpisodeCard ep={s.next_episode} now={now} /> : <Text className="text-muted">{t('studio.show.nothingScheduled')}</Text>}
           {s.is_mine ? <Scheduler show={s} now={now} /> : null}
         </ScrollView>
       ) : null}

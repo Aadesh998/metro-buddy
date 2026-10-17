@@ -10,8 +10,10 @@ import { Input } from '@/components/ui/Input';
 import { Screen } from '@/components/ui/Screen';
 import { Text } from '@/components/ui/Text';
 import { chatKeys } from '@/features/chat/hooks';
+import { useT } from '@/i18n';
 
 export default function NewGroup() {
+  const { t } = useT();
   const qc = useQueryClient();
   const [title, setTitle] = useState('');
   const create = useMutation({
@@ -23,10 +25,10 @@ export default function NewGroup() {
   });
   return (
     <Screen className="gap-5">
-      <ScreenHeader title="New group" />
-      <Input label="Group name" value={title} onChangeText={(t) => setTitle(t.slice(0, 60))} placeholder="Yellow Line 9:10 regulars" autoFocus />
-      <Text variant="caption">You’ll get an invite code to share. Groups hold up to 50 people.</Text>
-      <Button title="Create group" disabled={title.trim().length < 2} loading={create.isPending} onPress={() => create.mutate()} />
+      <ScreenHeader title={t('chat.groups.newTitle')} />
+      <Input label={t('chat.groups.name')} value={title} onChangeText={(v) => setTitle(v.slice(0, 60))} placeholder={t('chat.groups.namePlaceholder')} autoFocus />
+      <Text variant="caption">{t('chat.groups.newHint')}</Text>
+      <Button title={t('chat.groups.create')} disabled={title.trim().length < 2} loading={create.isPending} onPress={() => create.mutate()} />
     </Screen>
   );
 }

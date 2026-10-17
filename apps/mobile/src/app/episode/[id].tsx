@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Headphones, Mic, MicOff, MoreHorizontal, PhoneCall, Send } from 'lucide-react-native';
 import { useCallback, useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Switch, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { del, post } from '@/api/client';
@@ -20,6 +20,8 @@ import { whenLabel } from '@/features/studio/EpisodeCard';
 import { HostPanel, OnAirControls } from '@/features/studio/HostControls';
 import { studioKeys, useEpisode, useEpisodeEvents } from '@/features/studio/hooks';
 import { useLiveRoom } from '@/features/studio/useLiveRoom';
+import { voiceMaskSupported } from '@/features/studio/voice';
+import { useT } from '@/i18n';
 import { useNow } from '@/lib/clock';
 import { confirm } from '@/lib/confirm';
 import { colors } from '@/lib/theme';
@@ -27,10 +29,11 @@ import { colors } from '@/lib/theme';
 const REACTIONS: Record<string, string> = { heart: '❤️', hug: '🤗', clap: '👏', laugh: '😂', fire: '🔥', same: '🙋' };
 
 function Timer({ until }: { until: string }) {
+  const { tp } = useT();
   const now = useNow(1000);
   const s = Math.max(0, Math.round((Date.parse(until) - now) / 1000));
   return (
-    <Text className={`font-mono text-sm font-bold ${s < 60 ? 'text-danger' : 'text-accent'}`} accessibilityLabel={`${Math.ceil(s / 60)} minutes left`}>
+    <Text className={`font-mono text-sm font-bold ${s < 60 ? 'text-danger' : 'text-accent'}`} accessibilityLabel={tp('studio.episode.minutesLeft', Math.ceil(s / 60))}>
       {`${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`}
     </Text>
   );
@@ -50,30 +53,42 @@ function Speaker({ p, label, speaking }: { p: PersonaRef; label: string; speakin
   );
 }
 
-function CallInSheet({ ep, visible, onClose }: { ep: Episode; visible: boolean; onClose: () => void }) {
+function CallInSheet({ ep, visible, onClose, onMasked }: { ep: Episode; visible: boolean; onClose: () => void; onMasked: (on: boolean) => void }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const insets = useSafeAreaInsets();
   const [topic, setTopic] = useState('');
+  const [mask, setMask] = useState(false);
   const send = useMutation({
-    mutationFn: () => post(`/v1/episodes/${ep.id}/call-in`, { topic: topic.trim() }),
+    mutationFn: () => post(`/v1/episodes/${ep.id}/call-in`, { topic: topic.trim(), voice_masked: mask }),
     onSuccess: () => {
+      onMasked(mask);
       setTopic('');
       onClose();
       qc.invalidateQueries({ queryKey: studioKeys.episode(ep.id) });
-      toast('You’re in the queue. The host will bring you on air.', 'success');
+      toast(t('studio.episode.queuedToast'), 'success');
     },
     onError: (e) => toast(e.message),
   });
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1 justify-end bg-black/60">
-        <Pressable className="flex-1" onPress={onClose} accessibilityLabel="Close" />
+        <Pressable className="flex-1" onPress={onClose} accessibilityLabel={t('common.close')} />
         <View className="gap-4 rounded-t-3xl bg-surface p-5" style={{ paddingBottom: insets.bottom + 20 }}>
-          <Text variant="heading">Call in to {ep.show_title}</Text>
-          <Text className="text-sm text-muted">Tell the host what you want to talk about. Only the host sees this. You’ll be on air for up to 8 minutes.</Text>
-          <Input value={topic} onChangeText={(t) => setTopic(t.slice(0, 80))} placeholder="My manager takes credit for my work" autoFocus />
-          <Text variant="caption">{80 - topic.length} characters left · phone numbers and names are masked</Text>
-          <Button title="Join the queue" disabled={topic.trim().length < 3} loading={send.isPending} onPress={() => send.mutate()} />
+          <Text variant="heading">{t('studio.episode.callInTitle', { show: ep.show_title })}</Text>
+          <Text className="text-sm text-muted">{t('studio.episode.callInBody')}</Text>
+          <Input value={topic} onChangeText={(v) => setTopic(v.slice(0, 80))} placeholder={t('studio.episode.callInPlaceholder')} autoFocus />
+          <Text variant="caption">{t('studio.episode.charsLeft', { n: 80 - topic.length })}</Text>
+          {voiceMaskSupported ? (
+            <View className="flex-row items-center gap-3">
+              <View className="flex-1">
+                <Text variant="label">{t('studio.episode.maskVoice')}</Text>
+                <Text variant="caption">{t('studio.episode.maskVoiceHint')}</Text>
+              </View>
+              <Switch value={mask} onValueChange={setMask} trackColor={{ true: colors.accent, false: colors.line }} thumbColor={colors.ink} />
+            </View>
+          ) : null}
+          <Button title={t('studio.episode.joinQueue')} disabled={topic.trim().length < 3} loading={send.isPending} onPress={() => send.mutate()} />
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -81,24 +96,25 @@ function CallInSheet({ ep, visible, onClose }: { ep: Episode; visible: boolean; 
 }
 
 function AskBox({ ep }: { ep: Episode }) {
+  const { t } = useT();
   const [text, setText] = useState('');
   const ask = useMutation({
     mutationFn: () => post(`/v1/episodes/${ep.id}/questions`, { text: text.trim() }),
     onSuccess: () => {
       setText('');
-      toast('Question sent to the host', 'success');
+      toast(t('studio.episode.questionSent'), 'success');
     },
     onError: (e) => toast(e.message),
   });
   return (
     <View className="flex-row items-end gap-2">
       <View className="flex-1">
-        <Input value={text} onChangeText={(t) => setText(t.slice(0, 200))} placeholder="Ask the host something" />
+        <Input value={text} onChangeText={(v) => setText(v.slice(0, 200))} placeholder={t('studio.episode.askPlaceholder')} />
       </View>
       <Pressable
         onPress={() => ask.mutate()}
         disabled={text.trim().length < 3 || ask.isPending}
-        accessibilityLabel="Send question"
+        accessibilityLabel={t('studio.episode.sendQuestion')}
         className={`h-12 w-12 items-center justify-center rounded-xl ${text.trim().length < 3 ? 'bg-raised' : 'bg-accent'}`}
       >
         <Send size={18} color={text.trim().length < 3 ? colors.faint : colors.accentInk} />
@@ -110,6 +126,7 @@ function AskBox({ ep }: { ep: Episode }) {
 type Floater = { key: number; emoji: string; left: number };
 
 function Reactions({ ep, floaters }: { ep: Episode; floaters: Floater[] }) {
+  const { t } = useT();
   const react = useMutation({ mutationFn: (r: string) => post(`/v1/episodes/${ep.id}/reactions`, { reaction: r }) });
   return (
     <View>
@@ -128,7 +145,7 @@ function Reactions({ ep, floaters }: { ep: Episode; floaters: Floater[] }) {
               Haptics.selectionAsync().catch(() => {});
               react.mutate(k);
             }}
-            accessibilityLabel={`React ${k}`}
+            accessibilityLabel={t('studio.episode.react', { emoji: e })}
             className="h-11 w-11 items-center justify-center rounded-full bg-raised"
           >
             <Text className="text-xl">{e}</Text>
@@ -141,10 +158,11 @@ function Reactions({ ep, floaters }: { ep: Episode; floaters: Floater[] }) {
 
 export default function EpisodeScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t, tp } = useT();
   const qc = useQueryClient();
   const episode = useEpisode(id);
   const safety = useSafetySheet();
-  const { state, join, leave, setMic } = useLiveRoom(id);
+  const { state, join, leave, setMic, setMasked } = useLiveRoom(id);
   const [calling, setCalling] = useState(false);
   const [floaters, setFloaters] = useState<Floater[]>([]);
   const now = useNow(60_000);
@@ -162,6 +180,10 @@ export default function EpisodeScreen() {
   useEffect(() => {
     if (ended && state.status !== 'idle') leave(false);
   }, [ended, state.status, leave]);
+  const maskedOnServer = !!ep?.my_call_in?.voice_masked;
+  useEffect(() => {
+    if (maskedOnServer) setMasked(true);
+  }, [maskedOnServer, setMasked]);
 
   const refresh = () => qc.invalidateQueries({ queryKey: studioKeys.episode(id) });
   const action = useMutation({
@@ -178,7 +200,7 @@ export default function EpisodeScreen() {
   const meOnAir = ep.on_air && ep.my_call_in?.id === ep.on_air.id;
   const scheduledMs = Date.parse(ep.scheduled_at);
 
-  const confirmEnd = () => confirm('End the episode?', 'Everyone will be disconnected. Nothing is recorded.', 'End', () => action.mutate('end'));
+  const confirmEnd = () => confirm(t('studio.episode.endTitle'), t('studio.episode.endBody'), t('studio.episode.end'), () => action.mutate('end'));
 
   return (
     <SafeAreaView className="flex-1 bg-bg">
@@ -186,7 +208,7 @@ export default function EpisodeScreen() {
         title={ep.show_title}
         right={
           !isHost ? (
-            <Pressable onPress={() => safety.open({ type: 'episode', id: ep.id, personaId: ep.host.id, alias: ep.host.alias })} hitSlop={12} accessibilityLabel="Safety options">
+            <Pressable onPress={() => safety.open({ type: 'episode', id: ep.id, personaId: ep.host.id, alias: ep.host.alias })} hitSlop={12} accessibilityLabel={t('common.safetyOptions')}>
               <MoreHorizontal color={colors.ink} size={22} />
             </Pressable>
           ) : null
@@ -202,24 +224,24 @@ export default function EpisodeScreen() {
               </View>
             ) : null}
             <Text variant="caption">
-              {ep.status === 'live' ? `${ep.listeners} listening` : ended ? `Ended · peak ${ep.peak_listeners} listening` : whenLabel(ep.scheduled_at, now)}
+              {ep.status === 'live' ? tp('studio.listening', ep.listeners) : ended ? tp('studio.episode.endedPeak', ep.peak_listeners) : whenLabel(ep.scheduled_at, now)}
             </Text>
           </View>
         </View>
 
         {ep.status === 'scheduled' && !isHost ? (
           <View className="gap-3">
-            <Text className="text-muted">This episode hasn’t started yet. Follow the show to get a nudge 10 minutes before.</Text>
-            <Button title="See the show" kind="secondary" onPress={() => router.push(`/show/${ep.show_id}`)} />
+            <Text className="text-muted">{t('studio.episode.notStarted')}</Text>
+            <Button title={t('studio.episode.seeShow')} kind="secondary" onPress={() => router.push(`/show/${ep.show_id}`)} />
           </View>
         ) : null}
 
         {ep.status === 'live' ? (
           <View className="flex-row justify-around rounded-3xl border border-line bg-surface py-6">
-            <Speaker p={ep.host} label="Host" speaking={state.speaking.has(ep.host.id)} />
+            <Speaker p={ep.host} label={t('studio.host')} speaking={state.speaking.has(ep.host.id)} />
             {ep.on_air ? (
               <View className="items-center gap-1">
-                <Speaker p={ep.on_air.persona} label="On air" speaking={state.speaking.has(ep.on_air.persona.id)} />
+                <Speaker p={ep.on_air.persona} label={t('studio.episode.onAir')} speaking={state.speaking.has(ep.on_air.persona.id)} />
                 {ep.on_air.ends_at ? <Timer until={ep.on_air.ends_at} /> : null}
               </View>
             ) : (
@@ -227,7 +249,7 @@ export default function EpisodeScreen() {
                 <View className="h-[72px] w-[72px] items-center justify-center rounded-full border-2 border-dashed border-line">
                   <PhoneCall size={22} color={colors.faint} />
                 </View>
-                <Text variant="caption">Open line</Text>
+                <Text variant="caption">{t('studio.episode.openLine')}</Text>
               </View>
             )}
           </View>
@@ -236,33 +258,34 @@ export default function EpisodeScreen() {
         {ep.status === 'live' && !connected ? (
           <View className="gap-2">
             <Button
-              title={state.status === 'connecting' ? 'Connecting…' : isHost ? 'Open the studio' : 'Listen in'}
+              title={state.status === 'connecting' ? t('studio.episode.connecting') : isHost ? t('studio.episode.openStudio') : t('studio.episode.listenIn')}
               loading={state.status === 'connecting'}
               onPress={join}
             />
             {state.status === 'error' ? <Text className="text-center text-sm text-danger">{state.error}</Text> : null}
             <Text variant="caption" className="text-center">
-              Shows are never recorded. Listeners are anonymous.
+              {t('studio.episode.neverRecorded')}
             </Text>
           </View>
         ) : null}
 
-        {state.status === 'reconnecting' ? <Text className="text-center text-sm text-accent">Reconnecting…</Text> : null}
+        {state.status === 'reconnecting' ? <Text className="text-center text-sm text-accent">{t('studio.episode.reconnecting')}</Text> : null}
 
         {connected && ep.status === 'live' ? (
           <View className="gap-4">
             {meOnAir ? (
               <View className="gap-3 rounded-2xl border border-accent/50 bg-accent/10 p-4">
-                <Text variant="heading">You’re on air</Text>
-                <Text className="text-sm text-muted">Everyone can hear you. Don’t share your name, workplace or anything that identifies you.</Text>
+                <Text variant="heading">{t('studio.episode.youreOnAir')}</Text>
+                <Text className="text-sm text-muted">{t('studio.episode.onAirBody')}</Text>
+                {state.error ? <Text className="text-sm text-danger">{state.error}</Text> : null}
                 <View className="flex-row gap-2">
                   <Button
-                    title={state.micOn ? 'Mute' : 'Unmute'}
+                    title={state.micOn ? t('common.mute') : t('studio.episode.unmute')}
                     kind="secondary"
                     className="flex-1"
                     onPress={() => setMic(!state.micOn)}
                   />
-                  <Button title="Hang up" kind="danger" className="flex-1" onPress={() => withdraw.mutate()} />
+                  <Button title={t('studio.episode.hangUp')} kind="danger" className="flex-1" onPress={() => withdraw.mutate()} />
                 </View>
               </View>
             ) : null}
@@ -271,13 +294,13 @@ export default function EpisodeScreen() {
                 <View className="flex-row gap-2">
                   <Pressable
                     onPress={() => setMic(!state.micOn)}
-                    accessibilityLabel={state.micOn ? 'Mute your mic' : 'Unmute your mic'}
+                    accessibilityLabel={state.micOn ? t('studio.episode.muteMic') : t('studio.episode.unmuteMic')}
                     className={`h-12 flex-1 flex-row items-center justify-center gap-2 rounded-xl ${state.micOn ? 'bg-raised' : 'bg-danger'}`}
                   >
                     {state.micOn ? <Mic size={18} color={colors.ink} /> : <MicOff size={18} color="#fff" />}
-                    <Text className={state.micOn ? 'text-ink' : 'text-white'}>{state.micOn ? 'Mic on' : 'Mic muted'}</Text>
+                    <Text className={state.micOn ? 'text-ink' : 'text-white'}>{state.micOn ? t('studio.episode.micOn') : t('studio.episode.micMuted')}</Text>
                   </Pressable>
-                  <Button title="End episode" kind="danger" className="flex-1" onPress={confirmEnd} />
+                  <Button title={t('studio.episode.endEpisode')} kind="danger" className="flex-1" onPress={confirmEnd} />
                 </View>
                 <OnAirControls ep={ep} />
                 <HostPanel ep={ep} />
@@ -289,16 +312,16 @@ export default function EpisodeScreen() {
                     onPress={() => safety.open({ type: 'call_in', id: ep.on_air!.id, personaId: ep.on_air!.persona.id, alias: ep.on_air!.persona.alias })}
                     className="self-center"
                   >
-                    <Text className="text-xs text-muted underline">Report the caller</Text>
+                    <Text className="text-xs text-muted underline">{t('studio.episode.reportCaller')}</Text>
                   </Pressable>
                 ) : null}
                 {!ep.my_call_in ? (
-                  <Button title="Call in" onPress={() => setCalling(true)} />
+                  <Button title={t('studio.episode.callIn')} onPress={() => setCalling(true)} />
                 ) : ep.my_call_in.status === 'queued' ? (
                   <View className="gap-2 rounded-2xl border border-line bg-surface p-4">
-                    <Text variant="label">You’re in the queue</Text>
+                    <Text variant="label">{t('studio.episode.inQueue')}</Text>
                     <Text className="text-sm text-muted">“{ep.my_call_in.topic}”</Text>
-                    <Button title="Leave the queue" kind="secondary" onPress={() => del(`/v1/episodes/${id}/call-in`).catch(() => {}).finally(refresh)} />
+                    <Button title={t('studio.episode.leaveQueue')} kind="secondary" onPress={() => del(`/v1/episodes/${id}/call-in`).catch(() => {}).finally(refresh)} />
                   </View>
                 ) : null}
                 <Reactions ep={ep} floaters={floaters} />
@@ -306,7 +329,7 @@ export default function EpisodeScreen() {
               </View>
             )}
             <Button
-              title="Leave"
+              title={t('common.leave')}
               kind="ghost"
               onPress={() => {
                 leave(true);
@@ -319,19 +342,19 @@ export default function EpisodeScreen() {
 
         {ep.status === 'scheduled' && isHost ? (
           <View className="gap-2">
-            <Button title="Go live" disabled={scheduledMs - now > 15 * 60_000} loading={action.isPending} onPress={() => action.mutate('start', { onSuccess: () => join() })} />
-            {scheduledMs - now > 15 * 60_000 ? <Text variant="caption" className="text-center">You can go live 15 minutes before the scheduled time.</Text> : null}
+            <Button title={t('studio.episode.goLive')} disabled={scheduledMs - now > 15 * 60_000} loading={action.isPending} onPress={() => action.mutate('start', { onSuccess: () => join() })} />
+            {scheduledMs - now > 15 * 60_000 ? <Text variant="caption" className="text-center">{t('studio.episode.goLiveHint')}</Text> : null}
           </View>
         ) : null}
 
         {ended ? (
           <View className="items-center gap-2 py-6">
             <Headphones size={32} color={colors.muted} />
-            <Text className="text-muted">This episode has ended. Nothing was recorded.</Text>
+            <Text className="text-muted">{t('studio.episode.ended')}</Text>
           </View>
         ) : null}
       </ScrollView>
-      <CallInSheet ep={ep} visible={calling} onClose={() => setCalling(false)} />
+      <CallInSheet ep={ep} visible={calling} onClose={() => setCalling(false)} onMasked={setMasked} />
     </SafeAreaView>
   );
 }

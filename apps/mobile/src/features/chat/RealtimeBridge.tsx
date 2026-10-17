@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import type { Message } from '@/api/types';
 import { toast } from '@/components/ui/Toast';
 import { useMyPersona } from '@/features/me/hooks';
+import { t } from '@/i18n';
 import { on, onStatus, send as sendFrame, startRealtime, stopRealtime } from '@/lib/realtime';
 import { bumpConversation, chatKeys, flushOutbox, patchMessage, upsertMessage } from './hooks';
 import { activeConversation, presenceStore, receiptStore, typingStore } from './store';
@@ -61,7 +62,7 @@ export function RealtimeBridge() {
       ),
       on('dm_request.new', () => {
         qc.invalidateQueries({ queryKey: ['requests'] });
-        toast('New message request', 'info');
+        toast(t('chat.newRequestToast'), 'info');
       }),
       on('conversation.new', () => qc.invalidateQueries({ queryKey: chatKeys.conversations })),
       on('conversation.member_joined', (d: { conversation_id: string }) => qc.invalidateQueries({ queryKey: chatKeys.conversation(d.conversation_id) })),

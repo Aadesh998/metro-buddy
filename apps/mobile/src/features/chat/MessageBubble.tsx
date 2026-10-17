@@ -6,10 +6,11 @@ import { Pressable, View } from 'react-native';
 import type { Message } from '@/api/types';
 import { Avatar } from '@/components/Avatar';
 import { Text } from '@/components/ui/Text';
+import { dateLocale, useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 
 function time(iso: string) {
-  return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  return new Date(iso).toLocaleTimeString(dateLocale(), { hour: 'numeric', minute: '2-digit' });
 }
 
 export const MessageBubble = memo(function MessageBubble({
@@ -27,12 +28,13 @@ export const MessageBubble = memo(function MessageBubble({
   onRetry: (m: Message) => void;
   onPickOpener?: (text: string) => void;
 }) {
+  const { t } = useT();
   if (m.kind === 'icebreaker') {
     return (
       <View className="mx-4 my-2 gap-2 rounded-2xl border border-accent/30 bg-accent/5 p-4">
         <View className="flex-row items-center gap-2">
           <Sparkles size={16} color={colors.accent} />
-          <Text variant="label">Need an opener? Tap one to use it</Text>
+          <Text variant="label">{t('chat.bubble.openerTitle')}</Text>
         </View>
         {m.body.split('\n').map((line) => (
           <Pressable key={line} onPress={() => onPickOpener?.(line)} className="rounded-xl bg-raised px-3 py-2.5 active:opacity-70" accessibilityRole="button">
@@ -67,7 +69,7 @@ export const MessageBubble = memo(function MessageBubble({
         {showSender && !mine && m.sender ? <Text className="mb-0.5 ml-1 text-xs font-semibold text-muted">{m.sender.alias}</Text> : null}
         <View className={`rounded-2xl px-3.5 py-2 ${mine ? 'rounded-br-md bg-accent' : 'rounded-bl-md bg-raised'} ${m.local ? 'opacity-70' : ''}`}>
           {m.deleted ? (
-            <Text className={`italic ${mine ? 'text-accent-ink/70' : 'text-muted'}`}>Message removed</Text>
+            <Text className={`italic ${mine ? 'text-accent-ink/70' : 'text-muted'}`}>{t('chat.messageRemoved')}</Text>
           ) : (
             <>
               {m.media.map((im, i) =>
@@ -75,7 +77,7 @@ export const MessageBubble = memo(function MessageBubble({
                   <Image key={i} source={{ uri: im.url }} style={{ width: 220, aspectRatio: im.w / im.h, borderRadius: 12, marginBottom: 4 }} />
                 ) : (
                   <Text key={i} variant="caption">
-                    Image under review
+                    {t('chat.bubble.imageReview')}
                   </Text>
                 ),
               )}
@@ -85,17 +87,17 @@ export const MessageBubble = memo(function MessageBubble({
           <View className="mt-0.5 flex-row items-center justify-end gap-1">
             {m.pii_hidden ? <EyeOff size={10} color={mine ? colors.accentInk : colors.faint} /> : null}
             {m.local === 'sending' ? <Clock size={10} color={colors.accentInk} /> : null}
-            {m.expires_at ? <Timer size={10} color={mine ? colors.accentInk : colors.faint} accessibilityLabel="Disappearing message" /> : null}
+            {m.expires_at ? <Timer size={10} color={mine ? colors.accentInk : colors.faint} accessibilityLabel={t('chat.bubble.disappearing')} /> : null}
             <Text className={`text-[10px] ${mine ? 'text-accent-ink/60' : 'text-faint'}`}>{time(m.created_at)}</Text>
           </View>
         </View>
         {m.local === 'failed' ? (
           <View className="mt-1 flex-row items-center justify-end gap-1">
             <AlertCircle size={12} color={colors.danger} />
-            <Text className="text-xs text-danger">Not sent. Tap to retry.</Text>
+            <Text className="text-xs text-danger">{t('chat.bubble.notSent')}</Text>
           </View>
         ) : null}
-        {seen ? <Text className="mr-1 mt-0.5 text-right text-[11px] text-muted">Seen</Text> : null}
+        {seen ? <Text className="mr-1 mt-0.5 text-right text-[11px] text-muted">{t('chat.bubble.seen')}</Text> : null}
       </Pressable>
     </View>
   );

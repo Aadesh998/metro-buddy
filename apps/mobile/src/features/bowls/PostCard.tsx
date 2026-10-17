@@ -9,6 +9,7 @@ import { Avatar } from '@/components/Avatar';
 import { PersonaName } from '@/components/PersonaBadge';
 import { Text } from '@/components/ui/Text';
 import { useSafetySheet } from '@/features/safety/SafetySheet';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 import { ago } from '@/lib/time';
 import { useVote } from './hooks';
@@ -16,6 +17,7 @@ import { PollView } from './PollView';
 import { VoteBar } from './VoteBar';
 
 export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinned, onMod }: { p: Post; full?: boolean; showBowl?: boolean; pinned?: boolean; onMod?: (p: Post) => void }) {
+  const { t } = useT();
   const vote = useVote();
   const safety = useSafetySheet();
   const open = () => !full && router.push(`/post/${p.id}`);
@@ -27,7 +29,7 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinne
       {p.is_prompt || pinned ? (
         <View className="flex-row items-center gap-1.5">
           <Pin size={13} color={colors.accent} />
-          <Text className="text-xs font-semibold text-accent">{p.is_prompt ? 'Today’s prompt' : 'Pinned by moderators'}</Text>
+          <Text className="text-xs font-semibold text-accent">{p.is_prompt ? t('bowls.card.prompt') : t('bowls.card.pinnedByMods')}</Text>
         </View>
       ) : null}
       <View className="flex-row items-center gap-2">
@@ -35,7 +37,7 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinne
           onPress={() => !deleted && !p.is_mine && router.push(`/u/${p.author.id}`)}
           hitSlop={6}
           accessibilityRole="button"
-          accessibilityLabel={`${p.author.alias}'s profile`}
+          accessibilityLabel={t('bowls.card.profileOf', { alias: p.author.alias })}
         >
           <Avatar seed={p.author.avatar_seed} size={28} deleted={deleted} />
         </Pressable>
@@ -46,9 +48,9 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinne
             {ago(p.created_at)}
           </Text>
         </View>
-        {p.locked ? <Lock size={14} color={colors.muted} accessibilityLabel="Comments closed" /> : null}
+        {p.locked ? <Lock size={14} color={colors.muted} accessibilityLabel={t('bowls.card.commentsClosed')} /> : null}
         {onMod ? (
-          <Pressable onPress={() => onMod(p)} hitSlop={10} accessibilityLabel="Moderator tools">
+          <Pressable onPress={() => onMod(p)} hitSlop={10} accessibilityLabel={t('bowls.card.modTools')}>
             <Shield size={18} color={colors.accent} />
           </Pressable>
         ) : null}
@@ -56,7 +58,7 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinne
           <Pressable
             onPress={() => safety.open({ type: 'post', id: p.id, personaId: deleted ? undefined : p.author.id, alias: p.author.alias })}
             hitSlop={10}
-            accessibilityLabel="Report, block or mute"
+            accessibilityLabel={t('common.safetyOptions')}
           >
             <MoreHorizontal size={20} color={colors.muted} />
           </Pressable>
@@ -81,7 +83,7 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinne
             m.pending || !m.url ? (
               <View key={i} className="h-40 flex-1 items-center justify-center gap-1 rounded-xl bg-raised">
                 <ImageOff size={20} color={colors.faint} />
-                <Text variant="caption">Image under review</Text>
+                <Text variant="caption">{t('bowls.card.imageReview')}</Text>
               </View>
             ) : (
               <Image
@@ -89,7 +91,7 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinne
                 source={{ uri: m.url }}
                 style={{ flex: 1, aspectRatio: p.media.length === 1 ? m.w / m.h : 1, borderRadius: 12, maxHeight: 420 }}
                 contentFit="cover"
-                accessibilityLabel="Post image"
+                accessibilityLabel={t('bowls.card.postImage')}
               />
             ),
           )}
@@ -99,7 +101,7 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinne
       {p.pii_hidden ? (
         <View className="flex-row items-center gap-1">
           <EyeOff size={12} color={colors.faint} />
-          <Text variant="caption">Some contact details were hidden</Text>
+          <Text variant="caption">{t('bowls.card.piiHidden')}</Text>
         </View>
       ) : null}
 

@@ -11,23 +11,25 @@ import { EmptyState } from '@/components/EmptyState';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/ui/Text';
 import { chatKeys } from '@/features/chat/hooks';
+import { t, useT } from '@/i18n';
 import { linkToPath } from '@/lib/push';
 import { colors } from '@/lib/theme';
 import { ago } from '@/lib/time';
 
 const meta: Record<string, { icon: React.ReactNode; text: (p: Record<string, any>) => string }> = {
-  dm_request: { icon: <MessageCircle size={18} color={colors.sky} />, text: (p) => (p.accepted ? 'Your message request was accepted' : `${p.from ?? 'Someone'} sent you a message request`) },
-  reply: { icon: <MessageSquareReply size={18} color={colors.accent} />, text: () => 'Someone replied to you' },
-  match: { icon: <TrainFront size={18} color={colors.mint} />, text: (p) => p.text ?? 'You have a new travel match' },
-  trip_reminder: { icon: <TrainFront size={18} color={colors.mint} />, text: (p) => p.text ?? 'Your trip is coming up' },
-  episode_live: { icon: <Radio size={18} color={colors.danger} />, text: (p) => `${p.show ?? 'A show you follow'} is live` },
-  mod_notice: { icon: <Gavel size={18} color={colors.muted} />, text: (p) => (p.appeal ? `Your appeal was ${p.appeal}` : 'There’s an update about your account') },
-  sos: { icon: <ShieldAlert size={18} color={colors.danger} />, text: () => 'SOS alert' },
-  message: { icon: <Heart size={18} color={colors.accent} />, text: () => 'New message' },
+  dm_request: { icon: <MessageCircle size={18} color={colors.sky} />, text: (p) => (p.accepted ? t('safety.inbox.dmAccepted') : t('safety.inbox.dmRequest', { name: p.from ?? t('common.someone') })) },
+  reply: { icon: <MessageSquareReply size={18} color={colors.accent} />, text: () => t('safety.inbox.reply') },
+  match: { icon: <TrainFront size={18} color={colors.mint} />, text: (p) => p.text ?? t('safety.inbox.match') },
+  trip_reminder: { icon: <TrainFront size={18} color={colors.mint} />, text: (p) => p.text ?? t('safety.inbox.trip') },
+  episode_live: { icon: <Radio size={18} color={colors.danger} />, text: (p) => t('safety.inbox.live', { show: p.show ?? t('safety.inbox.aShow') }) },
+  mod_notice: { icon: <Gavel size={18} color={colors.muted} />, text: (p) => (p.appeal ? t('safety.inbox.appeal', { status: p.appeal }) : t('safety.inbox.accountUpdate')) },
+  sos: { icon: <ShieldAlert size={18} color={colors.danger} />, text: () => t('safety.inbox.sos') },
+  message: { icon: <Heart size={18} color={colors.accent} />, text: () => t('safety.inbox.message') },
 };
 
 export default function InboxScreen() {
   const qc = useQueryClient();
+  useT();
   const q = useQuery({ queryKey: chatKeys.inbox, queryFn: () => get<{ items: Notification[]; unread: number }>('/v1/notifications') });
   const read = useMutation({
     mutationFn: (body: { ids?: string[]; all?: boolean }) => post('/v1/notifications/read', body),
@@ -36,11 +38,11 @@ export default function InboxScreen() {
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-bg">
       <ScreenHeader
-        title="Notifications"
+        title={t('safety.inbox.title')}
         right={
           q.data?.unread ? (
             <Pressable onPress={() => read.mutate({ all: true })} hitSlop={8}>
-              <Text className="text-xs font-semibold text-accent">Read all</Text>
+              <Text className="text-xs font-semibold text-accent">{t('safety.inbox.readAll')}</Text>
             </Pressable>
           ) : null
         }
@@ -68,7 +70,7 @@ export default function InboxScreen() {
             </Pressable>
           );
         }}
-        ListEmptyComponent={q.isPending ? null : <EmptyState icon={<Bell size={28} color={colors.faint} />} title="All caught up" />}
+        ListEmptyComponent={q.isPending ? null : <EmptyState icon={<Bell size={28} color={colors.faint} />} title={t('safety.inbox.empty')} />}
       />
     </SafeAreaView>
   );

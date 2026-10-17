@@ -15,11 +15,12 @@ import { Text } from '@/components/ui/Text';
 import { useMyPersona } from '@/features/me/hooks';
 import { useStations } from '@/features/metro/hooks';
 import { travelKeys, usePlans } from '@/features/travel/hooks';
+import { useT } from '@/i18n';
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 function Form({ plan, cityId, stations }: { plan?: CommutePlan; cityId: string; stations: Station[] }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const persona = useMyPersona().data;
   const [from, setFrom] = useState<Station | undefined>(stations.find((s) => s.id === (plan?.from.id ?? persona?.home_station_id)));
@@ -39,7 +40,7 @@ function Form({ plan, cityId, stations }: { plan?: CommutePlan; cityId: string; 
       qc.invalidateQueries({ queryKey: travelKeys.plans });
       router.back();
     },
-    onError: (e) => setError(e instanceof ApiError ? e.message : 'Failed'),
+    onError: (e) => setError(e instanceof ApiError ? e.message : t('travel.plan.failed')),
   });
 
   const valid = from && to && from.id !== to.id && TIME.test(start) && TIME.test(end) && start < end && days.length > 0;
@@ -47,35 +48,35 @@ function Form({ plan, cityId, stations }: { plan?: CommutePlan; cityId: string; 
     <ScrollView contentContainerClassName="gap-5 px-5 pb-10" keyboardShouldPersistTaps="handled">
       {(['from', 'to'] as const).map((k) => (
         <Pressable key={k} disabled={!!plan} onPress={() => setPicking(k)} className="rounded-xl border border-line bg-surface p-4">
-          <Text variant="caption">{k === 'from' ? 'Getting on at' : 'Getting off at'}</Text>
-          <Text>{(k === 'from' ? from : to)?.name ?? 'Choose station'}</Text>
+          <Text variant="caption">{k === 'from' ? t('travel.gettingOn') : t('travel.gettingOff')}</Text>
+          <Text>{(k === 'from' ? from : to)?.name ?? t('travel.chooseStation')}</Text>
         </Pressable>
       ))}
       <View className="flex-row gap-3">
         <View className="flex-1">
-          <Input label="Leave between" value={start} onChangeText={setStart} placeholder="08:30" keyboardType="numbers-and-punctuation" maxLength={5} />
+          <Input label={t('travel.plan.leaveBetween')} value={start} onChangeText={setStart} placeholder="08:30" keyboardType="numbers-and-punctuation" maxLength={5} />
         </View>
         <View className="flex-1">
-          <Input label="and" value={end} onChangeText={setEnd} placeholder="09:15" keyboardType="numbers-and-punctuation" maxLength={5} />
+          <Input label={t('travel.plan.and')} value={end} onChangeText={setEnd} placeholder="09:15" keyboardType="numbers-and-punctuation" maxLength={5} />
         </View>
       </View>
       <View className="flex-row flex-wrap gap-2">
-        {DAYS.map((d, i) => (
+        {t('travel.plan.days').split(',').map((d, i) => (
           <Chip key={d} label={d} selected={days.includes(i + 1)} onPress={() => setDays(days.includes(i + 1) ? days.filter((x) => x !== i + 1) : [...days, i + 1])} />
         ))}
       </View>
-      <Text variant="caption">Your commute goes live about 45 minutes before you leave. Nobody ever sees these stations, only the stretch you share with a match.</Text>
+      <Text variant="caption">{t('travel.plan.hint')}</Text>
       {error ? <Text className="text-danger">{error}</Text> : null}
-      <Button title="Save commute" disabled={!valid} loading={save.isPending} onPress={() => save.mutate()} />
+      <Button title={t('travel.plan.save')} disabled={!valid} loading={save.isPending} onPress={() => save.mutate()} />
       {plan ? (
         <Button
-          title="Delete commute"
+          title={t('travel.plan.delete')}
           kind="ghost"
           onPress={() =>
-            Alert.alert('Delete this commute?', undefined, [
-              { text: 'Cancel', style: 'cancel' },
+            Alert.alert(t('travel.plan.deleteTitle'), undefined, [
+              { text: t('common.cancel'), style: 'cancel' },
               {
-                text: 'Delete',
+                text: t('common.delete'),
                 style: 'destructive',
                 onPress: () =>
                   del(`/v1/commute-plans/${plan.id}`).then(() => {
@@ -90,7 +91,7 @@ function Form({ plan, cityId, stations }: { plan?: CommutePlan; cityId: string; 
       <StationPicker
         cityId={cityId}
         visible={picking !== null}
-        title={picking === 'from' ? 'Getting on at' : 'Getting off at'}
+        title={picking === 'from' ? t('travel.gettingOn') : t('travel.gettingOff')}
         onClose={() => setPicking(null)}
         onPick={(s) => {
           if (picking === 'from') setFrom(s);
@@ -103,6 +104,7 @@ function Form({ plan, cityId, stations }: { plan?: CommutePlan; cityId: string; 
 }
 
 export default function PlanScreen() {
+  const { t } = useT();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const persona = useMyPersona().data;
   const stations = useStations(persona?.city_id);
@@ -110,7 +112,7 @@ export default function PlanScreen() {
   const plan = plans.data?.find((p) => p.id === id);
   return (
     <Screen edges={['top', 'bottom']} className="px-0">
-      <ScreenHeader title={plan ? 'Edit commute' : 'New commute'} />
+      <ScreenHeader title={plan ? t('travel.plan.editTitle') : t('travel.plan.newTitle')} />
       {persona && stations.data && (!id || plan) ? <Form plan={plan} cityId={persona.city_id} stations={stations.data} /> : null}
     </Screen>
   );

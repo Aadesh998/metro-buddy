@@ -250,6 +250,7 @@ export type CallIn = {
   status: 'queued' | 'on_air' | 'done' | 'dropped' | 'withdrawn';
   on_air_at: string | null;
   ends_at: string | null;
+  voice_masked: boolean;
   created_at: string;
 };
 

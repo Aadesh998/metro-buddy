@@ -5,17 +5,9 @@ import { get } from '@/api/client';
 import type { Vibe } from '@/api/types';
 import { Chip } from '@/components/ui/Chip';
 import { Text } from '@/components/ui/Text';
+import { useT } from '@/i18n';
 
-const CATEGORY_LABEL: Record<string, string> = {
-  talk_style: 'How you talk',
-  music: 'Music',
-  sport: 'Sport',
-  hobby: 'Hobbies',
-  work: 'Work',
-  study: 'Study',
-  food: 'Food',
-  wellbeing: 'Wellbeing',
-};
+const CATEGORIES = ['talk_style', 'music', 'sport', 'hobby', 'work', 'study', 'food', 'wellbeing'] as const;
 
 export const MAX_VIBES = 10;
 export const MIN_VIBES = 3;
@@ -28,7 +20,9 @@ export function useVibeCatalog() {
   });
 }
 
-export function VibePicker({ selected, onChange, locale = 'en' }: { selected: string[]; onChange: (s: string[]) => void; locale?: 'en' | 'hi' }) {
+export function VibePicker({ selected, onChange, locale: localeProp }: { selected: string[]; onChange: (s: string[]) => void; locale?: 'en' | 'hi' }) {
+  const { t, locale: appLocale } = useT();
+  const locale = localeProp ?? appLocale;
   const { data = [] } = useVibeCatalog();
   const groups = data.reduce<Record<string, Vibe[]>>((acc, v) => {
     (acc[v.category] ??= []).push(v);
@@ -42,13 +36,13 @@ export function VibePicker({ selected, onChange, locale = 'en' }: { selected: st
 
   return (
     <View className="gap-5">
-      {Object.keys(CATEGORY_LABEL)
+      {CATEGORIES
         .filter((cat) => groups[cat])
         .map((cat) => [cat, groups[cat]] as const)
         .map(([cat, vibes]) => (
         <View key={cat} className="gap-2">
           <Text variant="caption" className="uppercase tracking-wider">
-            {CATEGORY_LABEL[cat] ?? cat}
+            {t(`onboarding.vibeCategories.${cat}`)}
           </Text>
           <View className="flex-row flex-wrap gap-2">
             {vibes.map((v) => (

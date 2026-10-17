@@ -6,6 +6,7 @@ import { Helplines } from '@/components/Helplines';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Screen } from '@/components/ui/Screen';
 import { Text } from '@/components/ui/Text';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 
 function Tip({ icon, title, body }: { icon: ReactNode; title: string; body: string }) {
@@ -23,25 +24,26 @@ function Tip({ icon, title, body }: { icon: ReactNode; title: string; body: stri
 }
 
 export default function SafetyCenter() {
+  const { t } = useT();
   return (
     <Screen scroll edges={['top', 'bottom']} className="gap-4">
-      <ScreenHeader title="Safety Center" />
-      <Text className="text-muted">Metro Buddy is built so you stay anonymous until you choose otherwise. If you ever feel unsafe, these help.</Text>
+      <ScreenHeader title={t('safety.center.title')} />
+      <Text className="text-muted">{t('safety.center.intro')}</Text>
 
       <Text variant="heading" className="mt-2">
-        Helplines
+        {t('safety.center.helplines')}
       </Text>
       <Helplines />
 
       <Text variant="heading" className="mt-4">
-        Staying safe
+        {t('safety.center.stayingSafe')}
       </Text>
-      <Tip icon={<Lock color={colors.accent} size={20} />} title="Your identity stays hidden" body="Phone numbers, emails, handles and links are hidden automatically in posts and chats. Only reveal more when you both choose to." />
-      <Tip icon={<MapPin color={colors.accent} size={20} />} title="Meet only inside stations" body="Travel buddies always meet on a platform, at a coach. Never share your home or office address." />
-      <Tip icon={<TrainFront color={colors.accent} size={20} />} title="Share your trip" body="Every travel match has a Share Trip button and a one-tap SOS that alerts your trusted contacts." />
-      <Tip icon={<Eye color={colors.accent} size={20} />} title="Trust your gut" body="If something feels off, leave the chat. You never owe anyone a reply." />
-      <Tip icon={<Flag color={colors.accent} size={20} />} title="Report, block, mute" body="Tap ⋯ on any profile, post, comment or message. Reports are anonymous and reviewed by people, not bots." />
-      <Tip icon={<ShieldCheck color={colors.accent} size={20} />} title="Grievance officer" body="Unhappy with a decision? Appeal from the notice you received, or write to our grievance officer from the website. We acknowledge within 24 hours." />
+      <Tip icon={<Lock color={colors.accent} size={20} />} title={t('safety.center.identityTitle')} body={t('safety.center.identityBody')} />
+      <Tip icon={<MapPin color={colors.accent} size={20} />} title={t('safety.center.meetTitle')} body={t('safety.center.meetBody')} />
+      <Tip icon={<TrainFront color={colors.accent} size={20} />} title={t('safety.center.shareTitle')} body={t('safety.center.shareBody')} />
+      <Tip icon={<Eye color={colors.accent} size={20} />} title={t('safety.center.gutTitle')} body={t('safety.center.gutBody')} />
+      <Tip icon={<Flag color={colors.accent} size={20} />} title={t('safety.center.reportTitle')} body={t('safety.center.reportBody')} />
+      <Tip icon={<ShieldCheck color={colors.accent} size={20} />} title={t('safety.center.grievanceTitle')} body={t('safety.center.grievanceBody')} />
     </Screen>
   );
 }

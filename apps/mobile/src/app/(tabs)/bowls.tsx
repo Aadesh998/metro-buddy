@@ -15,9 +15,11 @@ import { useBowlSearch, useFeed, useJoinedBowls, useSuggestedBowls, type Sort } 
 import { PostCard } from '@/features/bowls/PostCard';
 import { SortTabs } from '@/features/bowls/SortTabs';
 import { useMe } from '@/features/me/hooks';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 
 function ForYou({ onDiscover }: { onDiscover: () => void }) {
+  const { t } = useT();
   const [sort, setSort] = useState<Sort>('hot');
   const feed = useFeed('home', sort);
   const joined = useJoinedBowls();
@@ -32,9 +34,9 @@ function ForYou({ onDiscover }: { onDiscover: () => void }) {
     return (
       <EmptyState
         icon={<Coffee color={colors.accent} size={36} />}
-        title="Join a bowl to fill your feed"
-        body="Bowls for your line, station and office are waiting."
-        action={<Button title="Find bowls" onPress={onDiscover} />}
+        title={t('bowls.emptyFeedTitle')}
+        body={t('bowls.emptyFeedBody')}
+        action={<Button title={t('bowls.findBowls')} onPress={onDiscover} />}
       />
     );
   }
@@ -51,12 +53,13 @@ function ForYou({ onDiscover }: { onDiscover: () => void }) {
       onEndReached={() => feed.hasNextPage && !feed.isFetchingNextPage && feed.fetchNextPage()}
       onEndReachedThreshold={0.5}
       refreshControl={<RefreshControl refreshing={feed.isRefetching} onRefresh={() => void feed.refetch()} tintColor={colors.accent} />}
-      ListEmptyComponent={feed.isPending ? null : <EmptyState title="Quiet in here" body="Be the first to post today." />}
+      ListEmptyComponent={feed.isPending ? null : <EmptyState title={t('bowls.quietTitle')} body={t('bowls.quietBody')} />}
     />
   );
 }
 
 function Discover() {
+  const { t } = useT();
   const me = useMe();
   const [q, setQ] = useState('');
   const suggested = useSuggestedBowls();
@@ -66,7 +69,7 @@ function Discover() {
     <View className="flex-1">
       <View className="mx-4 mb-3 h-11 flex-row items-center gap-2 rounded-xl border border-line bg-surface px-3">
         <Search color={colors.faint} size={18} />
-        <TextInput value={q} onChangeText={setQ} placeholder="Search bowls" placeholderTextColor={colors.faint} className="flex-1 text-base text-ink" />
+        <TextInput value={q} onChangeText={setQ} placeholder={t('bowls.searchPlaceholder')} placeholderTextColor={colors.faint} className="flex-1 text-base text-ink" />
       </View>
       <FlashList
         data={list}
@@ -76,36 +79,37 @@ function Discover() {
         ListHeaderComponent={
           !q ? (
             <View className="gap-3">
-              {(me.data?.trust_tier ?? 0) >= 2 ? <Button title="Start a bowl" kind="secondary" onPress={() => router.push('/bowl/new')} /> : null}
+              {(me.data?.trust_tier ?? 0) >= 2 ? <Button title={t('bowls.startBowl')} kind="secondary" onPress={() => router.push('/bowl/new')} /> : null}
               <Text variant="caption" className="mb-2 uppercase tracking-wider">
-                Suggested for you
+                {t('bowls.suggested')}
               </Text>
             </View>
           ) : null
         }
         renderItem={({ item }) => <BowlCard b={item} />}
-        ListEmptyComponent={q.length >= 2 && !search.isPending ? <Text className="py-8 text-center text-muted">No bowls match “{q}”.</Text> : null}
+        ListEmptyComponent={q.length >= 2 && !search.isPending ? <Text className="py-8 text-center text-muted">{t('bowls.noMatch', { q })}</Text> : null}
       />
     </View>
   );
 }
 
 export default function BowlsTab() {
+  const { t } = useT();
   const [tab, setTab] = useState<'feed' | 'discover'>('feed');
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-bg">
       <TabHeader
-        title="Bowls"
+        title={t('common.tabs.bowls')}
         right={
-          <Pressable onPress={() => router.push('/compose')} className="h-10 w-10 items-center justify-center rounded-full bg-accent" accessibilityLabel="New post">
+          <Pressable onPress={() => router.push('/compose')} className="h-10 w-10 items-center justify-center rounded-full bg-accent" accessibilityLabel={t('bowls.newPost')}>
             <PenSquare size={18} color={colors.accentInk} />
           </Pressable>
         }
       />
       <View className="mx-4 mb-3 flex-row rounded-xl bg-raised p-1">
-        {(['feed', 'discover'] as const).map((t) => (
-          <Pressable key={t} onPress={() => setTab(t)} className={`flex-1 items-center rounded-lg py-2 ${tab === t ? 'bg-bg' : ''}`} accessibilityState={{ selected: tab === t }}>
-            <Text className={`text-sm font-semibold ${tab === t ? 'text-ink' : 'text-muted'}`}>{t === 'feed' ? 'For you' : 'Discover'}</Text>
+        {(['feed', 'discover'] as const).map((k) => (
+          <Pressable key={k} onPress={() => setTab(k)} className={`flex-1 items-center rounded-lg py-2 ${tab === k ? 'bg-bg' : ''}`} accessibilityState={{ selected: tab === k }}>
+            <Text className={`text-sm font-semibold ${tab === k ? 'text-ink' : 'text-muted'}`}>{k === 'feed' ? t('bowls.forYou') : t('bowls.discover')}</Text>
           </Pressable>
         ))}
       </View>

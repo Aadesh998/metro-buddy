@@ -49,20 +49,35 @@ function lookup(d: Messages, key: string): string | undefined {
 
 type Vars = Record<string, string | number>;
 
-export function t(key: Key, vars?: Vars): string {
-  const s = lookup(dicts[locale], key) ?? lookup(dicts.en, key) ?? key;
+function translate(l: Locale, key: Key, vars?: Vars): string {
+  const s = lookup(dicts[l], key) ?? lookup(dicts.en, key) ?? key;
   return vars ? s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m)) : s;
 }
 
 // Plurals: key_one / key_other, with {count} available to the string.
-export function tp(key: PluralKey, count: number, vars?: Vars): string {
-  return t(`${key}_${count === 1 ? 'one' : 'other'}` as Key, { count, ...vars });
+function plural(l: Locale, key: PluralKey, count: number, vars?: Vars): string {
+  return translate(l, `${key}_${count === 1 ? 'one' : 'other'}` as Key, { count, ...vars });
 }
 
-// Components call this so they re-render when the language changes.
+export function t(key: Key, vars?: Vars): string {
+  return translate(locale, key, vars);
+}
+
+export function tp(key: PluralKey, count: number, vars?: Vars): string {
+  return plural(locale, key, count, vars);
+}
+
+// One bound set per language: a new `t` identity on switch is what makes memoized
+// (React Compiler) components re-render with the new strings.
+const bound = Object.fromEntries(
+  (['en', 'hi'] as const).map((l) => [
+    l,
+    { t: (key: Key, vars?: Vars) => translate(l, key, vars), tp: (key: PluralKey, n: number, vars?: Vars) => plural(l, key, n, vars), locale: l },
+  ]),
+) as Record<Locale, { t: typeof t; tp: typeof tp; locale: Locale }>;
+
 export function useT() {
-  useSyncExternalStore(subscribe, getLocale);
-  return { t, tp, locale };
+  return bound[useSyncExternalStore(subscribe, getLocale)];
 }
 
 export function dateLocale() {

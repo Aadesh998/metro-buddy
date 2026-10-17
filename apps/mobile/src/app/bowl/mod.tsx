@@ -14,48 +14,51 @@ import { Text } from '@/components/ui/Text';
 import { toast } from '@/components/ui/Toast';
 import { bowlKeys, useBowl } from '@/features/bowls/hooks';
 import { useMyPersona } from '@/features/me/hooks';
+import { useT, type Key } from '@/i18n';
 import { confirm } from '@/lib/confirm';
 import { ago } from '@/lib/time';
 
 type Mod = { persona: PersonaRef; role: 'owner' | 'moderator' };
 type LogRow = { verb: string; actor: PersonaRef; meta: Record<string, unknown>; created_at: string };
 
-const VERBS: Record<string, string> = {
-  update: 'edited the bowl',
-  pin: 'pinned a post',
-  unpin: 'unpinned a post',
-  add_mod: 'added a moderator',
-  remove_mod: 'removed a moderator',
-  mute: 'muted a member',
-  unmute: 'unmuted a member',
-  post_remove: 'removed a post',
-  post_restore: 'restored a post',
-  post_lock: 'closed comments',
-  post_unlock: 'reopened comments',
-  comment_remove: 'removed a comment',
-  comment_restore: 'restored a comment',
+const VERBS: Record<string, Key> = {
+  update: 'bowls.mod.verbs.update',
+  pin: 'bowls.mod.verbs.pin',
+  unpin: 'bowls.mod.verbs.unpin',
+  add_mod: 'bowls.mod.verbs.add_mod',
+  remove_mod: 'bowls.mod.verbs.remove_mod',
+  mute: 'bowls.mod.verbs.mute',
+  unmute: 'bowls.mod.verbs.unmute',
+  post_remove: 'bowls.mod.verbs.post_remove',
+  post_restore: 'bowls.mod.verbs.post_restore',
+  post_lock: 'bowls.mod.verbs.post_lock',
+  post_unlock: 'bowls.mod.verbs.post_unlock',
+  comment_remove: 'bowls.mod.verbs.comment_remove',
+  comment_restore: 'bowls.mod.verbs.comment_restore',
 };
 
 function Rules({ id, initial }: { id: string; initial: string }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const [rules, setRules] = useState(initial);
   const save = useMutation({
     mutationFn: () => patch(`/v1/bowls/${id}`, { rules_md: rules }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: bowlKeys.bowl(id) });
-      toast('Rules saved', 'success');
+      toast(t('bowls.mod.rulesSaved'), 'success');
     },
   });
   return (
     <View className="gap-2">
-      <Input label="Rules" value={rules} onChangeText={(t) => setRules(t.slice(0, 2000))} multiline className="min-h-28" textAlignVertical="top" />
-      <Button title="Save rules" kind="secondary" disabled={rules === initial} loading={save.isPending} onPress={() => save.mutate()} />
+      <Input label={t('bowls.mod.rulesLabel')} value={rules} onChangeText={(v) => setRules(v.slice(0, 2000))} multiline className="min-h-28" textAlignVertical="top" />
+      <Button title={t('bowls.mod.saveRules')} kind="secondary" disabled={rules === initial} loading={save.isPending} onPress={() => save.mutate()} />
     </View>
   );
 }
 
 export default function BowlModTools() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useT();
   const qc = useQueryClient();
   const bowl = useBowl(id);
   const me = useMyPersona().data;
@@ -68,37 +71,37 @@ export default function BowlModTools() {
   const owner = bowl.data?.role === 'owner';
   return (
     <SafeAreaView className="flex-1 bg-bg">
-      <ScreenHeader title="Mod tools" />
+      <ScreenHeader title={t('bowls.modTools')} />
       <ScrollView contentContainerClassName="gap-6 p-4 pb-10">
         {bowl.data ? <Rules key={bowl.data.rules_md} id={id} initial={bowl.data.rules_md ?? ''} /> : null}
         <View className="gap-3">
-          <Text variant="heading">Moderators</Text>
+          <Text variant="heading">{t('bowls.mod.moderators')}</Text>
           {(mods.data ?? []).map((m) => (
             <View key={m.persona.id} className="flex-row items-center justify-between">
-              <PersonaRow p={m.persona} subtitle={m.role === 'owner' ? 'Owner' : 'Moderator'} />
+              <PersonaRow p={m.persona} subtitle={m.role === 'owner' ? t('bowls.mod.owner') : t('bowls.mod.moderator')} />
               {m.role === 'moderator' && (owner || m.persona.id === me?.id) ? (
                 <Pressable
                   hitSlop={8}
                   onPress={() =>
-                    confirm(m.persona.id === me?.id ? 'Step down?' : 'Remove moderator?', `${m.persona.alias} will become a regular member.`, 'Confirm', () =>
+                    confirm(m.persona.id === me?.id ? t('bowls.mod.stepDownTitle') : t('bowls.mod.removeModTitle'), t('bowls.mod.removeModBody', { alias: m.persona.alias }), t('common.confirm'), () =>
                       removeMod.mutate(m.persona.id),
                     )
                   }
                 >
-                  <Text className="text-sm text-danger">{m.persona.id === me?.id ? 'Step down' : 'Remove'}</Text>
+                  <Text className="text-sm text-danger">{m.persona.id === me?.id ? t('bowls.mod.stepDown') : t('common.remove')}</Text>
                 </Pressable>
               ) : null}
             </View>
           ))}
-          {owner ? <Text variant="caption">To add a moderator, tap the shield on one of their posts in the bowl.</Text> : null}
+          {owner ? <Text variant="caption">{t('bowls.mod.addModHint')}</Text> : null}
         </View>
         <View className="gap-3">
-          <Text variant="heading">Mod log</Text>
-          {(log.data ?? []).length === 0 ? <Text className="text-muted">Nothing yet.</Text> : null}
+          <Text variant="heading">{t('bowls.mod.log')}</Text>
+          {(log.data ?? []).length === 0 ? <Text className="text-muted">{t('bowls.mod.logEmpty')}</Text> : null}
           {(log.data ?? []).map((r, i) => (
             <View key={i} className="flex-row items-baseline gap-2">
               <Text className="flex-1 text-sm">
-                <Text className="text-sm font-semibold">{r.actor.alias}</Text> {VERBS[r.verb] ?? r.verb}
+                <Text className="text-sm font-semibold">{r.actor.alias}</Text> {VERBS[r.verb] ? t(VERBS[r.verb]) : r.verb}
                 {typeof r.meta.reason === 'string' && r.meta.reason ? ` · “${r.meta.reason}”` : ''}
               </Text>
               <Text variant="caption">{ago(r.created_at)}</Text>

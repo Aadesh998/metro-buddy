@@ -10,12 +10,14 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Screen } from '@/components/ui/Screen';
 import { Text } from '@/components/ui/Text';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 
 type Rel = { persona: PersonaRef; created_at: string };
 
 function Section({ kind }: { kind: 'blocks' | 'mutes' }) {
   const qc = useQueryClient();
+  const { t } = useT();
   const q = useQuery({ queryKey: [kind], queryFn: () => get<{ items: Rel[] }>(`/v1/${kind}`).then((r) => r.items) });
   const undo = useMutation({
     mutationFn: (id: string) => del(`/v1/${kind}/${id}`),
@@ -23,14 +25,14 @@ function Section({ kind }: { kind: 'blocks' | 'mutes' }) {
   });
   return (
     <View className="gap-2">
-      <Text variant="heading">{kind === 'blocks' ? 'Blocked' : 'Muted'}</Text>
+      <Text variant="heading">{kind === 'blocks' ? t('settings.blocked.blocked') : t('settings.blocked.muted')}</Text>
       {(q.data ?? []).length === 0 ? (
-        <Text variant="caption">Nobody here.</Text>
+        <Text variant="caption">{t('settings.blocked.empty')}</Text>
       ) : (
         q.data!.map((r) => (
           <View key={r.persona.id} className="flex-row items-center justify-between rounded-xl border border-line bg-surface p-3">
             <PersonaRow p={r.persona} />
-            <Button title={kind === 'blocks' ? 'Unblock' : 'Unmute'} kind="secondary" className="h-9" onPress={() => undo.mutate(r.persona.id)} />
+            <Button title={kind === 'blocks' ? t('settings.blocked.unblock') : t('settings.blocked.unmute')} kind="secondary" className="h-9" onPress={() => undo.mutate(r.persona.id)} />
           </View>
         ))
       )}
@@ -39,12 +41,13 @@ function Section({ kind }: { kind: 'blocks' | 'mutes' }) {
 }
 
 export default function BlockedScreen() {
+  const { t } = useT();
   return (
     <Screen scroll className="gap-6">
-      <ScreenHeader title="Blocked & muted" />
+      <ScreenHeader title={t('settings.blocked.title')} />
       <Section kind="blocks" />
       <Section kind="mutes" />
-      <EmptyState icon={<ShieldBan color={colors.faint} size={28} />} title="" body="Blocked people can’t see you or contact you anywhere. Muted people just disappear from your feeds." />
+      <EmptyState icon={<ShieldBan color={colors.faint} size={28} />} title="" body={t('settings.blocked.explainer')} />
     </Screen>
   );
 }

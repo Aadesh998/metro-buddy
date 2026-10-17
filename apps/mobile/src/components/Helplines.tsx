@@ -2,11 +2,14 @@ import { Phone } from 'lucide-react-native';
 import { Linking, Pressable, View } from 'react-native';
 
 import { Text } from '@/components/ui/Text';
-import { HELPLINES } from '@/lib/helplines';
+import { useT } from '@/i18n';
+import { helplines } from '@/lib/helplines';
 import { colors } from '@/lib/theme';
 
 export function Helplines({ only }: { only?: string[] }) {
-  const list = only ? HELPLINES.filter((h) => only.includes(h.number)) : HELPLINES;
+  const { t } = useT();
+  const all = helplines();
+  const list = only ? all.filter((h) => only.includes(h.number)) : all;
   return (
     <View className="gap-2">
       {list.map((h) => (
@@ -15,7 +18,7 @@ export function Helplines({ only }: { only?: string[] }) {
           onPress={() => Linking.openURL(`tel:${h.number}`)}
           className="flex-row items-center gap-3 rounded-xl border border-line bg-surface p-3 active:bg-raised"
           accessibilityRole="button"
-          accessibilityLabel={`Call ${h.name} ${h.number}`}
+          accessibilityLabel={t('safety.helplines.call', { name: h.name, number: h.number })}
         >
           <View className="h-10 w-10 items-center justify-center rounded-full bg-mint/15">
             <Phone color={colors.mint} size={18} />

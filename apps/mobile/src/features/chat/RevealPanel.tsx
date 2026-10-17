@@ -9,17 +9,19 @@ import type { RevealLevel, RevealState } from '@/api/types';
 import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
 import { toast } from '@/components/ui/Toast';
+import { useT, type Key } from '@/i18n';
 import { confirm } from '@/lib/confirm';
 import { colors } from '@/lib/theme';
 
-const STEPS: { level: RevealLevel; label: string }[] = [
-  { level: 'first_name', label: 'First name' },
-  { level: 'photo', label: 'Photo' },
-  { level: 'contact', label: 'Contact' },
+const STEPS: { level: RevealLevel; label: Key; lower: Key }[] = [
+  { level: 'first_name', label: 'chat.reveal.first_name', lower: 'chat.reveal.first_nameLower' },
+  { level: 'photo', label: 'chat.reveal.photo', lower: 'chat.reveal.photoLower' },
+  { level: 'contact', label: 'chat.reveal.contact', lower: 'chat.reveal.contactLower' },
 ];
 const order: Record<RevealLevel, number> = { none: 0, first_name: 1, photo: 2, contact: 3 };
 
 export function RevealPanel({ conversationId, otherAlias }: { conversationId: string; otherAlias: string }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const key = ['reveal', conversationId];
   const q = useQuery({ queryKey: key, queryFn: () => get<RevealState>(`/v1/conversations/${conversationId}/reveal`) });
@@ -36,7 +38,7 @@ export function RevealPanel({ conversationId, otherAlias }: { conversationId: st
     <View className="gap-3 rounded-2xl border border-line bg-surface p-4">
       <View className="flex-row items-center gap-2">
         <Eye size={18} color={colors.accent} />
-        <Text variant="label">Reveal, step by step</Text>
+        <Text variant="label">{t('chat.reveal.title')}</Text>
       </View>
       <View className="flex-row gap-2">
         {STEPS.map((s) => {
@@ -45,8 +47,8 @@ export function RevealPanel({ conversationId, otherAlias }: { conversationId: st
           const theirs = order[r.theirs] >= order[s.level];
           return (
             <View key={s.level} className={`flex-1 items-center gap-1 rounded-xl p-2 ${mutual ? 'bg-mint/15' : 'bg-raised'}`}>
-              <Text className="text-xs font-semibold">{s.label}</Text>
-              <Text className="text-[10px] text-muted">{mutual ? 'shared' : mine ? 'waiting for them' : theirs ? 'they’re ready' : '—'}</Text>
+              <Text className="text-xs font-semibold">{t(s.label)}</Text>
+              <Text className="text-[10px] text-muted">{mutual ? t('chat.reveal.shared') : mine ? t('chat.reveal.waiting') : theirs ? t('chat.reveal.theyReady') : '—'}</Text>
             </View>
           );
         })}
@@ -64,29 +66,29 @@ export function RevealPanel({ conversationId, otherAlias }: { conversationId: st
       {next ? (
         canOfferNext ? (
           <Button
-            title={`Offer to share ${next.label.toLowerCase()}`}
+            title={t('chat.reveal.offer', { item: t(next.lower) })}
             loading={step.isPending}
             onPress={() =>
               confirm(
-                `Share your ${next.label.toLowerCase()}?`,
-                `${otherAlias} will only see it if they share theirs too. You can stop sharing any time.`,
-                'Offer',
+                t('chat.reveal.confirmTitle', { item: t(next.lower) }),
+                t('chat.reveal.confirmBody', { alias: otherAlias }),
+                t('chat.reveal.offerOk'),
                 () => step.mutate(next.level),
               )
             }
           />
         ) : (
-          <Button title={`Add your ${next.label.toLowerCase()} to your reveal card`} kind="secondary" onPress={() => router.push('/settings/reveal')} />
+          <Button title={t('chat.reveal.addToCard', { item: t(next.lower) })} kind="secondary" onPress={() => router.push('/settings/reveal')} />
         )
       ) : null}
       {r.mine !== 'none' ? (
         <Button
-          title="Stop sharing"
+          title={t('chat.reveal.stop')}
           kind="ghost"
-          onPress={() => confirm('Stop sharing?', 'They won’t see your details anymore, and contact details in new messages are hidden again.', 'Stop', () => step.mutate('none'))}
+          onPress={() => confirm(t('chat.reveal.stopTitle'), t('chat.reveal.stopBody'), t('chat.reveal.stopOk'), () => step.mutate('none'))}
         />
       ) : null}
-      <Text variant="caption">Only reveal to people you trust. If anything feels off, report or block from the menu.</Text>
+      <Text variant="caption">{t('chat.reveal.hint')}</Text>
     </View>
   );
 }

@@ -12,18 +12,20 @@ import { Chip } from '@/components/ui/Chip';
 import { Input } from '@/components/ui/Input';
 import { Text } from '@/components/ui/Text';
 import { bowlKeys } from '@/features/bowls/hooks';
+import { useT } from '@/i18n';
 
 const KINDS = [
-  { key: 'topic', label: 'Topic' },
-  { key: 'office_hub', label: 'Office' },
-  { key: 'college', label: 'College' },
+  { key: 'topic', label: 'bowls.create.kindTopic' },
+  { key: 'office_hub', label: 'bowls.create.kindOffice' },
+  { key: 'college', label: 'bowls.create.kindCollege' },
 ] as const;
 
 export default function NewBowl() {
+  const { t } = useT();
   const qc = useQueryClient();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [rules, setRules] = useState('1. Be kind.\n2. No real names, numbers or handles.\n3. No hate or harassment.');
+  const [rules, setRules] = useState(() => t('bowls.create.defaultRules'));
   const [kind, setKind] = useState<(typeof KINDS)[number]['key']>('topic');
   const [membersOnly, setMembersOnly] = useState(false);
   const create = useMutation({
@@ -36,26 +38,26 @@ export default function NewBowl() {
   });
   return (
     <SafeAreaView className="flex-1 bg-bg">
-      <ScreenHeader title="New bowl" />
+      <ScreenHeader title={t('bowls.create.title')} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
         <ScrollView contentContainerClassName="gap-5 p-4" keyboardShouldPersistTaps="handled">
-          <Input label="Name" value={name} onChangeText={(t) => setName(t.slice(0, 60))} placeholder="Night Shift Nurses" />
+          <Input label={t('bowls.create.name')} value={name} onChangeText={(v) => setName(v.slice(0, 60))} placeholder={t('bowls.create.namePlaceholder')} />
           <View className="gap-2">
-            <Text variant="label">Kind</Text>
+            <Text variant="label">{t('bowls.create.kind')}</Text>
             <View className="flex-row gap-2">
               {KINDS.map((k) => (
-                <Chip key={k.key} label={k.label} selected={kind === k.key} onPress={() => setKind(k.key)} />
+                <Chip key={k.key} label={t(k.label)} selected={kind === k.key} onPress={() => setKind(k.key)} />
               ))}
             </View>
           </View>
-          <Input label="What it’s for" value={description} onChangeText={(t) => setDescription(t.slice(0, 300))} multiline className="min-h-20" textAlignVertical="top" />
-          <Input label="Rules" value={rules} onChangeText={(t) => setRules(t.slice(0, 2000))} multiline className="min-h-32" textAlignVertical="top" />
+          <Input label={t('bowls.create.purpose')} value={description} onChangeText={(v) => setDescription(v.slice(0, 300))} multiline className="min-h-20" textAlignVertical="top" />
+          <Input label={t('bowls.create.rules')} value={rules} onChangeText={(v) => setRules(v.slice(0, 2000))} multiline className="min-h-32" textAlignVertical="top" />
           <View className="flex-row gap-2">
-            <Chip label="Anyone can read" selected={!membersOnly} onPress={() => setMembersOnly(false)} />
-            <Chip label="Members only" selected={membersOnly} onPress={() => setMembersOnly(true)} />
+            <Chip label={t('bowls.create.public')} selected={!membersOnly} onPress={() => setMembersOnly(false)} />
+            <Chip label={t('bowls.create.membersOnly')} selected={membersOnly} onPress={() => setMembersOnly(true)} />
           </View>
-          <Text variant="caption">You’ll be the owner and can add up to 10 moderators. Platform rules still apply in every bowl.</Text>
-          <Button title="Create bowl" disabled={name.trim().length < 3} loading={create.isPending} onPress={() => create.mutate()} />
+          <Text variant="caption">{t('bowls.create.ownerNote')}</Text>
+          <Button title={t('bowls.create.submit')} disabled={name.trim().length < 3} loading={create.isPending} onPress={() => create.mutate()} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

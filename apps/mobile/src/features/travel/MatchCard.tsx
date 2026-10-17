@@ -7,11 +7,13 @@ import { Avatar } from '@/components/Avatar';
 import { PersonaName } from '@/components/PersonaBadge';
 import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 import { useRespondMatch } from './hooks';
 
 // Only the shared stretch is ever shown: never where the other person gets on or off.
 export function MatchCard({ m }: { m: Match }) {
+  const { t } = useT();
   const respond = useRespondMatch();
   const waiting = m.my_status === 'accepted' && m.status === 'proposed';
   return (
@@ -20,7 +22,7 @@ export function MatchCard({ m }: { m: Match }) {
         <Avatar seed={m.other.avatar_seed} size={44} />
         <View className="flex-1">
           <PersonaName p={m.other} />
-          <Text variant="caption">{m.other_mood === 'either' ? 'Up for a chat or quiet' : m.other_mood === 'chatty' ? 'Feeling chatty' : 'Prefers quiet'}</Text>
+          <Text variant="caption">{m.other_mood === 'either' ? t('travel.match.either') : m.other_mood === 'chatty' ? t('travel.match.chatty') : t('travel.match.quiet')}</Text>
         </View>
         <View className="rounded-full bg-mint/15 px-2 py-1">
           <Text className="text-xs font-bold text-mint">{Math.round(m.score * 100)}%</Text>
@@ -43,27 +45,27 @@ export function MatchCard({ m }: { m: Match }) {
         ))}
       </View>
       {m.status === 'accepted' ? (
-        <Button title="It's a match. Open chat" onPress={() => m.conversation_id && router.push(`/chat/${m.conversation_id}`)} />
+        <Button title={t('travel.match.openChat')} onPress={() => m.conversation_id && router.push(`/chat/${m.conversation_id}`)} />
       ) : waiting ? (
         <View className="flex-row items-center justify-center gap-2 py-2">
           <Clock size={14} color={colors.muted} />
-          <Text className="text-muted">Waiting for them to say yes</Text>
+          <Text className="text-muted">{t('travel.match.waiting')}</Text>
         </View>
       ) : (
         <View className="flex-row gap-2">
           <Button
-            title="Travel together"
+            title={t('travel.match.together')}
             className="flex-1"
             loading={respond.isPending && respond.variables?.accept}
             onPress={() => respond.mutate({ id: m.id, accept: true })}
           />
-          <Button title="Not today" kind="secondary" onPress={() => respond.mutate({ id: m.id, accept: false })} />
+          <Button title={t('travel.match.notToday')} kind="secondary" onPress={() => respond.mutate({ id: m.id, accept: false })} />
         </View>
       )}
       {m.status === 'accepted' ? (
         <View className="flex-row items-center gap-1.5">
           <Check size={13} color={colors.mint} />
-          <Text variant="caption">Chat only opens when you both agree. Meet inside the station.</Text>
+          <Text variant="caption">{t('travel.match.agreeHint')}</Text>
         </View>
       ) : null}
     </View>

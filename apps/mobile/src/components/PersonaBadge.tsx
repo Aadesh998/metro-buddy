@@ -4,15 +4,17 @@ import { View } from 'react-native';
 import type { PersonaRef } from '@/api/types';
 import { Avatar } from '@/components/Avatar';
 import { Text } from '@/components/ui/Text';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 
 export function PersonaName({ p, size = 'sm' }: { p: Pick<PersonaRef, 'alias' | 'verified' | 'is_host'>; size?: 'sm' | 'lg' }) {
+  const { t } = useT();
   const icon = size === 'lg' ? 18 : 13;
   return (
     <View className="flex-row items-center gap-1">
       <Text className={size === 'lg' ? 'text-2xl font-bold text-ink' : 'text-sm font-semibold text-ink'}>{p.alias}</Text>
-      {p.verified ? <BadgeCheck color={colors.sky} size={icon} accessibilityLabel="Verified" /> : null}
-      {p.is_host ? <Mic color={colors.accent} size={icon} accessibilityLabel="Studio host" /> : null}
+      {p.verified ? <BadgeCheck color={colors.sky} size={icon} accessibilityLabel={t('bowls.persona.verified')} /> : null}
+      {p.is_host ? <Mic color={colors.accent} size={icon} accessibilityLabel={t('bowls.persona.host')} /> : null}
     </View>
   );
 }

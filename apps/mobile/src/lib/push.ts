@@ -8,6 +8,7 @@ import { Platform } from 'react-native';
 
 import { del, post } from '@/api/client';
 import { activeConversation } from '@/features/chat/store';
+import { t } from '@/i18n';
 
 const ASKED = 'mb.push_asked';
 let token: string | null = null;
@@ -37,17 +38,19 @@ export function listenForTaps() {
 
 async function ensureChannels() {
   if (Platform.OS !== 'android') return;
-  const channels: [string, string, AndroidImportance][] = [
-    ['message', 'Messages', AndroidImportance.HIGH],
-    ['dm_request', 'Message requests', AndroidImportance.DEFAULT],
-    ['reply', 'Replies', AndroidImportance.DEFAULT],
-    ['match', 'Travel matches', AndroidImportance.HIGH],
-    ['trip_reminder', 'Trip reminders', AndroidImportance.HIGH],
-    ['episode_live', 'Live shows', AndroidImportance.DEFAULT],
-    ['mod_notice', 'Account notices', AndroidImportance.DEFAULT],
-    ['sos', 'SOS alerts', AndroidImportance.MAX],
-  ];
-  await Promise.all(channels.map(([id, name, importance]) => Notifications.setNotificationChannelAsync(id, { name, importance })));
+  const channels = [
+    ['message', AndroidImportance.HIGH],
+    ['dm_request', AndroidImportance.DEFAULT],
+    ['reply', AndroidImportance.DEFAULT],
+    ['match', AndroidImportance.HIGH],
+    ['trip_reminder', AndroidImportance.HIGH],
+    ['episode_live', AndroidImportance.DEFAULT],
+    ['mod_notice', AndroidImportance.DEFAULT],
+    ['sos', AndroidImportance.MAX],
+  ] as const;
+  await Promise.all(
+    channels.map(([id, importance]) => Notifications.setNotificationChannelAsync(id, { name: t(`safety.push.channels.${id}`), importance })),
+  );
 }
 
 export async function pushStatus(): Promise<'granted' | 'denied' | 'undetermined' | 'unsupported'> {

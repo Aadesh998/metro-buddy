@@ -15,6 +15,7 @@ import { Chip } from '@/components/ui/Chip';
 import { Text } from '@/components/ui/Text';
 import { useJoinedBowls } from '@/features/bowls/hooks';
 import { uploadImage } from '@/features/bowls/upload';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 
 const FLAIRS = ['Rant', 'Advice', 'Question', 'Wholesome', 'Funny', 'Lost & Found', 'PSA'];
@@ -37,6 +38,7 @@ function useMaskedPreview(text: string) {
 
 export default function Compose() {
   const params = useLocalSearchParams<{ bowl?: string }>();
+  const { t } = useT();
   const qc = useQueryClient();
   const joined = useJoinedBowls();
   const [bowl, setBowl] = useState<string | undefined>(params.bowl);
@@ -83,11 +85,11 @@ export default function Compose() {
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-bg">
       <View className="h-12 flex-row items-center justify-between px-4">
-        <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel="Close">
+        <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel={t('common.close')}>
           <X size={24} color={colors.ink} />
         </Pressable>
-        <Text variant="heading">New post</Text>
-        <Button title="Post" className="h-9 px-4" disabled={!ready} loading={submit.isPending} onPress={() => submit.mutate()} />
+        <Text variant="heading">{t('bowls.compose.title')}</Text>
+        <Button title={t('bowls.compose.submit')} className="h-9 px-4" disabled={!ready} loading={submit.isPending} onPress={() => submit.mutate()} />
       </View>
       <ScrollView contentContainerClassName="px-4 pb-10 gap-4" keyboardShouldPersistTaps="handled">
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
@@ -95,28 +97,28 @@ export default function Compose() {
             <Chip key={b.id} label={b.name} selected={b.id === bowlId} onPress={() => setBowl(b.id)} />
           ))}
         </ScrollView>
-        {joined.data?.length === 0 ? <Text className="text-muted">Join a bowl first to post.</Text> : null}
+        {joined.data?.length === 0 ? <Text className="text-muted">{t('bowls.compose.joinFirst')}</Text> : null}
 
         <View className="flex-row gap-2">
           {(
             [
-              ['text', 'Text', Type],
-              ['image', 'Image', ImagePlus],
-              ['poll', 'Poll', BarChart3],
+              ['text', 'bowls.compose.text', Type],
+              ['image', 'bowls.compose.image', ImagePlus],
+              ['poll', 'bowls.compose.poll', BarChart3],
             ] as const
           ).map(([k, label, Icon]) => (
             <Pressable key={k} onPress={() => setKind(k)} className={`flex-1 flex-row items-center justify-center gap-2 rounded-xl border py-2.5 ${kind === k ? 'border-accent bg-accent/10' : 'border-line'}`}>
               <Icon size={16} color={kind === k ? colors.accent : colors.muted} />
-              <Text className={kind === k ? 'text-accent' : 'text-muted'}>{label}</Text>
+              <Text className={kind === k ? 'text-accent' : 'text-muted'}>{t(label)}</Text>
             </Pressable>
           ))}
         </View>
 
-        <TextInput value={title} onChangeText={(t) => setTitle(t.slice(0, 140))} placeholder="Title" placeholderTextColor={colors.faint} className="text-xl font-semibold text-ink" multiline />
+        <TextInput value={title} onChangeText={(v) => setTitle(v.slice(0, 140))} placeholder={t('bowls.compose.titlePlaceholder')} placeholderTextColor={colors.faint} className="text-xl font-semibold text-ink" multiline />
         <TextInput
           value={body}
-          onChangeText={(t) => setBody(t.slice(0, 5000))}
-          placeholder={kind === 'poll' ? 'Add context (optional)' : 'What’s on your mind?'}
+          onChangeText={(v) => setBody(v.slice(0, 5000))}
+          placeholder={kind === 'poll' ? t('bowls.compose.pollBodyPlaceholder') : t('bowls.compose.bodyPlaceholder')}
           placeholderTextColor={colors.faint}
           className="min-h-24 text-base leading-6 text-ink"
           multiline
@@ -128,18 +130,18 @@ export default function Compose() {
             {images.map((im, i) => (
               <View key={im.uri}>
                 <Image source={{ uri: im.uri }} style={{ width: 96, height: 96, borderRadius: 12 }} />
-                <Pressable onPress={() => setImages(images.filter((_, j) => j !== i))} className="absolute right-1 top-1 rounded-full bg-black/70 p-1" accessibilityLabel="Remove image">
+                <Pressable onPress={() => setImages(images.filter((_, j) => j !== i))} className="absolute right-1 top-1 rounded-full bg-black/70 p-1" accessibilityLabel={t('bowls.compose.removeImage')}>
                   <X size={12} color="#fff" />
                 </Pressable>
               </View>
             ))}
             {images.length < 4 ? (
-              <Pressable onPress={pick} className="h-24 w-24 items-center justify-center rounded-xl border border-dashed border-line" accessibilityLabel="Add image">
+              <Pressable onPress={pick} className="h-24 w-24 items-center justify-center rounded-xl border border-dashed border-line" accessibilityLabel={t('bowls.compose.addImage')}>
                 <Plus size={22} color={colors.muted} />
               </Pressable>
             ) : null}
             <Text variant="caption" className="w-full">
-              Location and camera details are removed from photos. Images appear after a quick safety check.
+              {t('bowls.compose.imageNote')}
             </Text>
           </View>
         ) : null}
@@ -150,16 +152,16 @@ export default function Compose() {
               <TextInput
                 key={i}
                 value={o}
-                onChangeText={(t) => setOptions(options.map((x, j) => (j === i ? t.slice(0, 60) : x)))}
-                placeholder={`Option ${i + 1}`}
+                onChangeText={(v) => setOptions(options.map((x, j) => (j === i ? v.slice(0, 60) : x)))}
+                placeholder={t('bowls.compose.option', { n: i + 1 })}
                 placeholderTextColor={colors.faint}
                 className="rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink"
               />
             ))}
-            {options.length < 6 ? <Button title="Add option" kind="ghost" onPress={() => setOptions([...options, ''])} /> : null}
+            {options.length < 6 ? <Button title={t('bowls.compose.addOption')} kind="ghost" onPress={() => setOptions([...options, ''])} /> : null}
             <View className="flex-row gap-2">
               {[6, 24, 72, 168].map((h) => (
-                <Chip key={h} label={h < 24 ? `${h}h` : `${h / 24}d`} selected={hours === h} onPress={() => setHours(h)} />
+                <Chip key={h} label={h < 24 ? t('common.time.hours', { n: h }) : t('common.time.days', { n: h / 24 })} selected={hours === h} onPress={() => setHours(h)} />
               ))}
             </View>
           </View>
@@ -167,7 +169,7 @@ export default function Compose() {
 
         <View className="gap-2">
           <Text variant="caption" className="uppercase tracking-wider">
-            Flair
+            {t('bowls.compose.flair')}
           </Text>
           <View className="flex-row flex-wrap gap-2">
             {FLAIRS.map((f) => (
@@ -181,10 +183,10 @@ export default function Compose() {
             <View className="flex-row items-center gap-2">
               <EyeOff size={16} color={colors.accent} />
               <Text variant="label" className="text-accent">
-                Some details will be hidden
+                {t('bowls.compose.hiddenTitle')}
               </Text>
             </View>
-            <Text variant="caption">To keep everyone anonymous, this is how others will see it:</Text>
+            <Text variant="caption">{t('bowls.compose.hiddenBody')}</Text>
             <Text className="text-sm leading-5">{preview.data?.masked.trim()}</Text>
           </View>
         ) : null}

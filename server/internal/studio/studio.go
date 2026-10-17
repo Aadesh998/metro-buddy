@@ -747,6 +747,7 @@ type CallInDTO struct {
 	Status    model.CallInStatus  `json:"status"`
 	OnAirAt   *time.Time          `json:"on_air_at"`
 	EndsAt    *time.Time          `json:"ends_at"`
+	Masked    bool                `json:"voice_masked"`
 	CreatedAt time.Time           `json:"created_at"`
 }
 
@@ -756,7 +757,7 @@ func (s *Service) callInDTO(tx *gorm.DB, ci *model.CallInRequest, withTopic bool
 	if err != nil {
 		return nil, err
 	}
-	d := &CallInDTO{ID: ci.ID, Persona: refs[ci.PersonaID], Status: ci.Status, OnAirAt: ci.OnAirAt, CreatedAt: ci.CreatedAt}
+	d := &CallInDTO{ID: ci.ID, Persona: refs[ci.PersonaID], Status: ci.Status, OnAirAt: ci.OnAirAt, CreatedAt: ci.CreatedAt, Masked: ci.VoiceMasked}
 	if withTopic {
 		d.Topic = ci.TopicMasked
 	}

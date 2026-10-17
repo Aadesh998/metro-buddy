@@ -1,9 +1,30 @@
-import { ConnectionState, Room, RoomEvent, type Participant, type RemoteTrack } from 'livekit-client';
+import { ConnectionState, createLocalAudioTrack, Room, RoomEvent, Track, type Participant, type RemoteTrack } from 'livekit-client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { post } from '@/api/client';
 import type { JoinGrant, StageRole } from '@/api/types';
+import { t } from '@/i18n';
 import { attachAudio, detachAll, startAudio, stopAudio } from './audio';
+import { voiceMask, voiceMaskSupported } from './voice';
+
+// A masked caller's track gets the voice processor before it is published, so the first sample
+// that leaves the device is already masked. If masking fails, nothing is published.
+async function enableMic(r: Room, masked: boolean) {
+  const existing = r.localParticipant.getTrackPublication(Track.Source.Microphone);
+  if (existing?.track || !masked || !voiceMaskSupported) {
+    await r.localParticipant.setMicrophoneEnabled(true);
+    return;
+  }
+  const track = await createLocalAudioTrack();
+  try {
+    await track.setAudioContext(new AudioContext());
+    await track.setProcessor(voiceMask()!);
+  } catch (e) {
+    track.stop();
+    throw e;
+  }
+  await r.localParticipant.publishTrack(track);
+}
 
 export type LiveState = {
   status: 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'error';
@@ -18,6 +39,7 @@ export type LiveState = {
 // LiveKit flips our permission and we switch the mic on; when it is revoked the track dies with it.
 export function useLiveRoom(episodeId: string) {
   const room = useRef<Room | null>(null);
+  const masked = useRef(false);
   const [state, setState] = useState<LiveState>({ status: 'idle', role: null, canSpeak: false, micOn: false, speaking: new Set() });
 
   const leave = useCallback(async (notify = true) => {
@@ -41,7 +63,11 @@ export function useLiveRoom(episodeId: string) {
       const syncPerms = () => {
         const can = !!r.localParticipant.permissions?.canPublish;
         setState((s) => ({ ...s, canSpeak: can, micOn: can ? s.micOn : false }));
-        if (can) r.localParticipant.setMicrophoneEnabled(true).then(() => setState((s) => ({ ...s, micOn: true }))).catch(() => {});
+        if (can) {
+          enableMic(r, masked.current)
+            .then(() => setState((s) => ({ ...s, micOn: true })))
+            .catch(() => setState((s) => ({ ...s, error: t('studio.episode.micFailed') })));
+        }
       };
       r.on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => attachAudio(track))
         .on(RoomEvent.ParticipantPermissionsChanged, (_prev, p: Participant) => {
@@ -61,14 +87,19 @@ export function useLiveRoom(episodeId: string) {
       syncPerms();
     } catch (e) {
       room.current = null;
-      setState((s) => ({ ...s, status: 'error', error: e instanceof Error ? e.message : 'Could not connect' }));
+      setState((s) => ({ ...s, status: 'error', error: e instanceof Error ? e.message : t('studio.episode.couldNotConnect') }));
     }
   }, [episodeId, leave]);
+
+  const setMasked = useCallback((on: boolean) => {
+    masked.current = on;
+  }, []);
 
   const setMic = useCallback(async (on: boolean) => {
     const r = room.current;
     if (!r) return;
-    await r.localParticipant.setMicrophoneEnabled(on);
+    if (on) await enableMic(r, masked.current);
+    else await r.localParticipant.setMicrophoneEnabled(false);
     setState((s) => ({ ...s, micOn: on }));
   }, []);
 
@@ -82,5 +113,5 @@ export function useLiveRoom(episodeId: string) {
     };
   }, []);
 
-  return { state, join, leave, setMic };
+  return { state, join, leave, setMic, setMasked };
 }

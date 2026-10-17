@@ -11,15 +11,17 @@ import { Button } from '@/components/ui/Button';
 import { Screen } from '@/components/ui/Screen';
 import { Text } from '@/components/ui/Text';
 import { meKeys, useMyPersona } from '@/features/me/hooks';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 
 function StationField({ label, icon, station, onPress }: { label: string; icon: React.ReactNode; station?: Station; onPress: () => void }) {
+  const { t } = useT();
   return (
     <Pressable onPress={onPress} className="flex-row items-center gap-4 rounded-2xl border border-line bg-surface p-4 active:bg-raised">
       <View className="h-10 w-10 items-center justify-center rounded-full bg-raised">{icon}</View>
       <View className="flex-1 gap-1">
         <Text variant="caption">{label}</Text>
-        <Text className={station ? 'text-ink' : 'text-faint'}>{station?.name ?? 'Choose a station'}</Text>
+        <Text className={station ? 'text-ink' : 'text-faint'}>{station?.name ?? t('onboarding.homeMetro.choose')}</Text>
       </View>
       {station ? <LineDots station={station} /> : null}
     </Pressable>
@@ -29,6 +31,7 @@ function StationField({ label, icon, station, onPress }: { label: string; icon: 
 export default function HomeMetroScreen() {
   const qc = useQueryClient();
   const { data: persona } = useMyPersona();
+  const { t } = useT();
   const [home, setHome] = useState<Station>();
   const [work, setWork] = useState<Station>();
   const [picking, setPicking] = useState<'home' | 'work' | null>(null);
@@ -43,19 +46,19 @@ export default function HomeMetroScreen() {
     <Screen>
       <StepHeader
         step="home-metro"
-        title="Your everyday metro"
-        subtitle="We use these to suggest bowls and travel buddies. Nobody ever sees your home or work station."
+        title={t('onboarding.homeMetro.title')}
+        subtitle={t('onboarding.homeMetro.subtitle')}
       />
       <View className="gap-3">
-        <StationField label="Station near home" icon={<MapPin color={colors.accent} size={20} />} station={home} onPress={() => setPicking('home')} />
-        <StationField label="Station near work or college (optional)" icon={<Briefcase color={colors.sky} size={20} />} station={work} onPress={() => setPicking('work')} />
+        <StationField label={t('onboarding.homeMetro.nearHome')} icon={<MapPin color={colors.accent} size={20} />} station={home} onPress={() => setPicking('home')} />
+        <StationField label={t('onboarding.homeMetro.nearWorkOptional')} icon={<Briefcase color={colors.sky} size={20} />} station={work} onPress={() => setPicking('work')} />
       </View>
       <View className="flex-1" />
-      <Button title="Continue" disabled={!home} loading={save.isPending} onPress={() => save.mutate()} className="mb-4" />
+      <Button title={t('common.continue')} disabled={!home} loading={save.isPending} onPress={() => save.mutate()} className="mb-4" />
       <StationPicker
         cityId={persona.city_id}
         visible={picking !== null}
-        title={picking === 'home' ? 'Station near home' : 'Station near work'}
+        title={picking === 'home' ? t('onboarding.homeMetro.nearHome') : t('onboarding.homeMetro.nearWork')}
         onClose={() => setPicking(null)}
         onPick={(s) => {
           if (picking === 'home') setHome(s);

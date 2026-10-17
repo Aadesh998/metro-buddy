@@ -19,24 +19,26 @@ import { chatKeys, useConversation, useMessages, useSend, useSendImage } from '@
 import { MessageBubble } from '@/features/chat/MessageBubble';
 import { activeConversation, useOnline, useReceipts, useSupportSignal, useTyping } from '@/features/chat/store';
 import { useSafetySheet } from '@/features/safety/SafetySheet';
+import { useT } from '@/i18n';
 import { useNow } from '@/lib/clock';
 import { send as frame } from '@/lib/realtime';
 import { colors } from '@/lib/theme';
 import { until } from '@/lib/time';
 
 function Header({ c, id }: { c?: Conversation; id: string }) {
+  const { t, tp } = useT();
   const { title, other } = useConversationTitle(c ?? ({ members: [], kind: 'group', title: '' } as unknown as Conversation));
   const online = useOnline(other?.id);
   const typing = useTyping(id);
   const safety = useSafetySheet();
   let sub = '';
-  if (typing.length) sub = c?.kind === 'dm' ? 'typing…' : `${typing.length} typing…`;
-  else if (c?.kind === 'discussion' && c.ends_at) sub = c.closed ? 'Room closed' : `Live · ${until(c.ends_at)}`;
-  else if (c && c.kind !== 'dm' && c.kind !== 'travel') sub = `${c.member_count} members`;
-  else if (online) sub = 'online';
+  if (typing.length) sub = c?.kind === 'dm' ? t('chat.typing') : t('chat.typingMany', { n: typing.length });
+  else if (c?.kind === 'discussion' && c.ends_at) sub = c.closed ? t('chat.roomClosed') : t('chat.live', { left: until(c.ends_at) });
+  else if (c && c.kind !== 'dm' && c.kind !== 'travel') sub = tp('chat.members', c.member_count);
+  else if (online) sub = t('chat.online');
   return (
     <View className="h-14 flex-row items-center border-b border-line px-2">
-      <Pressable onPress={() => router.back()} hitSlop={10} className="h-10 w-10 items-center justify-center" accessibilityLabel="Back">
+      <Pressable onPress={() => router.back()} hitSlop={10} className="h-10 w-10 items-center justify-center" accessibilityLabel={t('common.back')}>
         <ChevronLeft size={26} color={colors.ink} />
       </Pressable>
       <View className="flex-1">
@@ -46,12 +48,12 @@ function Header({ c, id }: { c?: Conversation; id: string }) {
         {sub ? <Text className={`text-xs ${typing.length ? 'text-accent' : 'text-muted'}`}>{sub}</Text> : null}
       </View>
       {c && (c.kind === 'dm' || c.kind === 'travel') && other ? (
-        <Pressable onPress={() => safety.open({ type: 'conversation', id, personaId: other.id, alias: other.alias })} hitSlop={10} className="h-10 w-10 items-center justify-center" accessibilityLabel="Report, block or mute">
+        <Pressable onPress={() => safety.open({ type: 'conversation', id, personaId: other.id, alias: other.alias })} hitSlop={10} className="h-10 w-10 items-center justify-center" accessibilityLabel={t('common.safetyOptions')}>
           <MoreHorizontal size={22} color={colors.ink} />
         </Pressable>
       ) : null}
       {c ? (
-        <Pressable onPress={() => router.push(`/chat/${id}/info`)} hitSlop={10} className="h-10 w-10 items-center justify-center" accessibilityLabel="Chat info">
+        <Pressable onPress={() => router.push(`/chat/${id}/info`)} hitSlop={10} className="h-10 w-10 items-center justify-center" accessibilityLabel={t('chat.chatInfo')}>
           <Info size={20} color={colors.ink} />
         </Pressable>
       ) : null}
@@ -60,6 +62,7 @@ function Header({ c, id }: { c?: Conversation; id: string }) {
 }
 
 export default function ChatScreen() {
+  const { t } = useT();
   const { id } = useLocalSearchParams<{ id: string }>();
   const qc = useQueryClient();
   const conv = useConversation(id);
@@ -110,15 +113,15 @@ export default function ChatScreen() {
 
   function onLongPress(m: Message) {
     const actions: { text: string; style?: 'destructive' | 'cancel'; onPress?: () => void }[] = [];
-    if (m.body && !m.deleted) actions.push({ text: 'Copy', onPress: () => Clipboard.setStringAsync(m.body) });
-    if (m.is_mine && !m.local) actions.push({ text: 'Delete for everyone', style: 'destructive', onPress: () => del(`/v1/messages/${m.id}`) });
-    if (!m.is_mine && m.sender) actions.push({ text: 'Report or block', onPress: () => safety.open({ type: 'message', id: m.id, personaId: m.sender!.id, alias: m.sender!.alias }) });
-    actions.push({ text: 'Cancel', style: 'cancel' });
-    Alert.alert('Message', undefined, actions);
+    if (m.body && !m.deleted) actions.push({ text: t('common.copy'), onPress: () => Clipboard.setStringAsync(m.body) });
+    if (m.is_mine && !m.local) actions.push({ text: t('chat.deleteForEveryone'), style: 'destructive', onPress: () => del(`/v1/messages/${m.id}`) });
+    if (!m.is_mine && m.sender) actions.push({ text: t('chat.reportOrBlock'), onPress: () => safety.open({ type: 'message', id: m.id, personaId: m.sender!.id, alias: m.sender!.alias }) });
+    actions.push({ text: t('common.cancel'), style: 'cancel' });
+    Alert.alert(t('chat.message'), undefined, actions);
   }
 
-  function onChange(t: string) {
-    setText(t.slice(0, 4000));
+  function onChange(v: string) {
+    setText(v.slice(0, 4000));
     if (Date.now() - lastTyping.current > 2500) {
       lastTyping.current = Date.now();
       frame('typing', { conversation_id: id });
@@ -131,7 +134,7 @@ export default function ChatScreen() {
     const a = r.assets[0];
     sendImage.mutate(
       { uri: a.uri, mimeType: a.mimeType, fileSize: a.fileSize },
-      { onSuccess: (m) => m.media[0]?.pending && toast('Your photo will appear once our safety check finishes.', 'success'), onError: (e) => toast(e.message) },
+      { onSuccess: (m) => m.media[0]?.pending && toast(t('chat.photoPending'), 'success'), onError: (e) => toast(e.message) },
     );
   }
 
@@ -149,8 +152,8 @@ export default function ChatScreen() {
       <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={0}>
         {notJoined ? (
           <View className="flex-1 items-center justify-center gap-3 px-8">
-            <Text className="text-center text-muted">You’re not in this conversation.</Text>
-            <Button title="Join room" onPress={() => join.mutate()} loading={join.isPending} />
+            <Text className="text-center text-muted">{t('chat.notInConversation')}</Text>
+            <Button title={t('chat.joinRoom')} onPress={() => join.mutate()} loading={join.isPending} />
           </View>
         ) : (
           <FlashList
@@ -174,24 +177,24 @@ export default function ChatScreen() {
         )}
         {c?.closed ? (
           <View className="border-t border-line p-4">
-            <Text className="text-center text-muted">This conversation is closed.</Text>
+            <Text className="text-center text-muted">{t('chat.conversationClosed')}</Text>
           </View>
         ) : c ? (
           <View className="flex-row items-end gap-2 border-t border-line bg-surface px-3 py-2">
             {c.kind !== 'discussion' ? (
-              <Pressable onPress={pickImage} disabled={sendImage.isPending} className="h-10 w-9 items-center justify-center" accessibilityLabel="Send a photo">
+              <Pressable onPress={pickImage} disabled={sendImage.isPending} className="h-10 w-9 items-center justify-center" accessibilityLabel={t('chat.sendPhoto')}>
                 {sendImage.isPending ? <ActivityIndicator color={colors.accent} /> : <ImagePlus size={20} color={colors.muted} />}
               </Pressable>
             ) : null}
             <TextInput
               value={text}
               onChangeText={onChange}
-              placeholder={c.slow_mode_sec ? `Slow mode: one message every ${c.slow_mode_sec}s` : 'Message'}
+              placeholder={c.slow_mode_sec ? t('chat.slowModePlaceholder', { n: c.slow_mode_sec }) : t('chat.messagePlaceholder')}
               placeholderTextColor={colors.faint}
               multiline
               className="max-h-32 flex-1 rounded-2xl bg-raised px-4 py-2.5 text-base text-ink"
             />
-            <Pressable onPress={submit} disabled={!text.trim()} className={`h-10 w-10 items-center justify-center rounded-full ${text.trim() ? 'bg-accent' : 'bg-raised'}`} accessibilityLabel="Send message">
+            <Pressable onPress={submit} disabled={!text.trim()} className={`h-10 w-10 items-center justify-center rounded-full ${text.trim() ? 'bg-accent' : 'bg-raised'}`} accessibilityLabel={t('chat.sendMessage')}>
               <Send size={17} color={text.trim() ? colors.accentInk : colors.faint} />
             </Pressable>
           </View>

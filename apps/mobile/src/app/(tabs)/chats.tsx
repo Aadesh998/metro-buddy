@@ -16,10 +16,12 @@ import { Text } from '@/components/ui/Text';
 import { ConversationRow } from '@/features/chat/ConversationRow';
 import { useConversations, useRequests, useRespond } from '@/features/chat/hooks';
 import { useSafetySheet } from '@/features/safety/SafetySheet';
+import { useT, type Key } from '@/i18n';
 import { colors } from '@/lib/theme';
 import { ago } from '@/lib/time';
 
 function RequestCard({ r }: { r: DMRequest }) {
+  const { t } = useT();
   const respond = useRespond();
   const safety = useSafetySheet();
   return (
@@ -29,26 +31,27 @@ function RequestCard({ r }: { r: DMRequest }) {
         <View className="flex-1">
           <PersonaName p={r.from} />
           <Text variant="caption">
-            via {r.context_type} · {ago(r.created_at)}
+            {t('chat.via', { context: t(`chat.context.${r.context_type}` as Key), ago: ago(r.created_at) })}
           </Text>
         </View>
       </View>
       <Text className="leading-6">“{r.intro}”</Text>
       <View className="flex-row gap-2">
         <Button
-          title="Accept"
+          title={t('chat.accept')}
           className="h-10 flex-1"
           loading={respond.isPending && respond.variables?.id === r.id && respond.variables.action === 'accept'}
           onPress={() => respond.mutate({ id: r.id, action: 'accept' }, { onSuccess: (c) => c && router.push(`/chat/${c.id}`) })}
         />
-        <Button title="Ignore" kind="secondary" className="h-10 flex-1" onPress={() => respond.mutate({ id: r.id, action: 'ignore' })} />
-        <Button title="Report" kind="ghost" className="h-10" onPress={() => safety.open({ type: 'persona', id: r.from.id, personaId: r.from.id, alias: r.from.alias })} />
+        <Button title={t('chat.ignore')} kind="secondary" className="h-10 flex-1" onPress={() => respond.mutate({ id: r.id, action: 'ignore' })} />
+        <Button title={t('common.report')} kind="ghost" className="h-10" onPress={() => safety.open({ type: 'persona', id: r.from.id, personaId: r.from.id, alias: r.from.alias })} />
       </View>
     </View>
   );
 }
 
 export default function ChatsTab() {
+  const { t } = useT();
   const [tab, setTab] = useState<'chats' | 'requests'>('chats');
   const [menu, setMenu] = useState(false);
   const convs = useConversations();
@@ -58,13 +61,13 @@ export default function ChatsTab() {
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-bg">
       <TabHeader
-        title="Chats"
+        title={t('chat.tabChats')}
         right={
           <View className="flex-row gap-2">
-            <Pressable onPress={() => router.push('/inbox')} className="h-10 w-10 items-center justify-center rounded-full bg-raised" accessibilityLabel="Notifications">
+            <Pressable onPress={() => router.push('/inbox')} className="h-10 w-10 items-center justify-center rounded-full bg-raised" accessibilityLabel={t('chat.notifications')}>
               <Inbox size={18} color={colors.ink} />
             </Pressable>
-            <Pressable onPress={() => setMenu(!menu)} className="h-10 w-10 items-center justify-center rounded-full bg-accent" accessibilityLabel="New chat">
+            <Pressable onPress={() => setMenu(!menu)} className="h-10 w-10 items-center justify-center rounded-full bg-accent" accessibilityLabel={t('chat.newChat')}>
               <Plus size={20} color={colors.accentInk} />
             </Pressable>
           </View>
@@ -74,9 +77,9 @@ export default function ChatsTab() {
       {menu ? (
         <View className="mx-4 mb-3 overflow-hidden rounded-2xl border border-line bg-surface">
           {[
-            { label: 'New group', icon: <MessageCircle size={18} color={colors.ink} />, to: '/groups/new' },
-            { label: 'Join with invite code', icon: <KeyRound size={18} color={colors.ink} />, to: '/groups/join' },
-            { label: 'Live discussion rooms', icon: <Radio size={18} color={colors.accent} />, to: '/rooms' },
+            { label: t('chat.menuNewGroup'), icon: <MessageCircle size={18} color={colors.ink} />, to: '/groups/new' },
+            { label: t('chat.menuJoinCode'), icon: <KeyRound size={18} color={colors.ink} />, to: '/groups/join' },
+            { label: t('chat.menuRooms'), icon: <Radio size={18} color={colors.accent} />, to: '/rooms' },
           ].map((m) => (
             <Pressable
               key={m.label}
@@ -93,10 +96,10 @@ export default function ChatsTab() {
         </View>
       ) : null}
       <View className="mx-4 mb-3 flex-row rounded-xl bg-raised p-1">
-        {(['chats', 'requests'] as const).map((t) => (
-          <Pressable key={t} onPress={() => setTab(t)} className={`flex-1 flex-row items-center justify-center gap-1.5 rounded-lg py-2 ${tab === t ? 'bg-bg' : ''}`}>
-            <Text className={`text-sm font-semibold capitalize ${tab === t ? 'text-ink' : 'text-muted'}`}>{t}</Text>
-            {t === 'requests' && count > 0 ? (
+        {(['chats', 'requests'] as const).map((k) => (
+          <Pressable key={k} onPress={() => setTab(k)} className={`flex-1 flex-row items-center justify-center gap-1.5 rounded-lg py-2 ${tab === k ? 'bg-bg' : ''}`}>
+            <Text className={`text-sm font-semibold capitalize ${tab === k ? 'text-ink' : 'text-muted'}`}>{k === 'chats' ? t('chat.tabChats') : t('chat.tabRequests')}</Text>
+            {k === 'requests' && count > 0 ? (
               <View className="rounded-full bg-accent px-1.5">
                 <Text className="text-[11px] font-bold text-accent-ink">{count}</Text>
               </View>
@@ -112,7 +115,7 @@ export default function ChatsTab() {
           refreshControl={<RefreshControl refreshing={convs.isRefetching} onRefresh={() => void convs.refetch()} tintColor={colors.accent} />}
           ListEmptyComponent={
             convs.isPending ? null : (
-              <EmptyState icon={<MessageCircle color={colors.accent} size={36} />} title="No chats yet" body="Chats start when someone accepts your request, or you join a group or room." />
+              <EmptyState icon={<MessageCircle color={colors.accent} size={36} />} title={t('chat.emptyChatsTitle')} body={t('chat.emptyChatsBody')} />
             )
           }
         />
@@ -121,7 +124,7 @@ export default function ChatsTab() {
           data={incoming.data ?? []}
           keyExtractor={(r) => r.id}
           renderItem={({ item }) => <RequestCard r={item} />}
-          ListEmptyComponent={incoming.isPending ? null : <EmptyState title="No requests" body="Nobody can message you without your yes." />}
+          ListEmptyComponent={incoming.isPending ? null : <EmptyState title={t('chat.emptyRequestsTitle')} body={t('chat.emptyRequestsBody')} />}
         />
       )}
     </SafeAreaView>

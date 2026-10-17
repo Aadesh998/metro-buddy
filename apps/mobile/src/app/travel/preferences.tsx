@@ -9,6 +9,7 @@ import { Chip } from '@/components/ui/Chip';
 import { Screen } from '@/components/ui/Screen';
 import { Text } from '@/components/ui/Text';
 import { useMe } from '@/features/me/hooks';
+import { useT, type Key } from '@/i18n';
 import { colors } from '@/lib/theme';
 
 type Settings = { match_same_gender_only: boolean; match_verified_only: boolean; match_age_min: number | null; match_age_max: number | null };
@@ -21,14 +22,20 @@ const BANDS: { label: string; min: number | null; max: number | null }[] = [
   { label: '35+', min: 35, max: 80 },
 ];
 
-const GENDERS = [
-  { key: 'woman', label: 'Woman' },
-  { key: 'man', label: 'Man' },
-  { key: 'non_binary', label: 'Non-binary' },
-  { key: 'prefer_not_to_say', label: 'Prefer not to say' },
+const GENDERS: { key: string; label: Key }[] = [
+  { key: 'woman', label: 'travel.prefs.woman' },
+  { key: 'man', label: 'travel.prefs.man' },
+  { key: 'non_binary', label: 'travel.prefs.nonBinary' },
+  { key: 'prefer_not_to_say', label: 'travel.prefs.preferNot' },
+];
+
+const ROWS: { key: string; label: Key; body: Key }[] = [
+  { key: 'match_same_gender_only', label: 'travel.prefs.sameGender', body: 'travel.prefs.sameGenderBody' },
+  { key: 'match_verified_only', label: 'travel.prefs.verified', body: 'travel.prefs.verifiedBody' },
 ];
 
 export default function Preferences() {
+  const { t } = useT();
   const qc = useQueryClient();
   const me = useMe().data;
   const q = useQuery({ queryKey: ['settings'], queryFn: () => get<Settings>('/v1/me/settings') });
@@ -40,24 +47,21 @@ export default function Preferences() {
 
   return (
     <Screen scroll className="gap-5">
-      <ScreenHeader title="Matching preferences" />
-      <Text className="text-muted">These only filter who you’re matched with. They’re never shown to anyone.</Text>
+      <ScreenHeader title={t('travel.prefs.title')} />
+      <Text className="text-muted">{t('travel.prefs.intro')}</Text>
       <View className="gap-2">
-        <Text variant="label">Your gender (private)</Text>
+        <Text variant="label">{t('travel.prefs.gender')}</Text>
         <View className="flex-row flex-wrap gap-2">
           {GENDERS.map((g) => (
-            <Chip key={g.key} label={g.label} selected={me?.gender === g.key} onPress={() => setGender.mutate(g.key)} />
+            <Chip key={g.key} label={t(g.label)} selected={me?.gender === g.key} onPress={() => setGender.mutate(g.key)} />
           ))}
         </View>
       </View>
-      {[
-        { key: 'match_same_gender_only', label: 'Same gender only', body: 'Only match with people of your gender. Needs your gender set above.' },
-        { key: 'match_verified_only', label: 'Verified only', body: 'Only match with people who completed selfie verification.' },
-      ].map((row) => (
+      {ROWS.map((row) => (
         <View key={row.key} className="flex-row items-center gap-4 rounded-2xl border border-line bg-surface p-4">
           <View className="flex-1 gap-1">
-            <Text variant="label">{row.label}</Text>
-            <Text variant="caption">{row.body}</Text>
+            <Text variant="label">{t(row.label)}</Text>
+            <Text variant="caption">{t(row.body)}</Text>
           </View>
           <Switch
             value={!!s[row.key as keyof Settings]}
@@ -68,18 +72,18 @@ export default function Preferences() {
         </View>
       ))}
       <View className="gap-2">
-        <Text variant="label">Age range</Text>
+        <Text variant="label">{t('travel.prefs.ageRange')}</Text>
         <View className="flex-row flex-wrap gap-2">
           {BANDS.map((b) => (
-            <Chip key={b.label} label={b.label} selected={b === band} onPress={() => save.mutate(b.min ? { match_age_min: b.min, match_age_max: b.max } : { clear_age_band: true })} />
+            <Chip key={b.label} label={b.min ? b.label : t('travel.prefs.anyAge')} selected={b === band} onPress={() => save.mutate(b.min ? { match_age_min: b.min, match_age_max: b.max } : { clear_age_band: true })} />
           ))}
         </View>
       </View>
       <Pressable onPress={() => router.push('/settings/contacts')} className="flex-row items-center gap-3 rounded-2xl border border-line bg-surface p-4">
         <Users size={20} color={colors.mint} />
         <View className="flex-1">
-          <Text variant="label">Trusted contacts</Text>
-          <Text variant="caption">Who gets your SOS text and live trip link</Text>
+          <Text variant="label">{t('travel.prefs.contacts')}</Text>
+          <Text variant="caption">{t('travel.prefs.contactsBody')}</Text>
         </View>
         <ChevronRight size={18} color={colors.faint} />
       </Pressable>

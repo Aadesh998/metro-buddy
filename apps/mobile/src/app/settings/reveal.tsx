@@ -13,9 +13,11 @@ import { Screen } from '@/components/ui/Screen';
 import { Text } from '@/components/ui/Text';
 import { toast } from '@/components/ui/Toast';
 import { uploadImage } from '@/features/bowls/upload';
+import { useT } from '@/i18n';
 
 function CardForm({ card }: { card: RevealCard }) {
   const qc = useQueryClient();
+  const { t } = useT();
   const [name, setName] = useState(card.first_name);
   const [contact, setContact] = useState(card.contact);
   const save = useMutation({
@@ -23,7 +25,7 @@ function CardForm({ card }: { card: RevealCard }) {
     onSuccess: (c) => {
       qc.setQueryData(['reveal-card'], c);
       qc.invalidateQueries({ queryKey: ['reveal'] });
-      toast('Saved privately', 'success');
+      toast(t('settings.reveal.saved'), 'success');
     },
     onError: (e) => toast(e.message),
   });
@@ -36,30 +38,28 @@ function CardForm({ card }: { card: RevealCard }) {
   }
   return (
     <>
-      <Input label="First name" value={name} onChangeText={(t) => setName(t.slice(0, 30))} placeholder="Only your first name" />
+      <Input label={t('settings.reveal.firstName')} value={name} onChangeText={(s) => setName(s.slice(0, 30))} placeholder={t('settings.reveal.firstNamePlaceholder')} />
       <View className="gap-2">
-        <Text variant="label">Photo</Text>
+        <Text variant="label">{t('settings.reveal.photo')}</Text>
         <View className="flex-row items-center gap-3">
           {card.photo_url ? <Image source={{ uri: card.photo_url }} style={{ width: 64, height: 64, borderRadius: 32 }} /> : null}
-          <Button title={card.photo_url ? 'Change photo' : 'Add photo'} kind="secondary" className="h-10 px-4" onPress={pickPhoto} />
-          {card.photo_url ? <Button title="Remove" kind="ghost" className="h-10" onPress={() => save.mutate({ remove_photo: true })} /> : null}
+          <Button title={card.photo_url ? t('settings.reveal.changePhoto') : t('settings.reveal.addPhoto')} kind="secondary" className="h-10 px-4" onPress={pickPhoto} />
+          {card.photo_url ? <Button title={t('common.remove')} kind="ghost" className="h-10" onPress={() => save.mutate({ remove_photo: true })} /> : null}
         </View>
       </View>
-      <Input label="Contact" value={contact} onChangeText={(t) => setContact(t.slice(0, 80))} placeholder="Phone number or a social handle" />
-      <Button title="Save" loading={save.isPending} disabled={name === card.first_name && contact === card.contact} onPress={() => save.mutate({ first_name: name, contact })} />
+      <Input label={t('settings.reveal.contact')} value={contact} onChangeText={(s) => setContact(s.slice(0, 80))} placeholder={t('settings.reveal.contactPlaceholder')} />
+      <Button title={t('common.save')} loading={save.isPending} disabled={name === card.first_name && contact === card.contact} onPress={() => save.mutate({ first_name: name, contact })} />
     </>
   );
 }
 
 export default function RevealCardScreen() {
+  const { t } = useT();
   const card = useQuery({ queryKey: ['reveal-card'], queryFn: () => get<RevealCard>('/v1/me/reveal-card') });
   return (
     <Screen scroll className="gap-5">
-      <ScreenHeader title="Reveal card" />
-      <Text className="text-muted">
-        These stay encrypted and hidden. In a one-to-one chat, you and the other person can each choose to reveal one step at a time: first name, then
-        photo, then contact. Nothing is shown until you both agree, and you can step back whenever you like.
-      </Text>
+      <ScreenHeader title={t('settings.reveal.title')} />
+      <Text className="text-muted">{t('settings.reveal.intro')}</Text>
       {card.data ? <CardForm key={JSON.stringify(card.data)} card={card.data} /> : null}
     </Screen>
   );

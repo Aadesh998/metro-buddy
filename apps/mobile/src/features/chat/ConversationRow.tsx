@@ -6,19 +6,22 @@ import type { Conversation } from '@/api/types';
 import { Avatar } from '@/components/Avatar';
 import { Text } from '@/components/ui/Text';
 import { useMyPersona } from '@/features/me/hooks';
+import { useT } from '@/i18n';
 import { useNow } from '@/lib/clock';
 import { colors } from '@/lib/theme';
 import { ago } from '@/lib/time';
 import { useOnline } from './store';
 
 export function useConversationTitle(c: Conversation) {
+  const { t } = useT();
   const me = useMyPersona().data?.id;
   const other = c.members.find((m) => m.id !== me);
-  if (c.kind === 'dm' || c.kind === 'travel') return { title: other?.alias ?? '[left]', other };
-  return { title: c.title ?? 'Group', other: undefined };
+  if (c.kind === 'dm' || c.kind === 'travel') return { title: other?.alias ?? t('chat.leftUser'), other };
+  return { title: c.title ?? t('chat.group'), other: undefined };
 }
 
 export function ConversationRow({ c }: { c: Conversation }) {
+  const { t } = useT();
   const { title, other } = useConversationTitle(c);
   const online = useOnline(other?.id);
   const now = useNow();
@@ -27,11 +30,11 @@ export function ConversationRow({ c }: { c: Conversation }) {
     c.kind === 'discussion' ? <Radio size={20} color={colors.accent} /> : c.kind === 'travel' || c.kind === 'crew' ? <TrainFront size={20} color={colors.mint} /> : <Users size={20} color={colors.sky} />;
   const preview = c.last_message
     ? c.last_message.deleted
-      ? 'Message removed'
+      ? t('chat.messageRemoved')
       : c.last_message.kind === 'image'
-        ? 'Photo'
-        : `${c.last_message.is_mine ? 'You: ' : c.kind !== 'dm' && c.last_message.sender ? `${c.last_message.sender.alias}: ` : ''}${c.last_message.body}`
-    : 'Say hi';
+        ? t('chat.photo')
+        : `${c.last_message.is_mine ? t('chat.youPrefix') : c.kind !== 'dm' && c.last_message.sender ? `${c.last_message.sender.alias}: ` : ''}${c.last_message.body}`
+    : t('chat.sayHi');
   return (
     <Pressable onPress={() => router.push(`/chat/${c.id}`)} className="flex-row items-center gap-3 px-4 py-3 active:bg-surface">
       <View>

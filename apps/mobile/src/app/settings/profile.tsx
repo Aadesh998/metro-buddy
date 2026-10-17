@@ -16,7 +16,8 @@ import { Text } from '@/components/ui/Text';
 import { toast } from '@/components/ui/Toast';
 import { meKeys, useMyPersona } from '@/features/me/hooks';
 import { useStations } from '@/features/metro/hooks';
-import { INTENTS } from '@/lib/intents';
+import { dateLocale, useT } from '@/i18n';
+import { intents as intentOptions } from '@/lib/intents';
 
 export default function EditProfile() {
   const { data: p } = useMyPersona();
@@ -27,6 +28,7 @@ export default function EditProfile() {
 
 function Form({ p, stations }: { p: OwnPersona; stations: Station[] }) {
   const qc = useQueryClient();
+  const { t } = useT();
   const [bio, setBio] = useState(p.bio);
   const [intents, setIntents] = useState<string[]>(p.intents);
   const [vibes, setVibes] = useState<string[]>(p.vibes.map((v) => v.slug));
@@ -41,7 +43,7 @@ function Form({ p, stations }: { p: OwnPersona; stations: Station[] }) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: meKeys.me });
-      toast('Profile saved', 'success');
+      toast(t('settings.profile.saved'), 'success');
     },
   });
 
@@ -51,14 +53,14 @@ function Form({ p, stations }: { p: OwnPersona; stations: Station[] }) {
       return r.suggestions[0].alias;
     },
     onSuccess: (alias) =>
-      Alert.alert(`Become ${alias}?`, 'You can change your alias once every 30 days.', [
-        { text: 'Cancel', style: 'cancel' },
+      Alert.alert(t('settings.profile.becomeTitle', { alias }), t('settings.profile.becomeBody'), [
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Change',
+          text: t('settings.profile.change'),
           onPress: () =>
             put('/v1/me/persona/alias', { alias })
               .then(() => qc.invalidateQueries({ queryKey: meKeys.persona }))
-              .catch((e) => toast(e instanceof ApiError ? e.message : 'Could not change alias')),
+              .catch((e) => toast(e instanceof ApiError ? e.message : t('settings.profile.aliasFailed'))),
         },
       ]),
   });
@@ -67,23 +69,23 @@ function Form({ p, stations }: { p: OwnPersona; stations: Station[] }) {
 
   return (
     <Screen scroll className="gap-6">
-      <ScreenHeader title="Edit profile" />
+      <ScreenHeader title={t('settings.profile.title')} />
       <View className="items-center gap-2">
         <Avatar seed={p.avatar_seed} size={72} />
         <Text variant="heading">{p.alias}</Text>
         {canChangeAlias ? (
-          <Button title="Get a new alias" kind="ghost" loading={reroll.isPending} onPress={() => reroll.mutate()} />
+          <Button title={t('settings.profile.newAlias')} kind="ghost" loading={reroll.isPending} onPress={() => reroll.mutate()} />
         ) : (
-          <Text variant="caption">New alias available {new Date(p.alias_change_available_at).toLocaleDateString()}</Text>
+          <Text variant="caption">{t('settings.profile.aliasAvailable', { date: new Date(p.alias_change_available_at).toLocaleDateString(dateLocale()) })}</Text>
         )}
       </View>
 
-      <Input label="Bio" value={bio} onChangeText={(t) => setBio(t.slice(0, 160))} multiline />
+      <Input label={t('settings.profile.bio')} value={bio} onChangeText={(s) => setBio(s.slice(0, 160))} multiline />
 
       <View className="gap-2">
-        <Text variant="label">Here for</Text>
+        <Text variant="label">{t('settings.profile.hereFor')}</Text>
         <View className="flex-row flex-wrap gap-2">
-          {INTENTS.map((it) => (
+          {intentOptions().map((it) => (
             <Chip
               key={it.key}
               label={it.label}
@@ -95,14 +97,14 @@ function Form({ p, stations }: { p: OwnPersona; stations: Station[] }) {
       </View>
 
       <View className="gap-2">
-        <Text variant="label">Stations (private)</Text>
+        <Text variant="label">{t('settings.profile.stations')}</Text>
         {(['home', 'work'] as const).map((k) => {
           const s = k === 'home' ? home : work;
           return (
             <Pressable key={k} onPress={() => setPicking(k)} className="flex-row items-center justify-between rounded-xl border border-line bg-surface p-4">
               <View>
-                <Text variant="caption">{k === 'home' ? 'Near home' : 'Near work / college'}</Text>
-                <Text>{s?.name ?? 'Not set'}</Text>
+                <Text variant="caption">{k === 'home' ? t('settings.profile.nearHome') : t('settings.profile.nearWork')}</Text>
+                <Text>{s?.name ?? t('settings.profile.notSet')}</Text>
               </View>
               {s ? <LineDots station={s} /> : null}
             </Pressable>
@@ -111,15 +113,15 @@ function Form({ p, stations }: { p: OwnPersona; stations: Station[] }) {
       </View>
 
       <View className="gap-2">
-        <Text variant="label">Vibes ({vibes.length})</Text>
+        <Text variant="label">{t('settings.profile.vibes', { count: vibes.length })}</Text>
         <VibePicker selected={vibes} onChange={setVibes} />
       </View>
 
-      <Button title="Save" disabled={vibes.length < MIN_VIBES || intents.length === 0 || !home} loading={save.isPending} onPress={() => save.mutate()} />
+      <Button title={t('common.save')} disabled={vibes.length < MIN_VIBES || intents.length === 0 || !home} loading={save.isPending} onPress={() => save.mutate()} />
       <StationPicker
         cityId={p.city_id}
         visible={picking !== null}
-        title={picking === 'home' ? 'Station near home' : 'Station near work'}
+        title={picking === 'home' ? t('onboarding.homeMetro.nearHome') : t('onboarding.homeMetro.nearWork')}
         onClose={() => setPicking(null)}
         onPick={(s) => {
           if (picking === 'home') setHome(s);

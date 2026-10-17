@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Text } from '@/components/ui/Text';
 import { toast } from '@/components/ui/Toast';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 
 export type SafetyTarget = {
@@ -21,18 +22,7 @@ export type SafetyTarget = {
   alias?: string;
 };
 
-const REASONS: { key: ReportReason; label: string; hint: string }[] = [
-  { key: 'harassment', label: 'Harassment or bullying', hint: 'Targeting, insulting or stalking someone' },
-  { key: 'sexual', label: 'Sexual content', hint: 'Unwanted sexual messages or intimate images' },
-  { key: 'threat', label: 'Threat or violence', hint: 'Threatening to hurt someone' },
-  { key: 'doxxing', label: 'Sharing private info', hint: 'Phone numbers, addresses, real names' },
-  { key: 'hate', label: 'Hate speech', hint: 'Attacks on religion, caste, gender, region…' },
-  { key: 'self_harm', label: 'Someone may be at risk', hint: 'Talk of self-harm or suicide' },
-  { key: 'underage', label: 'Under 18', hint: 'This person seems to be a minor' },
-  { key: 'impersonation', label: 'Impersonation', hint: 'Pretending to be someone else' },
-  { key: 'spam', label: 'Spam or scam', hint: 'Ads, links, money requests' },
-  { key: 'other', label: 'Something else', hint: '' },
-];
+const REASONS: ReportReason[] = ['harassment', 'sexual', 'threat', 'doxxing', 'hate', 'self_harm', 'underage', 'impersonation', 'spam', 'other'];
 
 type Ctx = { open: (t: SafetyTarget) => void };
 const SafetyCtx = createContext<Ctx>({ open: () => {} });
@@ -46,6 +36,7 @@ type Step = 'menu' | 'reasons' | 'done';
 export function SafetySheetProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
   const insets = useSafeAreaInsets();
+  const { t } = useT();
   const [target, setTarget] = useState<SafetyTarget | null>(null);
   const [step, setStep] = useState<Step>('menu');
   const [reason, setReason] = useState<ReportReason | null>(null);
@@ -53,8 +44,8 @@ export function SafetySheetProvider({ children }: { children: ReactNode }) {
   const [alsoBlock, setAlsoBlock] = useState(false);
   const [support, setSupport] = useState(false);
 
-  const open = useCallback((t: SafetyTarget) => {
-    setTarget(t);
+  const open = useCallback((next: SafetyTarget) => {
+    setTarget(next);
     setStep('menu');
     setReason(null);
     setDetails('');
@@ -82,7 +73,7 @@ export function SafetySheetProvider({ children }: { children: ReactNode }) {
   const block = useMutation({
     mutationFn: () => post('/v1/blocks', { persona_id: target!.personaId }),
     onSuccess: () => {
-      toast(`${target?.alias ?? 'They'} can no longer see you or contact you.`, 'success');
+      toast(t('safety.sheet.blockedToast', { name: target?.alias ?? t('safety.sheet.they') }), 'success');
       qc.invalidateQueries();
       close();
     },
@@ -91,16 +82,16 @@ export function SafetySheetProvider({ children }: { children: ReactNode }) {
   const mute = useMutation({
     mutationFn: () => post('/v1/mutes', { persona_id: target!.personaId }),
     onSuccess: () => {
-      toast(`You won't see ${target?.alias ?? 'them'} anymore.`, 'success');
+      toast(t('safety.sheet.mutedToast', { name: target?.alias ?? t('safety.sheet.them') }), 'success');
       qc.invalidateQueries();
       close();
     },
   });
 
   function confirmBlock() {
-    Alert.alert(`Block ${target?.alias ?? 'this person'}?`, 'You won’t see each other anywhere on Metro Buddy. They won’t be told.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Block', style: 'destructive', onPress: () => block.mutate() },
+    Alert.alert(t('safety.sheet.blockTitle', { name: target?.alias ?? t('safety.sheet.thisPerson') }), t('safety.sheet.blockBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.block'), style: 'destructive', onPress: () => block.mutate() },
     ]);
   }
 
@@ -115,19 +106,19 @@ export function SafetySheetProvider({ children }: { children: ReactNode }) {
     <SafetyCtx.Provider value={{ open }}>
       {children}
       <Modal visible={!!target} transparent animationType="slide" onRequestClose={close}>
-        <Pressable className="flex-1 bg-black/60" onPress={close} accessibilityLabel="Close" />
+        <Pressable className="flex-1 bg-black/60" onPress={close} accessibilityLabel={t('common.close')} />
         <View className="max-h-[85%] rounded-t-2xl border-t border-line bg-surface px-5 pt-3" style={{ paddingBottom: insets.bottom + 16 }}>
           <View className="mb-3 h-1 w-10 self-center rounded-full bg-line" />
           {step === 'menu' && target ? (
             <View>
-              {row(<Flag color={colors.danger} size={20} />, 'Report', () => setStep('reasons'), true)}
+              {row(<Flag color={colors.danger} size={20} />, t('common.report'), () => setStep('reasons'), true)}
               {target.personaId ? (
                 <>
-                  {row(<ShieldBan color={colors.ink} size={20} />, `Block ${target.alias ?? ''}`.trim(), confirmBlock)}
-                  {row(<BellOff color={colors.ink} size={20} />, `Mute ${target.alias ?? ''}`.trim(), () => mute.mutate())}
+                  {row(<ShieldBan color={colors.ink} size={20} />, target.alias ? t('safety.sheet.blockName', { name: target.alias }) : t('common.block'), confirmBlock)}
+                  {row(<BellOff color={colors.ink} size={20} />, target.alias ? t('safety.sheet.muteName', { name: target.alias }) : t('common.mute'), () => mute.mutate())}
                 </>
               ) : null}
-              {row(<LifeBuoy color={colors.mint} size={20} />, 'Safety Center & helplines', () => {
+              {row(<LifeBuoy color={colors.mint} size={20} />, t('safety.sheet.centerLink'), () => {
                 close();
                 router.push('/safety');
               })}
@@ -137,49 +128,52 @@ export function SafetySheetProvider({ children }: { children: ReactNode }) {
           {step === 'reasons' ? (
             <ScrollView keyboardShouldPersistTaps="handled">
               <Text variant="heading" className="mb-1">
-                What’s wrong?
+                {t('safety.sheet.whatsWrong')}
               </Text>
               <Text variant="caption" className="mb-3">
-                Reports are anonymous. A person on our safety team reviews every one.
+                {t('safety.sheet.anonymous')}
               </Text>
               <View className="gap-1.5">
-                {REASONS.map((r) => (
-                  <Pressable
-                    key={r.key}
-                    onPress={() => setReason(r.key)}
-                    className={`rounded-xl border px-4 py-3 ${reason === r.key ? 'border-accent bg-accent/10' : 'border-line'}`}
-                    accessibilityState={{ selected: reason === r.key }}
-                  >
-                    <Text variant="label">{r.label}</Text>
-                    {r.hint ? <Text variant="caption">{r.hint}</Text> : null}
-                  </Pressable>
-                ))}
+                {REASONS.map((r) => {
+                  const hint = t(`safety.reasons.${r}.hint`);
+                  return (
+                    <Pressable
+                      key={r}
+                      onPress={() => setReason(r)}
+                      className={`rounded-xl border px-4 py-3 ${reason === r ? 'border-accent bg-accent/10' : 'border-line'}`}
+                      accessibilityState={{ selected: reason === r }}
+                    >
+                      <Text variant="label">{t(`safety.reasons.${r}.label`)}</Text>
+                      {hint ? <Text variant="caption">{hint}</Text> : null}
+                    </Pressable>
+                  );
+                })}
               </View>
               <View className="mt-4">
-                <Input placeholder="Anything else we should know? (optional)" value={details} onChangeText={(t) => setDetails(t.slice(0, 500))} multiline />
+                <Input placeholder={t('safety.sheet.detailsPlaceholder')} value={details} onChangeText={(s) => setDetails(s.slice(0, 500))} multiline />
               </View>
               {target?.personaId ? (
                 <View className="mt-4 flex-row items-center justify-between">
-                  <Text>Also block {target.alias}</Text>
+                  <Text>{t('safety.sheet.alsoBlock', { name: target.alias ?? '' })}</Text>
                   <Switch value={alsoBlock} onValueChange={setAlsoBlock} trackColor={{ true: colors.accent, false: colors.line }} thumbColor={colors.ink} />
                 </View>
               ) : null}
-              <Button title="Send report" className="mb-2 mt-5" disabled={!reason} loading={report.isPending} onPress={() => report.mutate()} />
+              <Button title={t('safety.sheet.sendReport')} className="mb-2 mt-5" disabled={!reason} loading={report.isPending} onPress={() => report.mutate()} />
             </ScrollView>
           ) : null}
 
           {step === 'done' ? (
             <ScrollView>
               <Text variant="heading" className="mb-1">
-                Thanks for telling us
+                {t('safety.sheet.thanks')}
               </Text>
               <Text className="mb-4 text-muted">
                 {support
-                  ? 'If someone is in immediate danger, call 112. You can also share these free, confidential helplines.'
-                  : 'Our team will review this. We’ll keep the person who reported anonymous.'}
+                  ? t('safety.sheet.supportBody')
+                  : t('safety.sheet.reviewBody')}
               </Text>
               {support ? <Helplines only={['112', '14416']} /> : null}
-              <Button title="Done" kind="secondary" className="mb-2 mt-5" onPress={close} />
+              <Button title={t('common.done')} kind="secondary" className="mb-2 mt-5" onPress={close} />
             </ScrollView>
           ) : null}
         </View>

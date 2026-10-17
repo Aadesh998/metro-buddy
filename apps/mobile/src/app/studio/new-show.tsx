@@ -11,10 +11,12 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Input } from '@/components/ui/Input';
 import { Text } from '@/components/ui/Text';
+import { useT } from '@/i18n';
 
 const TAGS = ['work', 'relationships', 'family', 'stress', 'night', 'exams', 'loneliness', 'city life', 'money', 'funny'];
 
 export default function NewShow() {
+  const { t } = useT();
   const qc = useQueryClient();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -29,33 +31,33 @@ export default function NewShow() {
   });
   return (
     <SafeAreaView className="flex-1 bg-bg">
-      <ScreenHeader title="New show" />
+      <ScreenHeader title={t('studio.newShow')} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
         <ScrollView contentContainerClassName="gap-5 p-4" keyboardShouldPersistTaps="handled">
-          <Input label="Title" value={title} onChangeText={(t) => setTitle(t.slice(0, 60))} placeholder="Last Train Home" />
+          <Input label={t('studio.create.titleLabel')} value={title} onChangeText={(v) => setTitle(v.slice(0, 60))} placeholder={t('studio.create.titlePlaceholder')} />
           <Input
-            label="What it’s about"
+            label={t('studio.create.about')}
             value={description}
-            onChangeText={(t) => setDescription(t.slice(0, 300))}
+            onChangeText={(v) => setDescription(v.slice(0, 300))}
             multiline
             className="min-h-24"
             textAlignVertical="top"
           />
-          <Input label="When you usually go live (optional)" value={schedule} onChangeText={(t) => setSchedule(t.slice(0, 120))} placeholder="Fridays, 10 PM" />
+          <Input label={t('studio.create.schedule')} value={schedule} onChangeText={(v) => setSchedule(v.slice(0, 120))} placeholder={t('studio.create.schedulePlaceholder')} />
           <View className="gap-2">
-            <Text variant="label">Topics (up to 5)</Text>
+            <Text variant="label">{t('studio.create.topics')}</Text>
             <View className="flex-row flex-wrap gap-2">
-              {TAGS.map((t) => (
+              {TAGS.map((tag) => (
                 <Chip
-                  key={t}
-                  label={t}
-                  selected={tags.includes(t)}
-                  onPress={() => setTags((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : cur.length < 5 ? [...cur, t] : cur))}
+                  key={tag}
+                  label={tag}
+                  selected={tags.includes(tag)}
+                  onPress={() => setTags((cur) => (cur.includes(tag) ? cur.filter((x) => x !== tag) : cur.length < 5 ? [...cur, tag] : cur))}
                 />
               ))}
             </View>
           </View>
-          <Button title="Create show" disabled={title.trim().length < 3} loading={create.isPending} onPress={() => create.mutate()} />
+          <Button title={t('studio.create.create')} disabled={title.trim().length < 3} loading={create.isPending} onPress={() => create.mutate()} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

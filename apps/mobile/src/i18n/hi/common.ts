@@ -52,6 +52,13 @@ const common: Messages['common'] = {
     studio: 'स्टूडियो',
     me: 'मैं',
   },
+  intents: {
+    vent: 'मन की बात कहें',
+    listen: 'सुनें और साथ दें',
+    travel_buddy: 'सफ़र का साथी ढूँढें',
+    friends: 'दोस्त बनाएँ',
+    discuss: 'चर्चाओं में जुड़ें',
+  },
   language: {
     title: 'भाषा',
     en: 'English',

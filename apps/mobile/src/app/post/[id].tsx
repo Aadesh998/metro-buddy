@@ -31,6 +31,7 @@ import {
 import { PostCard } from "@/features/bowls/PostCard";
 import { VoteBar } from "@/features/bowls/VoteBar";
 import { useSafetySheet } from "@/features/safety/SafetySheet";
+import { useT } from "@/i18n";
 import { colors } from "@/lib/theme";
 import { ago } from "@/lib/time";
 
@@ -43,14 +44,15 @@ function CommentRow({
   postId: string;
   onReply: (c: Comment) => void;
 }) {
+  const { t } = useT();
   const vote = useVote();
   const safety = useSafetySheet();
   const qc = useQueryClient();
   const remove = () =>
-    Alert.alert("Delete comment?", undefined, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("bowls.post.deleteCommentTitle"), undefined, [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("common.delete"),
         style: "destructive",
         onPress: () =>
           del(`/v1/comments/${c.id}`).then(() =>
@@ -64,7 +66,7 @@ function CommentRow({
         className={`gap-1.5 py-3 ${c.depth > 0 ? "border-l-2 border-line pl-3" : ""}`}
       >
         {c.deleted ? (
-          <Text variant="caption">[removed]</Text>
+          <Text variant="caption">{t("bowls.post.removed")}</Text>
         ) : (
           <>
             <View className="flex-row items-center gap-2">
@@ -72,7 +74,9 @@ function CommentRow({
               <PersonaName p={c.author} />
               {c.is_op ? (
                 <View className="rounded bg-accent/20 px-1.5">
-                  <Text className="text-[10px] font-bold text-accent">OP</Text>
+                  <Text className="text-[10px] font-bold text-accent">
+                    {t("bowls.post.op")}
+                  </Text>
                 </View>
               ) : null}
               <Text variant="caption">{ago(c.created_at)}</Text>
@@ -81,7 +85,7 @@ function CommentRow({
                 <Pressable
                   onPress={remove}
                   hitSlop={10}
-                  accessibilityLabel="Delete comment"
+                  accessibilityLabel={t("bowls.post.deleteComment")}
                 >
                   <Trash2 size={15} color={colors.faint} />
                 </Pressable>
@@ -96,7 +100,7 @@ function CommentRow({
                     })
                   }
                   hitSlop={10}
-                  accessibilityLabel="Report, block or mute"
+                  accessibilityLabel={t("common.safetyOptions")}
                 >
                   <MoreHorizontal size={16} color={colors.faint} />
                 </Pressable>
@@ -117,7 +121,9 @@ function CommentRow({
                 }
               />
               <Pressable onPress={() => onReply(c)} hitSlop={8}>
-                <Text className="text-sm font-semibold text-muted">Reply</Text>
+                <Text className="text-sm font-semibold text-muted">
+                  {t("bowls.post.reply")}
+                </Text>
               </Pressable>
             </View>
           </>
@@ -129,6 +135,7 @@ function CommentRow({
 
 export default function PostScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useT();
   const qc = useQueryClient();
   const p = usePost(id);
   const comments = useComments(id);
@@ -156,8 +163,8 @@ export default function PostScreen() {
       <SafeAreaView className="flex-1 bg-bg">
         <ScreenHeader />
         <EmptyState
-          title="Post not available"
-          body="It may have been removed."
+          title={t("bowls.post.unavailableTitle")}
+          body={t("bowls.post.unavailableBody")}
         />
       </SafeAreaView>
     );
@@ -171,20 +178,24 @@ export default function PostScreen() {
           p.data?.is_mine ? (
             <Pressable
               hitSlop={10}
-              accessibilityLabel="Delete post"
+              accessibilityLabel={t("bowls.post.deletePost")}
               onPress={() =>
-                Alert.alert("Delete post?", "This can’t be undone.", [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: () =>
-                      del(`/v1/posts/${id}`).then(() => {
-                        qc.invalidateQueries({ queryKey: ["feed"] });
-                        router.back();
-                      }),
-                  },
-                ])
+                Alert.alert(
+                  t("bowls.post.deletePostTitle"),
+                  t("bowls.post.deletePostBody"),
+                  [
+                    { text: t("common.cancel"), style: "cancel" },
+                    {
+                      text: t("common.delete"),
+                      style: "destructive",
+                      onPress: () =>
+                        del(`/v1/posts/${id}`).then(() => {
+                          qc.invalidateQueries({ queryKey: ["feed"] });
+                          router.back();
+                        }),
+                    },
+                  ],
+                )
               }
             >
               <Trash2 size={18} color={colors.muted} />
@@ -212,7 +223,7 @@ export default function PostScreen() {
           ListEmptyComponent={
             comments.isPending ? null : (
               <Text className="px-4 py-8 text-center text-muted">
-                No comments yet. Say something kind.
+                {t("bowls.post.noComments")}
               </Text>
             )
           }
@@ -220,16 +231,14 @@ export default function PostScreen() {
         {p.data?.locked ? (
           <View className="flex-row items-center justify-center gap-2 border-t border-line bg-surface px-3 py-3">
             <Lock size={14} color={colors.muted} />
-            <Text variant="caption">
-              Moderators closed comments on this post.
-            </Text>
+            <Text variant="caption">{t("bowls.post.lockedNote")}</Text>
           </View>
         ) : (
           <View className="border-t border-line bg-surface px-3 pb-2 pt-2">
             {replyTo ? (
               <View className="mb-2 flex-row items-center justify-between px-1">
                 <Text variant="caption">
-                  Replying to {replyTo.author.alias}
+                  {t("bowls.post.replyingTo", { alias: replyTo.author.alias })}
                 </Text>
                 <Pressable onPress={() => setReplyTo(null)} hitSlop={8}>
                   <X size={14} color={colors.muted} />
@@ -239,8 +248,8 @@ export default function PostScreen() {
             <View className="flex-row items-end gap-2">
               <TextInput
                 value={text}
-                onChangeText={(t) => setText(t.slice(0, 2000))}
-                placeholder="Add a comment"
+                onChangeText={(v) => setText(v.slice(0, 2000))}
+                placeholder={t("bowls.post.commentPlaceholder")}
                 placeholderTextColor={colors.faint}
                 multiline
                 className="max-h-32 flex-1 rounded-2xl bg-raised px-4 py-2.5 text-base text-ink"
@@ -249,7 +258,7 @@ export default function PostScreen() {
                 disabled={!text.trim() || send.isPending}
                 onPress={() => send.mutate()}
                 className={`h-10 w-10 items-center justify-center rounded-full ${text.trim() ? "bg-accent" : "bg-raised"}`}
-                accessibilityLabel="Send comment"
+                accessibilityLabel={t("bowls.post.sendComment")}
               >
                 <Send
                   size={17}

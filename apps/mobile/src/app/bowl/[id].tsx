@@ -15,10 +15,12 @@ import { useBowl, useFeed, useJoin, type Sort } from '@/features/bowls/hooks';
 import { ModSheet } from '@/features/bowls/ModSheet';
 import { PostCard } from '@/features/bowls/PostCard';
 import { SortTabs } from '@/features/bowls/SortTabs';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 
 export default function BowlScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t, tp } = useT();
   const bowl = useBowl(id);
   const join = useJoin();
   const [sort, setSort] = useState<Sort>('hot');
@@ -41,7 +43,7 @@ export default function BowlScreen() {
         title={b?.name}
         right={
           b?.joined ? (
-            <Pressable onPress={() => router.push({ pathname: '/compose', params: { bowl: id } })} accessibilityLabel="Post in this bowl" hitSlop={10}>
+            <Pressable onPress={() => router.push({ pathname: '/compose', params: { bowl: id } })} accessibilityLabel={t('bowls.postInBowl')} hitSlop={10}>
               <PenSquare size={20} color={colors.accent} />
             </Pressable>
           ) : null
@@ -61,17 +63,17 @@ export default function BowlScreen() {
                 <View className="flex-1">
                   <Text variant="heading">{b.name}</Text>
                   <Text variant="caption">
-                    {b.member_count} member{b.member_count === 1 ? '' : 's'}
+                    {tp('bowls.members', b.member_count)}
                     {b.line ? ` · ${b.line.name}` : ''}
                   </Text>
                 </View>
-                <Button title={b.joined ? 'Joined' : 'Join'} kind={b.joined ? 'secondary' : 'primary'} className="h-9 px-4" onPress={() => join.mutate({ id: b.id, join: !b.joined })} />
+                <Button title={b.joined ? t('common.joined') : t('common.join')} kind={b.joined ? 'secondary' : 'primary'} className="h-9 px-4" onPress={() => join.mutate({ id: b.id, join: !b.joined })} />
               </View>
               {b.description ? <Text className="text-muted">{b.description}</Text> : null}
               {b.rules_md ? (
                 <Pressable onPress={() => setRules(!rules)} className="rounded-xl bg-surface p-3">
                   <View className="flex-row items-center justify-between">
-                    <Text variant="label">Bowl rules</Text>
+                    <Text variant="label">{t('bowls.rules')}</Text>
                     {rules ? <ChevronUp size={16} color={colors.muted} /> : <ChevronDown size={16} color={colors.muted} />}
                   </View>
                   {rules ? <Text className="mt-2 text-sm leading-6 text-muted">{b.rules_md}</Text> : null}
@@ -81,7 +83,7 @@ export default function BowlScreen() {
                 {isMod ? (
                   <Pressable onPress={() => router.push({ pathname: '/bowl/mod', params: { id } })} className="flex-row items-center gap-1.5" hitSlop={8}>
                     <Shield size={15} color={colors.accent} />
-                    <Text className="text-sm font-medium text-accent">Mod tools</Text>
+                    <Text className="text-sm font-medium text-accent">{t('bowls.modTools')}</Text>
                   </Pressable>
                 ) : (
                   <View />
@@ -91,7 +93,7 @@ export default function BowlScreen() {
             </View>
           ) : null
         }
-        ListEmptyComponent={feed.isPending ? null : <EmptyState title="No posts yet" body={b?.joined ? 'Start the conversation.' : 'Join to post here.'} />}
+        ListEmptyComponent={feed.isPending ? null : <EmptyState title={t('bowls.noPostsTitle')} body={b?.joined ? t('bowls.noPostsJoined') : t('bowls.noPostsJoin')} />}
       />
       <ModSheet bowlId={id} pinnedId={pinnedId} owner={b?.role === 'owner'} post={modding} onClose={() => setModding(null)} />
     </SafeAreaView>

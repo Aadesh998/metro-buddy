@@ -7,11 +7,13 @@ import { post } from '@/api/client';
 import type { Post } from '@/api/types';
 import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 import { until } from '@/lib/time';
 import { patchPost } from './hooks';
 
 export function PollView({ p }: { p: Post }) {
+  const { t, tp } = useT();
   const qc = useQueryClient();
   const poll = p.poll!;
   const voted = poll.options.some((o) => o.mine);
@@ -46,9 +48,9 @@ export function PollView({ p }: { p: Post }) {
       })}
       <View className="flex-row items-center justify-between">
         <Text variant="caption">
-          {poll.total} vote{poll.total === 1 ? '' : 's'} · {until(poll.closes_at)}
+          {tp('bowls.poll.votes', poll.total)} · {until(poll.closes_at)}
         </Text>
-        {!showResults ? <Button title="Vote" className="h-9" disabled={picked.length === 0} loading={vote.isPending} onPress={() => vote.mutate()} /> : null}
+        {!showResults ? <Button title={t('bowls.poll.vote')} className="h-9" disabled={picked.length === 0} loading={vote.isPending} onPress={() => vote.mutate()} /> : null}
       </View>
     </View>
   );

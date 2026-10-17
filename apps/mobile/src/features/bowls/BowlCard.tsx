@@ -5,6 +5,7 @@ import { Pressable, View } from 'react-native';
 import type { Bowl } from '@/api/types';
 import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
+import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 import { useJoin } from './hooks';
 
@@ -19,6 +20,7 @@ export function BowlIcon({ b, size = 20 }: { b: Bowl; size?: number }) {
 }
 
 export function BowlCard({ b }: { b: Bowl }) {
+  const { t, tp } = useT();
   const join = useJoin();
   return (
     <Pressable onPress={() => router.push(`/bowl/${b.id}`)} className="flex-row items-center gap-3 rounded-2xl border border-line bg-surface p-3 active:bg-raised">
@@ -29,11 +31,11 @@ export function BowlCard({ b }: { b: Bowl }) {
         </Text>
         <Text variant="caption" numberOfLines={1}>
           {b.reason ? `${b.reason} · ` : ''}
-          {b.member_count} member{b.member_count === 1 ? '' : 's'}
+          {tp('bowls.members', b.member_count)}
         </Text>
       </View>
       <Button
-        title={b.joined ? 'Joined' : 'Join'}
+        title={b.joined ? t('common.joined') : t('common.join')}
         kind={b.joined ? 'secondary' : 'primary'}
         className="h-9 px-4"
         onPress={() => join.mutate({ id: b.id, join: !b.joined })}
