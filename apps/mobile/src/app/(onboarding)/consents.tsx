@@ -49,7 +49,7 @@ export default function ConsentsScreen() {
               <View className="flex-1 gap-1">
                 <Text variant="label">
                   {copy.title}
-                  {copy.required ? <Text className="text-xs text-accent">{`  ${t('onboarding.consents.required')}`}</Text> : null}
+                  {copy.required ? <Text className="text-xs text-brand">{`  ${t('onboarding.consents.required')}`}</Text> : null}
                 </Text>
                 <Text variant="caption" className="leading-5">
                   {copy.body}
@@ -58,8 +58,8 @@ export default function ConsentsScreen() {
               <Switch
                 value={state[p]}
                 onValueChange={(v) => setState((s) => ({ ...s, [p]: v }))}
-                trackColor={{ true: colors.accent, false: colors.line }}
-                thumbColor={colors.ink}
+                trackColor={{ true: colors.brand, false: colors.line }}
+                thumbColor={colors.surface}
                 accessibilityLabel={copy.title}
               />
             </View>
@@ -68,7 +68,7 @@ export default function ConsentsScreen() {
       </View>
       <Text variant="caption" className="mt-4" onPress={() => Linking.openURL(`${API_URL}/privacy`)}>
         {t('onboarding.consents.readBefore')}
-        <Text className="text-xs text-accent">{t('onboarding.consents.policy')}</Text>
+        <Text className="text-xs text-brand">{t('onboarding.consents.policy')}</Text>
         {t('onboarding.consents.readAfter', { version: me?.policy_version ?? '' })}
       </Text>
       {!state.core_service ? (

@@ -57,8 +57,8 @@ export function useJoin() {
   });
 }
 
-export function useFeed(scope: 'home' | string, sort: Sort) {
-  const path = scope === 'home' ? '/v1/feed' : `/v1/bowls/${scope}/posts`;
+export function useFeed(scope: 'home' | 'following' | string, sort: Sort) {
+  const path = scope === 'home' ? '/v1/feed' : scope === 'following' ? '/v1/feed/following' : `/v1/bowls/${scope}/posts`;
   return useInfiniteQuery({
     queryKey: bowlKeys.feed(scope, sort),
     initialPageParam: '',

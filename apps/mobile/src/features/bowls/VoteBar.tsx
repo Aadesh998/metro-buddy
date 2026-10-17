@@ -15,9 +15,9 @@ export function VoteBar({ score, mine, onVote }: { score: number; mine: -1 | 0 |
   return (
     <View className="flex-row items-center rounded-full bg-raised">
       <Pressable onPress={() => tap(1)} hitSlop={6} className="px-2 py-1" accessibilityLabel={t('bowls.card.upvote')} accessibilityState={{ selected: mine === 1 }}>
-        <ArrowBigUp size={20} color={mine === 1 ? colors.accent : colors.muted} fill={mine === 1 ? colors.accent : 'transparent'} />
+        <ArrowBigUp size={20} color={mine === 1 ? colors.brand : colors.muted} fill={mine === 1 ? colors.brand : 'transparent'} />
       </Pressable>
-      <Text className={`min-w-6 text-center text-sm font-semibold ${mine === 1 ? 'text-accent' : mine === -1 ? 'text-sky' : 'text-ink'}`}>{score}</Text>
+      <Text className={`min-w-6 text-center text-sm font-semibold ${mine === 1 ? 'text-brand' : mine === -1 ? 'text-sky' : 'text-ink'}`}>{score}</Text>
       <Pressable onPress={() => tap(-1)} hitSlop={6} className="px-2 py-1" accessibilityLabel={t('bowls.card.downvote')} accessibilityState={{ selected: mine === -1 }}>
         <ArrowBigDown size={20} color={mine === -1 ? colors.sky : colors.muted} fill={mine === -1 ? colors.sky : 'transparent'} />
       </Pressable>

@@ -5,6 +5,7 @@ import { ActivityIndicator, Linking, Pressable, View } from 'react-native';
 import { ApiError } from '@/api/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { BrandMark } from '@/components/BrandMark';
 import { Screen } from '@/components/ui/Screen';
 import { Text } from '@/components/ui/Text';
 import { googleAvailable } from '@/features/auth/google';
@@ -51,9 +52,7 @@ export default function SignInScreen() {
     <Screen scroll>
       <View className="flex-1 justify-center gap-7 py-8">
         <View className="gap-3">
-          <View className="h-12 w-12 items-center justify-center rounded-2xl bg-accent">
-            <Text className="text-xl font-black text-accent-ink">M</Text>
-          </View>
+          <BrandMark size={56} />
           <Text variant="title">Metro Buddy</Text>
           <Text className="text-muted">{t('auth.tagline')}</Text>
         </View>
@@ -64,7 +63,7 @@ export default function SignInScreen() {
               onPress={() => run('google', signInWithGoogle)}
               disabled={busy !== null}
               accessibilityRole="button"
-              className="h-14 flex-row items-center justify-center gap-3 rounded-xl bg-white active:opacity-80"
+              className="h-14 flex-row items-center justify-center gap-3 rounded-full border border-line bg-white active:opacity-80"
             >
               {busy === 'google' ? <ActivityIndicator color="#1f1f1f" /> : <GoogleMark />}
               <Text className="text-base font-semibold text-[#1f1f1f]">{t('auth.google')}</Text>
@@ -142,7 +141,7 @@ export default function SignInScreen() {
           >
             <Text className="text-sm text-muted">
               {signup ? t('auth.haveAccount') : t('auth.noAccount')}{' '}
-              <Text className="text-sm font-semibold text-accent">{signup ? t('auth.switchToLogIn') : t('auth.switchToSignUp')}</Text>
+              <Text className="text-sm font-semibold text-brand">{signup ? t('auth.switchToLogIn') : t('auth.switchToSignUp')}</Text>
             </Text>
           </Pressable>
           <Text variant="caption" className="text-center">
@@ -153,9 +152,9 @@ export default function SignInScreen() {
       <Pressable className="items-center pb-4" onPress={() => Linking.openURL(`${API_URL}/terms`)}>
         <Text variant="caption" className="text-center">
           {t('auth.termsBefore')}
-          <Text className="text-xs text-accent">{t('auth.terms')}</Text>
+          <Text className="text-xs text-brand">{t('auth.terms')}</Text>
           {t('auth.termsMiddle')}
-          <Text className="text-xs text-accent">{t('auth.privacy')}</Text>
+          <Text className="text-xs text-brand">{t('auth.privacy')}</Text>
           {t('auth.termsAfter')}
         </Text>
       </Pressable>

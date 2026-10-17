@@ -38,12 +38,12 @@ export default function SafetyCenter() {
       <Text variant="heading" className="mt-4">
         {t('safety.center.stayingSafe')}
       </Text>
-      <Tip icon={<Lock color={colors.accent} size={20} />} title={t('safety.center.identityTitle')} body={t('safety.center.identityBody')} />
-      <Tip icon={<MapPin color={colors.accent} size={20} />} title={t('safety.center.meetTitle')} body={t('safety.center.meetBody')} />
-      <Tip icon={<TrainFront color={colors.accent} size={20} />} title={t('safety.center.shareTitle')} body={t('safety.center.shareBody')} />
-      <Tip icon={<Eye color={colors.accent} size={20} />} title={t('safety.center.gutTitle')} body={t('safety.center.gutBody')} />
-      <Tip icon={<Flag color={colors.accent} size={20} />} title={t('safety.center.reportTitle')} body={t('safety.center.reportBody')} />
-      <Tip icon={<ShieldCheck color={colors.accent} size={20} />} title={t('safety.center.grievanceTitle')} body={t('safety.center.grievanceBody')} />
+      <Tip icon={<Lock color={colors.brand} size={20} />} title={t('safety.center.identityTitle')} body={t('safety.center.identityBody')} />
+      <Tip icon={<MapPin color={colors.brand} size={20} />} title={t('safety.center.meetTitle')} body={t('safety.center.meetBody')} />
+      <Tip icon={<TrainFront color={colors.brand} size={20} />} title={t('safety.center.shareTitle')} body={t('safety.center.shareBody')} />
+      <Tip icon={<Eye color={colors.brand} size={20} />} title={t('safety.center.gutTitle')} body={t('safety.center.gutBody')} />
+      <Tip icon={<Flag color={colors.brand} size={20} />} title={t('safety.center.reportTitle')} body={t('safety.center.reportBody')} />
+      <Tip icon={<ShieldCheck color={colors.brand} size={20} />} title={t('safety.center.grievanceTitle')} body={t('safety.center.grievanceBody')} />
     </Screen>
   );
 }

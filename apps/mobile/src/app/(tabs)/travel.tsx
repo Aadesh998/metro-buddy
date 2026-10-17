@@ -31,7 +31,7 @@ function ConsentCard() {
   });
   return (
     <EmptyState
-      icon={<TrainFront color={colors.accent} size={36} />}
+      icon={<TrainFront color={colors.brand} size={36} />}
       title={t('travel.consent.title')}
       body={t('travel.consent.body')}
       action={<Button title={t('travel.consent.action')} loading={enable.isPending} onPress={() => enable.mutate()} />}
@@ -42,7 +42,7 @@ function ConsentCard() {
 function Countdown({ until }: { until: string }) {
   const now = useNow(1000);
   const s = Math.max(0, Math.round((Date.parse(until) - now) / 1000));
-  return <Text className="font-mono text-2xl font-bold text-accent">{`${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`}</Text>;
+  return <Text className="font-mono text-2xl font-bold text-brand">{`${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`}</Text>;
 }
 
 function TravelNow() {
@@ -79,9 +79,9 @@ function TravelNow() {
   if (intent.data && intent.data.status === 'active') {
     const i = intent.data;
     return (
-      <View className="gap-3 rounded-2xl border border-accent/40 bg-accent/5 p-4">
+      <View className="gap-3 rounded-2xl border border-accent/40 bg-brand/5 p-4">
         <View className="flex-row items-center justify-between">
-          <Text variant="label" className="text-accent">
+          <Text variant="label" className="text-brand">
             {i.from_plan ? t('travel.now.commuteLive') : t('travel.now.isOn')}
           </Text>
           <Countdown until={i.expires_at} />
@@ -107,7 +107,7 @@ function TravelNow() {
         const st = k === 'from' ? f : dest;
         return (
           <Pressable key={k} onPress={() => setPicking(k)} className="flex-row items-center gap-3 rounded-xl bg-raised p-3">
-            <MapPin size={16} color={k === 'from' ? colors.accent : colors.sky} />
+            <MapPin size={16} color={k === 'from' ? colors.brand : colors.sky} />
             <Text variant="caption" className="w-10">
               {k === 'from' ? t('travel.now.from') : t('travel.now.to')}
             </Text>
@@ -157,7 +157,7 @@ function PlanRow({ p }: { p: CommutePlan }) {
           {p.depart_from}–{p.depart_to} · {t('common.weekdaysShort').split(',').filter((_, i) => p.weekdays.includes(i + 1)).join(' ') || '—'} · {tp('travel.tab.stops', p.stops)}
         </Text>
       </View>
-      <Switch value={p.active} onValueChange={(v) => toggle.mutate(v)} trackColor={{ true: colors.accent, false: colors.line }} thumbColor={colors.ink} />
+      <Switch value={p.active} onValueChange={(v) => toggle.mutate(v)} trackColor={{ true: colors.brand, false: colors.line }} thumbColor={colors.surface} />
     </Pressable>
   );
 }
@@ -189,7 +189,7 @@ export default function TravelTab() {
       />
       <ScrollView
         contentContainerClassName="gap-4 px-4 pb-10"
-        refreshControl={<RefreshControl refreshing={matches.isRefetching} onRefresh={() => void post('/v1/matches/refresh').catch(() => {}).then(() => matches.refetch())} tintColor={colors.accent} />}
+        refreshControl={<RefreshControl refreshing={matches.isRefetching} onRefresh={() => void post('/v1/matches/refresh').catch(() => {}).then(() => matches.refetch())} tintColor={colors.brand} />}
       >
         {trip.data ? (
           <Pressable onPress={() => router.push(`/trip/${trip.data!.id}`)} className="gap-2 rounded-2xl border border-mint/50 bg-mint/10 p-4">
@@ -218,7 +218,7 @@ export default function TravelTab() {
         <View className="mt-2 flex-row items-center justify-between">
           <Text variant="heading">{t('travel.tab.myCommutes')}</Text>
           <Pressable onPress={() => router.push('/travel/plan')} hitSlop={10} accessibilityLabel={t('travel.tab.addCommute')}>
-            <Plus size={22} color={colors.accent} />
+            <Plus size={22} color={colors.brand} />
           </Pressable>
         </View>
         {(plans.data ?? []).map((p) => (

@@ -108,9 +108,9 @@ export default function Compose() {
               ['poll', 'bowls.compose.poll', BarChart3],
             ] as const
           ).map(([k, label, Icon]) => (
-            <Pressable key={k} onPress={() => setKind(k)} className={`flex-1 flex-row items-center justify-center gap-2 rounded-xl border py-2.5 ${kind === k ? 'border-accent bg-accent/10' : 'border-line'}`}>
-              <Icon size={16} color={kind === k ? colors.accent : colors.muted} />
-              <Text className={kind === k ? 'text-accent' : 'text-muted'}>{t(label)}</Text>
+            <Pressable key={k} onPress={() => setKind(k)} className={`flex-1 flex-row items-center justify-center gap-2 rounded-xl border py-2.5 ${kind === k ? 'border-accent bg-brand/10' : 'border-line'}`}>
+              <Icon size={16} color={kind === k ? colors.brand : colors.muted} />
+              <Text className={kind === k ? 'text-brand' : 'text-muted'}>{t(label)}</Text>
             </Pressable>
           ))}
         </View>
@@ -180,10 +180,10 @@ export default function Compose() {
         </View>
 
         {hidden.length > 0 ? (
-          <View className="gap-2 rounded-2xl border border-accent/40 bg-accent/5 p-4">
+          <View className="gap-2 rounded-2xl border border-accent/40 bg-brand/5 p-4">
             <View className="flex-row items-center gap-2">
-              <EyeOff size={16} color={colors.accent} />
-              <Text variant="label" className="text-accent">
+              <EyeOff size={16} color={colors.brand} />
+              <Text variant="label" className="text-brand">
                 {t('bowls.compose.hiddenTitle')}
               </Text>
             </View>

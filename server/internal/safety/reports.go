@@ -83,16 +83,28 @@ func (h *Handlers) block(c echo.Context) error {
 		}).Error; err != nil {
 			return err
 		}
-		// A block also cancels any pending contact requests between the two.
-		return tx.Model(&model.DMRequest{}).
-			Where("status = ? AND ((from_persona_id = ? AND to_persona_id = ?) OR (from_persona_id = ? AND to_persona_id = ?))",
-				model.RequestPending, p.PersonaID, req.PersonaID, req.PersonaID, p.PersonaID).
-			Update("status", model.RequestBlocked).Error
+		return sever(tx, p.PersonaID, req.PersonaID)
 	})
 	if err != nil {
 		return err
 	}
 	return c.NoContent(http.StatusNoContent)
+}
+
+// sever runs with a new block: it ends follows and connections between the two
+// and cancels any pending contact requests.
+func sever(tx *gorm.DB, a, b uuid.UUID) error {
+	if err := tx.Where("(follower_persona_id = ? AND followee_persona_id = ?) OR (follower_persona_id = ? AND followee_persona_id = ?)",
+		a, b, b, a).Delete(&model.Follow{}).Error; err != nil {
+		return err
+	}
+	if err := tx.Where("pair_key = ?", model.PairKey(a, b)).Delete(&model.Connection{}).Error; err != nil {
+		return err
+	}
+	return tx.Model(&model.DMRequest{}).
+		Where("status = ? AND ((from_persona_id = ? AND to_persona_id = ?) OR (from_persona_id = ? AND to_persona_id = ?))",
+			model.RequestPending, a, b, b, a).
+		Update("status", model.RequestBlocked).Error
 }
 
 func (h *Handlers) unblock(c echo.Context) error {
@@ -239,9 +251,12 @@ func (h *Handlers) report(c echo.Context) error {
 			return err
 		}
 		if req.AlsoBlock && owner != nil {
-			return tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&model.Block{
+			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&model.Block{
 				BlockerPersonaID: p.PersonaID, BlockedPersonaID: *owner, BlockerUserID: p.UserID,
-			}).Error
+			}).Error; err != nil {
+				return err
+			}
+			return sever(tx, p.PersonaID, *owner)
 		}
 		return nil
 	})

@@ -53,7 +53,7 @@ export function AdminsPage({ me }: { me: Admin }) {
         </form>
         <ErrorText error={error} />
         {created ? (
-          <div className="mt-4 rounded-lg border border-accent/40 bg-accent/5 p-4 text-sm">
+          <div className="mt-4 rounded-lg border border-accent/40 bg-brand/5 p-4 text-sm">
             <p className="mb-2 font-semibold">Share these with {created.admin.email} once, over a secure channel. They won’t be shown again.</p>
             <p>
               Temporary password: <code className="rounded bg-raised px-1.5 py-0.5">{created.temp_password}</code>

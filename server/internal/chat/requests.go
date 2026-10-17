@@ -33,6 +33,63 @@ func (s *Service) registerRequests(g *echo.Group) {
 	g.POST("/dm-requests/:id/accept", s.acceptRequest)
 	g.POST("/dm-requests/:id/ignore", s.ignoreRequest)
 	g.DELETE("/dm-requests/:id", s.withdrawRequest)
+	g.POST("/dm/open", s.openDirect)
+}
+
+type openDirectBody struct {
+	PersonaID uuid.UUID `json:"persona_id" validate:"required"`
+}
+
+var ErrNotConnected = httpx.E(http.StatusForbidden, "not_connected", "connect first, or send a message request")
+
+// openDirect returns the 1:1 chat with someone, creating it when the two are connected.
+// Strangers still go through a message request.
+func (s *Service) openDirect(c echo.Context) error {
+	req, err := httpx.Bind[openDirectBody](c)
+	if err != nil {
+		return err
+	}
+	p := httpx.PrincipalFrom(c)
+	if req.PersonaID == p.PersonaID {
+		return httpx.BadRequest("that's you")
+	}
+	ctx := c.Request().Context()
+	var convID uuid.UUID
+	created := false
+	err = s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if b, err := safety.IsBlocked(ctx, tx, p.PersonaID, req.PersonaID); err != nil || b {
+			return httpx.NotFound()
+		}
+		if id, err := existingDM(tx, p.PersonaID, req.PersonaID); err != nil {
+			return err
+		} else if id != nil {
+			convID = *id
+			return nil
+		}
+		var n int64
+		if err := tx.Model(&model.Connection{}).Where("pair_key = ? AND status = ?", model.PairKey(p.PersonaID, req.PersonaID), model.ConnAccepted).
+			Count(&n).Error; err != nil {
+			return err
+		}
+		if n == 0 {
+			return ErrNotConnected
+		}
+		conv := model.Conversation{Kind: model.ConvDM, MemberCap: 2}
+		if err := Create(tx, s.now(), &conv, map[uuid.UUID]model.ConvRole{p.PersonaID: model.ConvMember, req.PersonaID: model.ConvMember}); err != nil {
+			return err
+		}
+		convID, created = conv.ID, true
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	if created {
+		s.Hub.Publish(ctx, []uuid.UUID{p.PersonaID, req.PersonaID}, "conversation.new", map[string]any{"id": convID, "kind": model.ConvDM})
+	}
+	c.SetParamNames("id")
+	c.SetParamValues(convID.String())
+	return s.get(c)
 }
 
 type createRequestBody struct {

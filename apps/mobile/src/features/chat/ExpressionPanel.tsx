@@ -27,8 +27,8 @@ export function ExpressionPanel({ onEmoji, onSticker }: { onEmoji: (e: string) =
     <View className="h-64 border-t border-line bg-surface">
       <View className="flex-row gap-2 px-3 pt-2">
         {(['emoji', 'stickers'] as const).map((k) => (
-          <Pressable key={k} onPress={() => setTab(k)} className={`rounded-full px-3 py-1.5 ${tab === k ? 'bg-accent/15' : ''}`}>
-            <Text className={`text-sm font-medium ${tab === k ? 'text-accent' : 'text-muted'}`}>{k === 'emoji' ? t('chat.emoji') : t('chat.stickers_tab')}</Text>
+          <Pressable key={k} onPress={() => setTab(k)} className={`rounded-full px-3 py-1.5 ${tab === k ? 'bg-brand/15' : ''}`}>
+            <Text className={`text-sm font-medium ${tab === k ? 'text-brand' : 'text-muted'}`}>{k === 'emoji' ? t('chat.emoji') : t('chat.stickers_tab')}</Text>
           </Pressable>
         ))}
       </View>

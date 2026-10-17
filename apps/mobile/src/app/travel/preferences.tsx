@@ -66,8 +66,8 @@ export default function Preferences() {
           <Switch
             value={!!s[row.key as keyof Settings]}
             onValueChange={(v) => save.mutate({ [row.key]: v })}
-            trackColor={{ true: colors.accent, false: colors.line }}
-            thumbColor={colors.ink}
+            trackColor={{ true: colors.brand, false: colors.line }}
+            thumbColor={colors.surface}
           />
         </View>
       ))}

@@ -50,7 +50,7 @@ export default function HomeMetroScreen() {
         subtitle={t('onboarding.homeMetro.subtitle')}
       />
       <View className="gap-3">
-        <StationField label={t('onboarding.homeMetro.nearHome')} icon={<MapPin color={colors.accent} size={20} />} station={home} onPress={() => setPicking('home')} />
+        <StationField label={t('onboarding.homeMetro.nearHome')} icon={<MapPin color={colors.brand} size={20} />} station={home} onPress={() => setPicking('home')} />
         <StationField label={t('onboarding.homeMetro.nearWorkOptional')} icon={<Briefcase color={colors.sky} size={20} />} station={work} onPress={() => setPicking('work')} />
       </View>
       <View className="flex-1" />

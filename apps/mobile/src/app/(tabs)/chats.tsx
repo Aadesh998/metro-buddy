@@ -79,7 +79,7 @@ export default function ChatsTab() {
           {[
             { label: t('chat.menuNewGroup'), icon: <MessageCircle size={18} color={colors.ink} />, to: '/groups/new' },
             { label: t('chat.menuJoinCode'), icon: <KeyRound size={18} color={colors.ink} />, to: '/groups/join' },
-            { label: t('chat.menuRooms'), icon: <Radio size={18} color={colors.accent} />, to: '/rooms' },
+            { label: t('chat.menuRooms'), icon: <Radio size={18} color={colors.brand} />, to: '/rooms' },
           ].map((m) => (
             <Pressable
               key={m.label}
@@ -112,10 +112,10 @@ export default function ChatsTab() {
           data={convs.data ?? []}
           keyExtractor={(c) => c.id}
           renderItem={({ item }) => <ConversationRow c={item} />}
-          refreshControl={<RefreshControl refreshing={convs.isRefetching} onRefresh={() => void convs.refetch()} tintColor={colors.accent} />}
+          refreshControl={<RefreshControl refreshing={convs.isRefetching} onRefresh={() => void convs.refetch()} tintColor={colors.brand} />}
           ListEmptyComponent={
             convs.isPending ? null : (
-              <EmptyState icon={<MessageCircle color={colors.accent} size={36} />} title={t('chat.emptyChatsTitle')} body={t('chat.emptyChatsBody')} />
+              <EmptyState icon={<MessageCircle color={colors.brand} size={36} />} title={t('chat.emptyChatsTitle')} body={t('chat.emptyChatsBody')} />
             )
           }
         />

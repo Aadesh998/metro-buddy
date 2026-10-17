@@ -110,6 +110,8 @@ export default {
       trip_reminder: 'Trip reminders',
       episode_live: 'Live shows',
       mod_notice: 'Account notices',
+      follow: 'New followers',
+      connection: 'Connections',
       sos: 'SOS alerts',
     },
   },

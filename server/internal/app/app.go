@@ -37,6 +37,7 @@ import (
 	"metro-buddy/server/internal/safety"
 	"metro-buddy/server/internal/secure"
 	"metro-buddy/server/internal/sms"
+	socialpkg "metro-buddy/server/internal/social"
 	"metro-buddy/server/internal/studio"
 	"metro-buddy/server/internal/travel"
 	"metro-buddy/server/internal/trust"
@@ -73,6 +74,7 @@ type App struct {
 	Admin        *admin.Handlers
 	Hub          *realtime.Hub
 	Chat         *chat.Service
+	Social       *socialpkg.Service
 	Notify       *notify.Service
 	Travel       *travel.Service
 	Studio       *studio.Service
@@ -251,6 +253,8 @@ func (a *App) routes() *echo.Echo {
 			a.Audit.Log(tx, model.ActorUser, &userID, verb, "conversation", &conv, meta)
 		}}
 	a.Chat.Register(social)
+	a.Social = &socialpkg.Service{DB: a.DB, PII: a.PII, Hub: a.Hub, Limiter: a.Limiter}
+	a.Social.Register(social)
 	a.Notify.Register(authed)
 	a.Travel = &travel.Service{DB: a.DB, Redis: a.Redis, Metro: a.Metro, Chat: a.Chat, Notify: a.Notify, Limiter: a.Limiter,
 		Audit: a.Audit, Box: a.Box, SMS: a.SMS, BaseURL: a.Cfg.PublicBaseURL, AI: a.AI, Log: a.Log}

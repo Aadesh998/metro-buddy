@@ -5,7 +5,7 @@ export function Button({ kind = 'primary', className = '', ...rest }: ButtonHTML
     primary: 'bg-accent text-accent-ink hover:brightness-95',
     secondary: 'bg-raised text-ink border border-line hover:bg-line',
     danger: 'bg-danger text-white hover:brightness-95',
-    ghost: 'text-accent hover:bg-raised',
+    ghost: 'text-brand hover:bg-raised',
   }[kind]
   return <button className={`rounded-lg px-3.5 py-2 text-sm font-semibold disabled:opacity-50 ${k} ${className}`} {...rest} />
 }
@@ -25,10 +25,10 @@ export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
 const tones: Record<string, string> = {
   critical: 'bg-danger/20 text-danger',
   high: 'bg-orange-500/20 text-orange-300',
-  medium: 'bg-accent/15 text-accent',
+  medium: 'bg-brand/15 text-brand',
   low: 'bg-raised text-muted',
   open: 'bg-sky/15 text-sky',
-  in_review: 'bg-accent/15 text-accent',
+  in_review: 'bg-brand/15 text-brand',
   actioned: 'bg-mint/15 text-mint',
   dismissed: 'bg-raised text-muted',
   escalated: 'bg-danger/20 text-danger',

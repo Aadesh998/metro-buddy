@@ -5,17 +5,19 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { Fragment, useEffect } from "react";
+import { View } from "react-native";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ToastProvider } from "@/components/ui/Toast";
 import { useOnboardingStep } from "@/features/me/hooks";
 import { SafetySheetProvider } from "@/features/safety/SafetySheet";
+import { AuthorSheetProvider } from "@/features/social/AuthorSheet";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { queryClient } from "@/lib/query";
-import { poppinsFonts } from "@/lib/fonts";
-import { colors } from "@/lib/theme";
+import { appFonts } from "@/lib/fonts";
+import { colors, themeVars, useScheme } from "@/lib/theme";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,18 +26,40 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <KeyboardProvider>
         <QueryClientProvider client={queryClient}>
-          <ToastProvider>
-            <AuthProvider>
-              <SafetySheetProvider>
-                <StatusBar style="light" />
-                <Navigation />
-              </SafetySheetProvider>
-            </AuthProvider>
-          </ToastProvider>
+          <Themed>
+            <ToastProvider>
+              <AuthProvider>
+                <Remount>
+                  <SafetySheetProvider>
+                    <AuthorSheetProvider>
+                      <Navigation />
+                    </AuthorSheetProvider>
+                  </SafetySheetProvider>
+                </Remount>
+              </AuthProvider>
+            </ToastProvider>
+          </Themed>
         </QueryClientProvider>
       </KeyboardProvider>
     </SafeAreaProvider>
   );
+}
+
+// Sets the palette as CSS variables for everything below.
+function Themed({ children }: { children: React.ReactNode }) {
+  const scheme = useScheme();
+  return (
+    <View style={[{ flex: 1, backgroundColor: colors.bg }, themeVars[scheme]]}>
+      <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+      {children}
+    </View>
+  );
+}
+
+// Screens remount on a theme switch so icon and navigator colors (plain JS values) update too.
+function Remount({ children }: { children: React.ReactNode }) {
+  const scheme = useScheme();
+  return <Fragment key={scheme}>{children}</Fragment>;
 }
 
 function Navigation() {
@@ -43,7 +67,7 @@ function Navigation() {
   const signedIn = status === "signedIn";
   const { step, loading } = useOnboardingStep(signedIn);
   // Fonts are embedded in native builds; this loads them on web and in dev clients.
-  const [fontsLoaded, fontError] = useFonts(poppinsFonts);
+  const [fontsLoaded, fontError] = useFonts(appFonts);
   const ready =
     status !== "loading" && !loading && (fontsLoaded || !!fontError);
 
@@ -72,6 +96,10 @@ function Navigation() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="u/[id]"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="connections"
           options={{ animation: "slide_from_right" }}
         />
         <Stack.Screen

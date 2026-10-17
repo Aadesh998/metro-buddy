@@ -10,6 +10,7 @@ import { PersonaName } from '@/components/PersonaBadge';
 import { Text } from '@/components/ui/Text';
 import { useSafetySheet } from '@/features/safety/SafetySheet';
 import { useT } from '@/i18n';
+import { useAuthorSheet } from '@/features/social/AuthorSheet';
 import { colors } from '@/lib/theme';
 import { ago } from '@/lib/time';
 import { useVote } from './hooks';
@@ -18,6 +19,7 @@ import { VoteBar } from './VoteBar';
 
 export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinned, onMod }: { p: Post; full?: boolean; showBowl?: boolean; pinned?: boolean; onMod?: (p: Post) => void }) {
   const { t } = useT();
+  const author = useAuthorSheet();
   const vote = useVote();
   const safety = useSafetySheet();
   const open = () => !full && router.push(`/post/${p.id}`);
@@ -28,13 +30,13 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinne
     <Outer {...(full ? {} : { onPress: open })} className={`gap-2 bg-surface px-4 py-4 ${full ? '' : 'mb-2 active:bg-raised'}`}>
       {p.is_prompt || pinned ? (
         <View className="flex-row items-center gap-1.5">
-          <Pin size={13} color={colors.accent} />
-          <Text className="text-xs font-semibold text-accent">{p.is_prompt ? t('bowls.card.prompt') : t('bowls.card.pinnedByMods')}</Text>
+          <Pin size={13} color={colors.brand} />
+          <Text className="text-xs font-semibold text-brand">{p.is_prompt ? t('bowls.card.prompt') : t('bowls.card.pinnedByMods')}</Text>
         </View>
       ) : null}
       <View className="flex-row items-center gap-2">
         <Pressable
-          onPress={() => !deleted && !p.is_mine && router.push(`/u/${p.author.id}`)}
+          onPress={() => !deleted && !p.is_mine && author.open({ persona: p.author, context: 'post', contextId: p.id })}
           hitSlop={6}
           accessibilityRole="button"
           accessibilityLabel={t('bowls.card.profileOf', { alias: p.author.alias })}
@@ -51,7 +53,7 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinne
         {p.locked ? <Lock size={14} color={colors.muted} accessibilityLabel={t('bowls.card.commentsClosed')} /> : null}
         {onMod ? (
           <Pressable onPress={() => onMod(p)} hitSlop={10} accessibilityLabel={t('bowls.card.modTools')}>
-            <Shield size={18} color={colors.accent} />
+            <Shield size={18} color={colors.brand} />
           </Pressable>
         ) : null}
         {!p.is_mine ? (

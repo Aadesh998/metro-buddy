@@ -34,7 +34,7 @@ function Timer({ until }: { until: string }) {
   const now = useNow(1000);
   const s = Math.max(0, Math.round((Date.parse(until) - now) / 1000));
   return (
-    <Text className={`font-mono text-sm font-bold ${s < 60 ? 'text-danger' : 'text-accent'}`} accessibilityLabel={tp('studio.episode.minutesLeft', Math.ceil(s / 60))}>
+    <Text className={`font-mono text-sm font-bold ${s < 60 ? 'text-danger' : 'text-brand'}`} accessibilityLabel={tp('studio.episode.minutesLeft', Math.ceil(s / 60))}>
       {`${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`}
     </Text>
   );
@@ -86,7 +86,7 @@ function CallInSheet({ ep, visible, onClose, onMasked }: { ep: Episode; visible:
                 <Text variant="label">{t('studio.episode.maskVoice')}</Text>
                 <Text variant="caption">{t('studio.episode.maskVoiceHint')}</Text>
               </View>
-              <Switch value={mask} onValueChange={setMask} trackColor={{ true: colors.accent, false: colors.line }} thumbColor={colors.ink} />
+              <Switch value={mask} onValueChange={setMask} trackColor={{ true: colors.brand, false: colors.line }} thumbColor={colors.surface} />
             </View>
           ) : null}
           <Button title={t('studio.episode.joinQueue')} disabled={topic.trim().length < 3} loading={send.isPending} onPress={() => send.mutate()} />
@@ -270,12 +270,12 @@ export default function EpisodeScreen() {
           </View>
         ) : null}
 
-        {state.status === 'reconnecting' ? <Text className="text-center text-sm text-accent">{t('studio.episode.reconnecting')}</Text> : null}
+        {state.status === 'reconnecting' ? <Text className="text-center text-sm text-brand">{t('studio.episode.reconnecting')}</Text> : null}
 
         {connected && ep.status === 'live' ? (
           <View className="gap-4">
             {meOnAir ? (
-              <View className="gap-3 rounded-2xl border border-accent/50 bg-accent/10 p-4">
+              <View className="gap-3 rounded-2xl border border-accent/50 bg-brand/10 p-4">
                 <Text variant="heading">{t('studio.episode.youreOnAir')}</Text>
                 <Text className="text-sm text-muted">{t('studio.episode.onAirBody')}</Text>
                 {state.error ? <Text className="text-sm text-danger">{state.error}</Text> : null}

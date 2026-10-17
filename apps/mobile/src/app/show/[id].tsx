@@ -62,8 +62,8 @@ function Scheduler({ show, now }: { show: Show; now: number }) {
         </View>
       ) : (
         <Pressable onPress={() => setShowIdeas(true)} className="flex-row items-center gap-1.5 self-start" hitSlop={8}>
-          <Lightbulb size={15} color={colors.accent} />
-          <Text className="text-sm font-medium text-accent">{t('studio.show.needIdea')}</Text>
+          <Lightbulb size={15} color={colors.brand} />
+          <Text className="text-sm font-medium text-brand">{t('studio.show.needIdea')}</Text>
         </Pressable>
       )}
       <View className="flex-row flex-wrap gap-2">

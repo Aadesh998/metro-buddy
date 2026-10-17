@@ -6,9 +6,9 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "metrobuddy",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "bundleIdentifier": "in.metrobuddy.app",
       "supportsTablet": false,
       "infoPlist": {
@@ -21,7 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#0E1116",
+        "backgroundColor": "#1B1A19",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -43,9 +43,13 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0E1116",
+          "backgroundColor": "#FAF7F3",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 120,
+          "dark": {
+            "backgroundColor": "#141312",
+            "image": "./assets/images/splash-icon-dark.png"
+          }
         }
       ],
       "expo-secure-store",
@@ -81,7 +85,21 @@
             "node_modules/@expo-google-fonts/poppins/500Medium/Poppins_500Medium.ttf",
             "node_modules/@expo-google-fonts/poppins/600SemiBold/Poppins_600SemiBold.ttf",
             "node_modules/@expo-google-fonts/poppins/700Bold/Poppins_700Bold.ttf",
-            "node_modules/@expo-google-fonts/poppins/800ExtraBold/Poppins_800ExtraBold.ttf"
+            "node_modules/@expo-google-fonts/poppins/800ExtraBold/Poppins_800ExtraBold.ttf",
+            "node_modules/@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf",
+            "node_modules/@expo-google-fonts/inter/500Medium/Inter_500Medium.ttf",
+            "node_modules/@expo-google-fonts/inter/600SemiBold/Inter_600SemiBold.ttf",
+            "node_modules/@expo-google-fonts/inter/700Bold/Inter_700Bold.ttf",
+            "node_modules/@expo-google-fonts/inter/800ExtraBold/Inter_800ExtraBold.ttf",
+            "node_modules/@expo-google-fonts/nunito/400Regular/Nunito_400Regular.ttf",
+            "node_modules/@expo-google-fonts/nunito/500Medium/Nunito_500Medium.ttf",
+            "node_modules/@expo-google-fonts/nunito/600SemiBold/Nunito_600SemiBold.ttf",
+            "node_modules/@expo-google-fonts/nunito/700Bold/Nunito_700Bold.ttf",
+            "node_modules/@expo-google-fonts/nunito/800ExtraBold/Nunito_800ExtraBold.ttf",
+            "node_modules/@expo-google-fonts/lora/400Regular/Lora_400Regular.ttf",
+            "node_modules/@expo-google-fonts/lora/500Medium/Lora_500Medium.ttf",
+            "node_modules/@expo-google-fonts/lora/600SemiBold/Lora_600SemiBold.ttf",
+            "node_modules/@expo-google-fonts/lora/700Bold/Lora_700Bold.ttf"
           ]
         }
       ],
@@ -92,7 +110,7 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "backgroundColor": "#0E1116",
+    "backgroundColor": "#FAF7F3",
     "runtimeVersion": {
       "policy": "appVersion"
     },

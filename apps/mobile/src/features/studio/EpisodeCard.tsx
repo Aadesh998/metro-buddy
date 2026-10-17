@@ -27,7 +27,7 @@ export function EpisodeCard({ ep, now }: { ep: Episode; now: number }) {
     <Pressable
       onPress={() => router.push(`/episode/${ep.id}`)}
       accessibilityRole="button"
-      className={`gap-3 rounded-2xl border p-4 ${live ? 'border-accent/50 bg-accent/5' : 'border-line bg-surface'}`}
+      className={`gap-3 rounded-2xl border p-4 ${live ? 'border-accent/50 bg-brand/5' : 'border-line bg-surface'}`}
     >
       <View className="flex-row items-center gap-2">
         {live ? (
@@ -36,7 +36,7 @@ export function EpisodeCard({ ep, now }: { ep: Episode; now: number }) {
             <Text className="text-xs font-bold text-white">LIVE</Text>
           </View>
         ) : (
-          <Text variant="caption" className="text-accent">
+          <Text variant="caption" className="text-brand">
             {whenLabel(ep.scheduled_at, now)}
           </Text>
         )}

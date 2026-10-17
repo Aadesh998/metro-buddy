@@ -18,8 +18,7 @@ import (
 const AliasChangeInterval = 30 * 24 * time.Hour
 
 var (
-	ErrBadAlias       = httpx.Unprocessable("invalid_alias", "pick one of the suggested aliases")
-	ErrAliasTaken     = httpx.Conflict("that alias was just taken, re-roll for another")
+	ErrAliasTaken     = httpx.Conflict("that name is taken, try another")
 	ErrAliasTooSoon   = httpx.E(http.StatusTooManyRequests, "alias_change_too_soon", "you can change your alias once every 30 days")
 	ErrPersonaExists  = httpx.Conflict("you already have a persona")
 	ErrUnknownCity    = httpx.Unprocessable("invalid_city", "unknown city")
@@ -69,8 +68,54 @@ func (h *Handlers) aliasTaken(tx *gorm.DB, cityID uuid.UUID, alias string) (bool
 		return true, nil
 	}
 	// Retired aliases stay reserved so nobody can impersonate a persona's old name.
-	err = tx.Model(&model.PersonaAliasHistory{}).Where("alias = ?", alias).Count(&n).Error
+	err = tx.Model(&model.PersonaAliasHistory{}).Where(aliasKeySQL+" = ?", AliasKey(alias)).Count(&n).Error
 	return n > 0, err
+}
+
+// checkAlias accepts a generated alias or a self-chosen name that passes AliasProblem.
+func checkAlias(a string) error {
+	if ValidAlias(a) {
+		return nil
+	}
+	if msg := AliasProblem(a); msg != "" {
+		return httpx.Unprocessable("invalid_alias", msg)
+	}
+	return nil
+}
+
+type aliasCheckRequest struct {
+	CityID uuid.UUID `json:"city_id"`
+	Alias  string    `json:"alias" validate:"required,max=40"`
+}
+
+// checkAliasAvailable lets the app show "available" while someone types a name.
+func (h *Handlers) checkAliasAvailable(c echo.Context) error {
+	req, err := httpx.Bind[aliasCheckRequest](c)
+	if err != nil {
+		return err
+	}
+	if err := checkAlias(req.Alias); err != nil {
+		return err
+	}
+	ctx := c.Request().Context()
+	city := req.CityID
+	if city == uuid.Nil {
+		var p model.Persona
+		if err := h.DB.WithContext(ctx).Select("city_id").First(&p, "id = ?", httpx.PrincipalFrom(c).PersonaID).Error; err != nil {
+			return httpx.BadRequest("city_id is required")
+		}
+		city = p.CityID
+	}
+	// The Bloom filter answers "free" for most names without touching the database.
+	available := h.Aliases != nil && h.Aliases.Filter != nil && !h.Aliases.mightBeTaken(ctx, city, req.Alias)
+	if !available {
+		taken, err := h.aliasTaken(h.DB.WithContext(ctx), city, req.Alias)
+		if err != nil {
+			return err
+		}
+		available = !taken
+	}
+	return c.JSON(http.StatusOK, map[string]any{"available": available})
 }
 
 type createPersonaRequest struct {
@@ -90,8 +135,8 @@ func (h *Handlers) createPersona(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if !ValidAlias(req.Alias) {
-		return ErrBadAlias
+	if err := checkAlias(req.Alias); err != nil {
+		return err
 	}
 	if !ValidSeed(req.AvatarSeed) {
 		return httpx.Unprocessable("invalid_avatar", "invalid avatar seed")
@@ -249,8 +294,8 @@ func (h *Handlers) changeAlias(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if !ValidAlias(req.Alias) {
-		return ErrBadAlias
+	if err := checkAlias(req.Alias); err != nil {
+		return err
 	}
 	pid := httpx.PrincipalFrom(c).PersonaID
 	now := h.now()

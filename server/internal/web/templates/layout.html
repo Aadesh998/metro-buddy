@@ -13,7 +13,8 @@
 <meta property="og:url" content="{{.Meta.Canonical}}">
 <meta property="og:image" content="{{.Base}}/static/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#0E1116">
+<meta name="theme-color" content="#FAF7F3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141312" media="(prefers-color-scheme: dark)">
 <meta name="htmx-config" content='{"includeIndicatorStyles":false,"allowEval":false,"responseHandling":[{"code":"204","swap":false},{"code":"[23]..","swap":true},{"code":"422","swap":true},{"code":"[45]..","swap":false,"error":true}]}'>
 {{if .Meta.NoIndex}}<meta name="robots" content="noindex">{{end}}
 <link rel="stylesheet" href="/static/site.css">
@@ -22,7 +23,7 @@
 </head>
 <body>
 <header class="top"><div class="wrap">
-<a class="brand" href="/"><i>M</i>Metro Buddy</a>
+<a class="brand" href="/"><img src="/static/logo.svg" alt="" width="30" height="30">Metro Buddy</a>
 <nav><a href="/guidelines" class="hide-sm">Guidelines</a><a href="/privacy">Privacy</a><a href="/grievance">Grievance</a></nav>
 </div></header>
 <main>{{template "content" .}}</main>

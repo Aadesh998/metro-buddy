@@ -39,12 +39,12 @@ func TestPersonaRequiredBeforeSocialRoutes(t *testing.T) {
 	}
 }
 
-func TestCreatePersonaMasksBioAndRejectsFreeTextAlias(t *testing.T) {
+func TestCreatePersonaMasksBioAndRejectsContactInAlias(t *testing.T) {
 	env := apitest.New(t)
 	city := env.City("DEL")
 	s := env.LoginOnboarded("9876543210")
 	env.Do(http.MethodPost, "/v1/me/persona", s.AccessToken, map[string]any{
-		"city_id": city, "alias": "Riya Sharma 23", "avatar_seed": "abcdefabcdef",
+		"city_id": city, "alias": "Riya 9876543210", "avatar_seed": "abcdefabcdef",
 	}).Want(http.StatusUnprocessableEntity)
 
 	var p identity.OwnPersona
@@ -106,4 +106,48 @@ func TestPublicPersonaNeverExposesPrivateFields(t *testing.T) {
 			t.Fatalf("public persona leaks %q: %s", k, r.Body)
 		}
 	}
+}
+
+func TestIllustratedAvatarSeeds(t *testing.T) {
+	for _, s := range []string{"img-m01", "img-f10", "abcdef123456"} {
+		if !identity.ValidSeed(s) {
+			t.Errorf("%s should be valid", s)
+		}
+	}
+	for _, s := range []string{"img-m11", "img-x01", "img-m00", "IMG-m01", "short"} {
+		if identity.ValidSeed(s) {
+			t.Errorf("%s should be invalid", s)
+		}
+	}
+}
+
+func TestAliasProblem(t *testing.T) {
+	for _, ok := range []string{"Chai Lover", "night_owl.22", "राहुल मेट्रो", "Ana"} {
+		if p := identity.AliasProblem(ok); p != "" {
+			t.Errorf("%q rejected: %s", ok, p)
+		}
+	}
+	for _, bad := range []string{"ab", " Riya", "Riya  K", "9876543210", "call 98765", "riya@gmail.com", "Metro Buddy Support", "Admin Riya", "x.com/riya", "@riya", "fuck_this", "AnExtremelyLongNameThatGoesOn"} {
+		if identity.AliasProblem(bad) == "" {
+			t.Errorf("%q should be rejected", bad)
+		}
+	}
+}
+
+func TestChooseOwnAlias(t *testing.T) {
+	env := apitest.New(t)
+	city := env.City("DEL")
+	s := env.LoginOnboarded("9000000001")
+	env.Do(http.MethodPost, "/v1/me/persona", s.AccessToken, map[string]any{"city_id": city, "alias": "call 98765 43210", "avatar_seed": "img-f01"}).
+		Want(http.StatusUnprocessableEntity)
+	env.Do(http.MethodPost, "/v1/me/persona/alias-check", s.AccessToken, map[string]any{"city_id": city, "alias": "Chai Lover"}).Want(http.StatusOK)
+	env.Do(http.MethodPost, "/v1/me/persona", s.AccessToken, map[string]any{"city_id": city, "alias": "Chai Lover", "avatar_seed": "img-f01"}).Want(http.StatusOK)
+
+	other := env.LoginOnboarded("9000000002")
+	var r struct{ Available bool }
+	env.Do(http.MethodPost, "/v1/me/persona/alias-check", other.AccessToken, map[string]any{"city_id": city, "alias": "chai_lover"}).Want(http.StatusOK).JSON(&r)
+	if r.Available {
+		t.Fatal("same name with different case and punctuation must count as taken")
+	}
+	env.Do(http.MethodPost, "/v1/me/persona", other.AccessToken, map[string]any{"city_id": city, "alias": "CHAI.LOVER", "avatar_seed": "img-m01"}).Want(http.StatusConflict)
 }

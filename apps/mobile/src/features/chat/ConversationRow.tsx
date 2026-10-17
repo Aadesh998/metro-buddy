@@ -27,7 +27,7 @@ export function ConversationRow({ c }: { c: Conversation }) {
   const now = useNow();
   const muted = c.muted_until && Date.parse(c.muted_until) > now;
   const icon =
-    c.kind === 'discussion' ? <Radio size={20} color={colors.accent} /> : c.kind === 'travel' || c.kind === 'crew' ? <TrainFront size={20} color={colors.mint} /> : <Users size={20} color={colors.sky} />;
+    c.kind === 'discussion' ? <Radio size={20} color={colors.brand} /> : c.kind === 'travel' || c.kind === 'crew' ? <TrainFront size={20} color={colors.mint} /> : <Users size={20} color={colors.sky} />;
   const preview = c.last_message
     ? c.last_message.deleted
       ? t('chat.messageRemoved')

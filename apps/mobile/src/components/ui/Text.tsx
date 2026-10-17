@@ -1,12 +1,12 @@
 import { Text as RNText, type TextProps } from 'react-native';
 
 import { cn } from '@/lib/cn';
-import { fontStyle, useFontChoice } from '@/lib/fonts';
+import { fontStyle, headlineStyle, useFontChoice } from '@/lib/fonts';
 
 type Variant = 'title' | 'heading' | 'body' | 'label' | 'caption';
 
 const variants: Record<Variant, string> = {
-  title: 'text-3xl font-bold text-ink',
+  title: 'text-3xl font-semibold leading-tight text-ink',
   heading: 'text-lg font-semibold text-ink',
   body: 'text-base text-ink',
   label: 'text-sm font-medium text-ink',
@@ -16,5 +16,6 @@ const variants: Record<Variant, string> = {
 export function Text({ variant = 'body', className = '', style, ...rest }: TextProps & { variant?: Variant; className?: string }) {
   const font = useFontChoice();
   const cls = cn(variants[variant], className);
-  return <RNText className={cls} style={[fontStyle(font, cls), style]} {...rest} />;
+  const face = variant === 'title' || variant === 'heading' ? headlineStyle(font) : fontStyle(font, cls);
+  return <RNText className={cls} style={[face, style]} {...rest} />;
 }

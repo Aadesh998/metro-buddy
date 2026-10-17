@@ -57,9 +57,18 @@ export default {
     friends: 'Make friends',
     discuss: 'Join discussions',
   },
+  theme: {
+    title: 'Appearance',
+    light: 'Light',
+    dark: 'Dark',
+    system: 'Match phone',
+  },
   font: {
     title: 'Font',
     poppins: 'Poppins',
+    inter: 'Inter',
+    nunito: 'Nunito',
+    lora: 'Lora (serif)',
     system: 'Phone default',
   },
   language: {

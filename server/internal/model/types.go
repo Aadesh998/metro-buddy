@@ -370,6 +370,8 @@ const (
 	NotifModNotice    NotificationKind = "mod_notice"
 	NotifSOS          NotificationKind = "sos"
 	NotifHostDecision NotificationKind = "host_decision"
+	NotifFollow       NotificationKind = "follow"
+	NotifConnection   NotificationKind = "connection"
 )
 
 type AdminRole string
@@ -412,4 +414,13 @@ const (
 	AIModTriage     AIPurpose = "moderation_triage"
 	AIIcebreaker    AIPurpose = "icebreaker"
 	AIHostTopics    AIPurpose = "host_topics"
+)
+
+type ConnectionStatus string
+
+const (
+	ConnPending  ConnectionStatus = "pending"
+	ConnAccepted ConnectionStatus = "accepted"
+	// Declined requests stay pending to the sender, who can't send another.
+	ConnDeclined ConnectionStatus = "declined"
 )

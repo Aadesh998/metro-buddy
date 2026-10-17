@@ -27,7 +27,7 @@ export function Login({ onDone }: { onDone: (a: Admin) => void }) {
     <main className="flex min-h-full items-center justify-center p-6">
       <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-2xl border border-line bg-surface p-7">
         <div className="mb-2 flex items-center gap-3">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent font-black text-accent-ink">M</span>
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="h-9 w-9" />
           <div>
             <h1 className="text-lg font-bold">Metro Buddy</h1>
             <p className="text-xs text-muted">Trust &amp; Safety console</p>

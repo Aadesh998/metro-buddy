@@ -112,6 +112,8 @@ const safety: Messages['safety'] = {
       trip_reminder: 'सफ़र रिमाइंडर',
       episode_live: 'लाइव शो',
       mod_notice: 'अकाउंट सूचनाएँ',
+      follow: 'नए फ़ॉलोअर',
+      connection: 'कनेक्शन',
       sos: 'SOS अलर्ट',
     },
   },

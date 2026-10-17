@@ -61,7 +61,7 @@ function HostCard() {
   if (a?.status === 'suspended') return null;
   return (
     <Pressable onPress={() => router.push('/studio/apply')} className="flex-row items-center gap-3 rounded-2xl border border-dashed border-line p-4">
-      <Mic size={20} color={colors.accent} />
+      <Mic size={20} color={colors.brand} />
       <View className="flex-1">
         <Text variant="label">{t('studio.tab.wantToHost')}</Text>
         <Text variant="caption">{a?.status === 'rejected' ? t('studio.tab.applyAgain') : t('studio.tab.applyBody')}</Text>
@@ -88,7 +88,7 @@ export default function StudioTab() {
         contentContainerClassName="gap-6 px-4 pb-10"
         refreshControl={
           <RefreshControl
-            tintColor={colors.accent}
+            tintColor={colors.brand}
             refreshing={schedule.isRefetching}
             onRefresh={() => {
               schedule.refetch();
@@ -123,7 +123,7 @@ export default function StudioTab() {
           ))}
           {shows.data?.length === 0 ? (
             <EmptyState
-              icon={<Radio color={colors.accent} size={32} />}
+              icon={<Radio color={colors.brand} size={32} />}
               title={filter ? t('studio.tab.emptyFollowingTitle') : t('studio.tab.emptyTitle')}
               body={filter ? t('studio.tab.emptyFollowingBody') : t('studio.tab.emptyBody')}
             />

@@ -44,7 +44,7 @@ export default function BowlScreen() {
         right={
           b?.joined ? (
             <Pressable onPress={() => router.push({ pathname: '/compose', params: { bowl: id } })} accessibilityLabel={t('bowls.postInBowl')} hitSlop={10}>
-              <PenSquare size={20} color={colors.accent} />
+              <PenSquare size={20} color={colors.brand} />
             </Pressable>
           ) : null
         }
@@ -54,7 +54,7 @@ export default function BowlScreen() {
         keyExtractor={(p) => p.id}
         renderItem={({ item }) => <PostCard p={item} showBowl={false} pinned={item.id === pinnedId && !item.is_prompt} onMod={isMod ? setModding : undefined} />}
         onEndReached={() => feed.hasNextPage && !feed.isFetchingNextPage && feed.fetchNextPage()}
-        refreshControl={<RefreshControl refreshing={feed.isRefetching} onRefresh={() => void feed.refetch()} tintColor={colors.accent} />}
+        refreshControl={<RefreshControl refreshing={feed.isRefetching} onRefresh={() => void feed.refetch()} tintColor={colors.brand} />}
         ListHeaderComponent={
           b ? (
             <View className="mb-2 gap-3 border-b border-line px-4 pb-4">
@@ -82,8 +82,8 @@ export default function BowlScreen() {
               <View className="flex-row items-center justify-between">
                 {isMod ? (
                   <Pressable onPress={() => router.push({ pathname: '/bowl/mod', params: { id } })} className="flex-row items-center gap-1.5" hitSlop={8}>
-                    <Shield size={15} color={colors.accent} />
-                    <Text className="text-sm font-medium text-accent">{t('bowls.modTools')}</Text>
+                    <Shield size={15} color={colors.brand} />
+                    <Text className="text-sm font-medium text-brand">{t('bowls.modTools')}</Text>
                   </Pressable>
                 ) : (
                   <View />

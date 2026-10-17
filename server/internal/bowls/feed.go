@@ -119,6 +119,16 @@ func (h *Handlers) home(c echo.Context) error {
 	return h.servePosts(c, q, pinned)
 }
 
+// followingFeed shows posts by people the viewer follows, from public bowls or bowls they're in.
+func (h *Handlers) followingFeed(c echo.Context) error {
+	viewer := httpx.PrincipalFrom(c).PersonaID
+	q := h.DB.WithContext(c.Request().Context()).Model(&model.Post{}).
+		Where("posts.author_persona_id IN (SELECT followee_persona_id FROM follows WHERE follower_persona_id = ?)", viewer).
+		Where("(posts.bowl_id IN (SELECT id FROM bowls WHERE visibility = ? AND deleted_at IS NULL) OR posts.bowl_id IN (SELECT bowl_id FROM bowl_members WHERE persona_id = ?))",
+			model.BowlPublic, viewer)
+	return h.servePosts(c, q, nil)
+}
+
 func (h *Handlers) servePosts(c echo.Context, q *gorm.DB, pinned *model.Post) error {
 	req, err := httpx.Bind[feedQuery](c)
 	if err != nil {

@@ -59,9 +59,18 @@ const common: Messages['common'] = {
     friends: 'दोस्त बनाएँ',
     discuss: 'चर्चाओं में जुड़ें',
   },
+  theme: {
+    title: 'रूप',
+    light: 'लाइट',
+    dark: 'डार्क',
+    system: 'फ़ोन जैसा',
+  },
   font: {
     title: 'फ़ॉन्ट',
     poppins: 'Poppins',
+    inter: 'Inter',
+    nunito: 'Nunito',
+    lora: 'Lora (सेरिफ़)',
     system: 'फ़ोन का डिफ़ॉल्ट',
   },
   language: {

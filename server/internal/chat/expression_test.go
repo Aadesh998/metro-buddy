@@ -88,4 +88,3 @@ func TestViewOncePhotoOpensOncePerRecipientThenIsDeleted(t *testing.T) {
 		}
 	}
 }
-

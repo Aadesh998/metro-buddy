@@ -49,7 +49,7 @@ function Header({ c, id }: { c?: Conversation; id: string }) {
         <Text className="font-semibold" numberOfLines={1}>
           {c ? title : ''}
         </Text>
-        {sub ? <Text className={`text-xs ${typing.length ? 'text-accent' : 'text-muted'}`}>{sub}</Text> : null}
+        {sub ? <Text className={`text-xs ${typing.length ? 'text-brand' : 'text-muted'}`}>{sub}</Text> : null}
       </View>
       {c && (c.kind === 'dm' || c.kind === 'travel') && other ? (
         <Pressable onPress={() => safety.open({ type: 'conversation', id, personaId: other.id, alias: other.alias })} hitSlop={10} className="h-10 w-10 items-center justify-center" accessibilityLabel={t('common.safetyOptions')}>
@@ -265,8 +265,8 @@ export default function ChatScreen() {
           <View>
             {editing ? (
               <View className="flex-row items-center gap-2 border-t border-line bg-surface px-4 pt-2">
-                <Pencil size={14} color={colors.accent} />
-                <Text className="flex-1 text-xs text-accent">{t('chat.editing')}</Text>
+                <Pencil size={14} color={colors.brand} />
+                <Text className="flex-1 text-xs text-brand">{t('chat.editing')}</Text>
                 <Pressable
                   onPress={() => {
                     setEditing(null);
@@ -282,7 +282,7 @@ export default function ChatScreen() {
             <View className={`flex-row items-end gap-1.5 bg-surface px-2 py-2 ${editing ? '' : 'border-t border-line'}`}>
               {c.kind !== 'discussion' && !editing ? (
                 <Pressable onPress={pickImage} disabled={sendImage.isPending} className="h-10 w-9 items-center justify-center" accessibilityLabel={t('chat.sendPhoto')}>
-                  {sendImage.isPending ? <ActivityIndicator color={colors.accent} /> : <ImagePlus size={20} color={colors.muted} />}
+                  {sendImage.isPending ? <ActivityIndicator color={colors.brand} /> : <ImagePlus size={20} color={colors.muted} />}
                 </Pressable>
               ) : null}
               <Pressable
@@ -297,7 +297,7 @@ export default function ChatScreen() {
                 className="h-10 w-9 items-center justify-center"
                 accessibilityLabel={t('chat.emoji')}
               >
-                {panel ? <KeyboardIcon size={20} color={colors.accent} /> : <Smile size={20} color={colors.muted} />}
+                {panel ? <KeyboardIcon size={20} color={colors.brand} /> : <Smile size={20} color={colors.muted} />}
               </Pressable>
               <FontTextInput
                 value={text}

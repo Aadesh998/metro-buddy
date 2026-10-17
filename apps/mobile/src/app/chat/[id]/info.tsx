@@ -86,7 +86,7 @@ export default function ChatInfo() {
       {admin && c.invite_code ? (
         <View className="gap-3 rounded-2xl border border-line bg-surface p-4">
           <Text variant="label">{t('chat.info.inviteCode')}</Text>
-          <Text className="text-2xl font-bold tracking-[6px] text-accent">{c.invite_code}</Text>
+          <Text className="text-2xl font-bold tracking-[6px] text-brand">{c.invite_code}</Text>
           <View className="flex-row gap-2">
             <Button title={t('common.copy')} kind="secondary" className="h-10 flex-1" onPress={() => Clipboard.setStringAsync(c.invite_code!).then(() => toast(t('common.copied'), 'success'))} />
             <Button title={t('common.share')} kind="secondary" className="h-10 flex-1" onPress={() => Share.share({ message: t('chat.info.shareMessage', { code: c.invite_code! }) })} />
@@ -102,7 +102,7 @@ export default function ChatInfo() {
 
       <View className="flex-row items-center justify-between rounded-2xl border border-line bg-surface p-4">
         <Text>{t('chat.info.muteNotifications')}</Text>
-        <Switch value={muted} onValueChange={(v) => mute.mutate(v)} trackColor={{ true: colors.accent, false: colors.line }} thumbColor={colors.ink} />
+        <Switch value={muted} onValueChange={(v) => mute.mutate(v)} trackColor={{ true: colors.brand, false: colors.line }} thumbColor={colors.surface} />
       </View>
 
       {c.kind !== 'discussion' && (c.kind !== 'group' || admin) ? (

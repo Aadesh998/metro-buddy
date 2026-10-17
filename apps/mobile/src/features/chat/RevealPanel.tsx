@@ -37,7 +37,7 @@ export function RevealPanel({ conversationId, otherAlias }: { conversationId: st
   return (
     <View className="gap-3 rounded-2xl border border-line bg-surface p-4">
       <View className="flex-row items-center gap-2">
-        <Eye size={18} color={colors.accent} />
+        <Eye size={18} color={colors.brand} />
         <Text variant="label">{t('chat.reveal.title')}</Text>
       </View>
       <View className="flex-row gap-2">
@@ -58,7 +58,7 @@ export function RevealPanel({ conversationId, otherAlias }: { conversationId: st
           {r.revealed.photo_url ? <Image source={{ uri: r.revealed.photo_url }} style={{ width: 48, height: 48, borderRadius: 24 }} /> : null}
           <View className="flex-1">
             <Text variant="label">{r.revealed.first_name}</Text>
-            {r.revealed.contact ? <Text selectable className="text-sm text-accent">{r.revealed.contact}</Text> : null}
+            {r.revealed.contact ? <Text selectable className="text-sm text-brand">{r.revealed.contact}</Text> : null}
           </View>
           <Check size={16} color={colors.mint} />
         </View>

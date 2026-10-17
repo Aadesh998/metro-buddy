@@ -17,8 +17,8 @@ export function PushPrompt() {
   }, []);
   if (!show) return null;
   return (
-    <View className="mx-4 mb-3 flex-row gap-3 rounded-2xl border border-accent/40 bg-accent/5 p-4">
-      <BellRing size={20} color={colors.accent} />
+    <View className="mx-4 mb-3 flex-row gap-3 rounded-2xl border border-accent/40 bg-brand/5 p-4">
+      <BellRing size={20} color={colors.brand} />
       <View className="flex-1 gap-2">
         <Text variant="label">{t('safety.push.title')}</Text>
         <Text variant="caption">{t('safety.push.body')}</Text>

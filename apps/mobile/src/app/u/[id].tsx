@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { MoreHorizontal } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
 
@@ -9,14 +9,28 @@ import { Avatar } from '@/components/Avatar';
 import { EmptyState } from '@/components/EmptyState';
 import { PersonaName } from '@/components/PersonaBadge';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Screen } from '@/components/ui/Screen';
 import { Text } from '@/components/ui/Text';
 import { useSafetySheet } from '@/features/safety/SafetySheet';
+import { useRelationship } from '@/features/social/hooks';
+import { PersonaActions } from '@/features/social/PersonaActions';
 import { useT } from '@/i18n';
 import { intentLabel } from '@/lib/intents';
 import { colors } from '@/lib/theme';
+
+function Counts({ id }: { id: string }) {
+  const { t, tp } = useT();
+  const r = useRelationship(id).data;
+  if (!r) return null;
+  return (
+    <View className="flex-row flex-wrap justify-center gap-x-4 gap-y-1">
+      <Text variant="caption">{tp('social.followers', r.followers)}</Text>
+      <Text variant="caption">{t('social.followingCount', { n: r.following_count })}</Text>
+      <Text variant="caption">{tp('social.connections', r.connections)}</Text>
+    </View>
+  );
+}
 
 export default function PersonaProfile() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -52,11 +66,8 @@ export default function PersonaProfile() {
               <Chip key={i} label={intentLabel(i)} />
             ))}
           </View>
-          <Button
-            title={t('bowls.profile.messageRequest')}
-            className="w-full"
-            onPress={() => router.push({ pathname: '/dm/new', params: { persona: p.id, alias: p.alias, seed: p.avatar_seed } })}
-          />
+          <Counts id={p.id} />
+          <PersonaActions persona={p} />
           <View className="mt-2 w-full gap-2">
             <Text variant="caption" className="uppercase tracking-wider">
               {t('bowls.profile.vibes')}

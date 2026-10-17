@@ -50,7 +50,7 @@ function Spark({ label, points, range }: { label: string; points: Point[]; range
       </div>
       <div className="flex h-16 items-end gap-0.5">
         {vals.map((v, i) => (
-          <div key={range[i]} title={`${range[i]}: ${v}`} className="flex-1 rounded-sm bg-accent/70" style={{ height: `${Math.max(2, (v / max) * 100)}%` }} />
+          <div key={range[i]} title={`${range[i]}: ${v}`} className="flex-1 rounded-sm bg-brand/70" style={{ height: `${Math.max(2, (v / max) * 100)}%` }} />
         ))}
       </div>
     </Card>

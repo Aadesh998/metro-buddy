@@ -140,7 +140,7 @@ export function SafetySheetProvider({ children }: { children: ReactNode }) {
                     <Pressable
                       key={r}
                       onPress={() => setReason(r)}
-                      className={`rounded-xl border px-4 py-3 ${reason === r ? 'border-accent bg-accent/10' : 'border-line'}`}
+                      className={`rounded-xl border px-4 py-3 ${reason === r ? 'border-accent bg-brand/10' : 'border-line'}`}
                       accessibilityState={{ selected: reason === r }}
                     >
                       <Text variant="label">{t(`safety.reasons.${r}.label`)}</Text>
@@ -155,7 +155,7 @@ export function SafetySheetProvider({ children }: { children: ReactNode }) {
               {target?.personaId ? (
                 <View className="mt-4 flex-row items-center justify-between">
                   <Text>{t('safety.sheet.alsoBlock', { name: target.alias ?? '' })}</Text>
-                  <Switch value={alsoBlock} onValueChange={setAlsoBlock} trackColor={{ true: colors.accent, false: colors.line }} thumbColor={colors.ink} />
+                  <Switch value={alsoBlock} onValueChange={setAlsoBlock} trackColor={{ true: colors.brand, false: colors.line }} thumbColor={colors.surface} />
                 </View>
               ) : null}
               <Button title={t('safety.sheet.sendReport')} className="mb-2 mt-5" disabled={!reason} loading={report.isPending} onPress={() => report.mutate()} />

@@ -42,6 +42,7 @@ func (h *Handlers) Register(authed *echo.Group, persona echo.MiddlewareFunc) {
 	authed.GET("/me/consents", h.getConsents)
 	authed.POST("/me/consents", h.setConsents)
 	authed.POST("/me/persona/suggestions", h.suggest, h.requireOnboarded)
+	authed.POST("/me/persona/alias-check", h.checkAliasAvailable, h.requireOnboarded)
 	authed.POST("/me/persona", h.createPersona, h.requireOnboarded)
 	authed.GET("/me/persona", h.getPersona, persona)
 	authed.PATCH("/me/persona", h.patchPersona, persona)

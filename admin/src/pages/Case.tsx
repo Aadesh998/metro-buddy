@@ -99,7 +99,7 @@ export function CasePage({ id, me }: { id: string; me: Admin }) {
             <div className="mb-1 flex items-center justify-between">
               <p className="text-xs uppercase tracking-wide text-sky">AI suggestion (not a decision){c.ai_severity ? ` · ${c.ai_severity}` : ''}</p>
               <button
-                className="text-xs text-accent"
+                className="text-xs text-brand"
                 onClick={async () => {
                   await api('POST', `/cases/${id}/triage`).catch(() => {})
                   setTimeout(load, 4000)

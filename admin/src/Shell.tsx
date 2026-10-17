@@ -45,7 +45,7 @@ export function Shell({ me, onLogout }: { me: Admin; onLogout: () => void }) {
     <div className="flex min-h-full">
       <aside className="flex w-60 shrink-0 flex-col border-r border-line bg-surface">
         <div className="flex items-center gap-2.5 px-5 py-5">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent text-sm font-black text-accent-ink">M</span>
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="h-8 w-8" />
           <span className="font-bold">Trust &amp; Safety</span>
         </div>
         <nav className="flex-1 space-y-0.5 px-3">

@@ -34,9 +34,9 @@ export const MessageBubble = memo(function MessageBubble({
   const { t } = useT();
   if (m.kind === 'icebreaker') {
     return (
-      <View className="mx-4 my-2 gap-2 rounded-2xl border border-accent/30 bg-accent/5 p-4">
+      <View className="mx-4 my-2 gap-2 rounded-2xl border border-accent/30 bg-brand/5 p-4">
         <View className="flex-row items-center gap-2">
-          <Sparkles size={16} color={colors.accent} />
+          <Sparkles size={16} color={colors.brand} />
           <Text variant="label">{t('chat.bubble.openerTitle')}</Text>
         </View>
         {m.body.split('\n').map((line) => (
@@ -94,7 +94,7 @@ export const MessageBubble = memo(function MessageBubble({
                   accessibilityRole="button"
                 >
                   <View className={`h-7 w-7 items-center justify-center rounded-full border-2 ${mine ? 'border-accent-ink' : 'border-accent'}`}>
-                    <Text className={`text-xs font-bold ${mine ? 'text-accent-ink' : 'text-accent'}`}>1</Text>
+                    <Text className={`text-xs font-bold ${mine ? 'text-accent-ink' : 'text-brand'}`}>1</Text>
                   </View>
                   <View>
                     <Text className={`text-sm font-semibold ${mine ? 'text-accent-ink' : 'text-ink'}`}>{t('chat.viewOnce')}</Text>

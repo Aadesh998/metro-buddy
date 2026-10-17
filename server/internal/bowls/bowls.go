@@ -45,6 +45,7 @@ func (h *Handlers) now() time.Time {
 
 func (h *Handlers) Register(g *echo.Group) {
 	g.GET("/feed", h.home)
+	g.GET("/feed/following", h.followingFeed)
 	g.GET("/bowls", h.list)
 	g.GET("/bowls/joined", h.joined)
 	g.GET("/bowls/:id", h.get)

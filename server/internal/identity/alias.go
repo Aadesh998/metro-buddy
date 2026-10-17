@@ -6,6 +6,8 @@ import (
 	"math/big"
 	"regexp"
 	"strings"
+
+	"metro-buddy/server/internal/pii"
 )
 
 // Aliases read like a handle someone would pick: evocative, a little Indian, never silly.
@@ -45,7 +47,8 @@ var (
 	adjSet  = toSet(adjectives, legacyWords)
 	nounSet = toSet(nouns, legacyWords)
 	aliasRe = regexp.MustCompile(`^([A-Z][a-z]+) ([A-Z][a-z]+)(?: (\d{2}))?$`)
-	seedRe  = regexp.MustCompile(`^[a-z0-9]{12}$`)
+	// A random seed for a generated avatar, or one of the 20 illustrated avatars bundled in the app.
+	seedRe = regexp.MustCompile(`^(?:[a-z0-9]{12}|img-[mf](?:0[1-9]|10))$`)
 )
 
 func toSet(lists ...[]string) map[string]bool {
@@ -82,7 +85,49 @@ func ValidAlias(a string) bool {
 	return m != nil && adjSet[m[1]] && nounSet[m[2]] && m[1] != m[2]
 }
 
-func AliasKey(a string) string { return strings.ToLower(strings.ReplaceAll(a, " ", "")) }
+// AliasKey is the uniqueness key: case, spaces, dots and underscores don't make a different name.
+func AliasKey(a string) string {
+	return strings.ToLower(strings.NewReplacer(" ", "", ".", "", "_", "").Replace(a))
+}
+
+// aliasKeySQL is AliasKey for a column, for matching names already in the database.
+const aliasKeySQL = "LOWER(REPLACE(REPLACE(REPLACE(alias, ' ', ''), '.', ''), '_', ''))"
+
+var (
+	customRe = regexp.MustCompile(`^[\p{L}\p{M}][\p{L}\p{M}\p{N} ._]{2,19}$`)
+	digitRe  = regexp.MustCompile(`\p{N}`)
+	// Names that would read as staff, the app itself or an emergency service.
+	reservedWords = []string{"admin", "moderator", "metrobuddy", "support", "official", "staff", "safetyteam", "helpline", "police", "system", "deleted"}
+	blockedWords  = []string{"fuck", "shit", "bitch", "slut", "whore", "rape", "nigg", "chutiya", "madarchod", "bhenchod", "behenchod", "randi", "gandu", "bhosdi", "lund", "chut"}
+)
+
+// AliasProblem explains why a self-chosen name can't be used, or "" if it can.
+// Names must not carry contact details: no phone-like digits, emails, links or @handles.
+func AliasProblem(a string) string {
+	switch {
+	case a != strings.TrimSpace(a) || strings.Contains(a, "  "):
+		return "remove extra spaces"
+	case !customRe.MatchString(a):
+		return "use 3 to 20 letters or numbers; spaces, dots and underscores are fine"
+	case len(digitRe.FindAllString(a, -1)) > 3:
+		return "use at most 3 numbers so it can't look like a phone number"
+	}
+	if r := pii.Mask(a, pii.Options{}); r.Flags != 0 {
+		return "that looks like contact details"
+	}
+	key := AliasKey(a)
+	for _, w := range reservedWords {
+		if strings.Contains(key, w) {
+			return "that name is reserved"
+		}
+	}
+	for _, w := range blockedWords {
+		if strings.Contains(key, w) {
+			return "pick a kinder name"
+		}
+	}
+	return ""
+}
 
 const seedChars = "abcdefghijklmnopqrstuvwxyz0123456789"
 

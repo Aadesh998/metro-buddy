@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Bell, Gavel, Heart, MessageCircle, MessageSquareReply, Radio, ShieldAlert, TrainFront } from 'lucide-react-native';
+import { Bell, Gavel, Heart, MessageCircle, MessageSquareReply, Radio, ShieldAlert, TrainFront, UserPlus, Users } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -18,13 +18,18 @@ import { ago } from '@/lib/time';
 
 const meta: Record<string, { icon: React.ReactNode; text: (p: Record<string, any>) => string }> = {
   dm_request: { icon: <MessageCircle size={18} color={colors.sky} />, text: (p) => (p.accepted ? t('safety.inbox.dmAccepted') : t('safety.inbox.dmRequest', { name: p.from ?? t('common.someone') })) },
-  reply: { icon: <MessageSquareReply size={18} color={colors.accent} />, text: () => t('safety.inbox.reply') },
+  reply: { icon: <MessageSquareReply size={18} color={colors.brand} />, text: () => t('safety.inbox.reply') },
   match: { icon: <TrainFront size={18} color={colors.mint} />, text: (p) => p.text ?? t('safety.inbox.match') },
   trip_reminder: { icon: <TrainFront size={18} color={colors.mint} />, text: (p) => p.text ?? t('safety.inbox.trip') },
   episode_live: { icon: <Radio size={18} color={colors.danger} />, text: (p) => t('safety.inbox.live', { show: p.show ?? t('safety.inbox.aShow') }) },
   mod_notice: { icon: <Gavel size={18} color={colors.muted} />, text: (p) => (p.appeal ? t('safety.inbox.appeal', { status: p.appeal }) : t('safety.inbox.accountUpdate')) },
   sos: { icon: <ShieldAlert size={18} color={colors.danger} />, text: () => t('safety.inbox.sos') },
-  message: { icon: <Heart size={18} color={colors.accent} />, text: () => t('safety.inbox.message') },
+  follow: { icon: <UserPlus size={18} color={colors.brand} />, text: (p) => t('social.inboxFollow', { name: p.from ?? t('common.someone') }) },
+  connection: {
+    icon: <Users size={18} color={colors.sky} />,
+    text: (p) => (p.accepted ? t('social.inboxAccepted', { name: p.from ?? t('common.someone') }) : t('social.inboxRequest', { name: p.from ?? t('common.someone') })),
+  },
+  message: { icon: <Heart size={18} color={colors.brand} />, text: () => t('safety.inbox.message') },
 };
 
 export default function InboxScreen() {
@@ -42,7 +47,7 @@ export default function InboxScreen() {
         right={
           q.data?.unread ? (
             <Pressable onPress={() => read.mutate({ all: true })} hitSlop={8}>
-              <Text className="text-xs font-semibold text-accent">{t('safety.inbox.readAll')}</Text>
+              <Text className="text-xs font-semibold text-brand">{t('safety.inbox.readAll')}</Text>
             </Pressable>
           ) : null
         }

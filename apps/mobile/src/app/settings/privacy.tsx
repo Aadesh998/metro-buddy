@@ -35,7 +35,7 @@ export default function PrivacyScreen() {
               {consentCopy(it.purpose).body}
             </Text>
             {it.purpose === 'core_service' ? (
-              <Text variant="caption" className="text-accent">
+              <Text variant="caption" className="text-brand">
                 {t('settings.privacy.corePause')}
               </Text>
             ) : null}
@@ -43,8 +43,8 @@ export default function PrivacyScreen() {
           <Switch
             value={it.granted}
             onValueChange={() => set.mutate(it)}
-            trackColor={{ true: colors.accent, false: colors.line }}
-            thumbColor={colors.ink}
+            trackColor={{ true: colors.brand, false: colors.line }}
+            thumbColor={colors.surface}
             accessibilityLabel={consentCopy(it.purpose).title}
           />
         </View>

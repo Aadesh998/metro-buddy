@@ -59,6 +59,17 @@ func (a *App) wireNotifications() {
 		a.Notify.Notify(ctx, requester, model.NotifDMRequest, model.JSONMap{"conversation_id": convID.String(), "accepted": true},
 			notify.Content{Title: "Request accepted", Body: "You can chat now", Link: "metrobuddy://chat/" + convID.String()}, true)
 	}
+	a.Social.OnFollow = func(ctx context.Context, follower, followee uuid.UUID) {
+		a.Notify.Notify(ctx, followee, model.NotifFollow, model.JSONMap{"persona_id": follower.String(), "from": a.alias(ctx, follower)},
+			notify.Content{Title: "New follower", Body: a.alias(ctx, follower) + " started following you", Link: "metrobuddy://u/" + follower.String()}, true)
+	}
+	a.Social.OnConnection = func(ctx context.Context, to, from uuid.UUID, accepted bool) {
+		c := notify.Content{Title: "Connection request", Body: a.alias(ctx, from) + " wants to connect", Link: "metrobuddy://connections"}
+		if accepted {
+			c = notify.Content{Title: "Connected", Body: a.alias(ctx, from) + " accepted. You can chat directly now.", Link: "metrobuddy://u/" + from.String()}
+		}
+		a.Notify.Notify(ctx, to, model.NotifConnection, model.JSONMap{"persona_id": from.String(), "from": a.alias(ctx, from), "accepted": accepted}, c, true)
+	}
 	a.Bowls.OnReply = func(ctx context.Context, to, postID, commentID uuid.UUID) {
 		a.Notify.Notify(ctx, to, model.NotifReply, model.JSONMap{"post_id": postID.String(), "comment_id": commentID.String()},
 			notify.Content{Title: "New reply", Body: "Someone replied to you", Link: "metrobuddy://post/" + postID.String()}, true)

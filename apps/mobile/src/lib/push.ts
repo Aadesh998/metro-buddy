@@ -46,6 +46,8 @@ async function ensureChannels() {
     ['trip_reminder', AndroidImportance.HIGH],
     ['episode_live', AndroidImportance.DEFAULT],
     ['mod_notice', AndroidImportance.DEFAULT],
+    ['follow', AndroidImportance.LOW],
+    ['connection', AndroidImportance.DEFAULT],
     ['sos', AndroidImportance.MAX],
   ] as const;
   await Promise.all(

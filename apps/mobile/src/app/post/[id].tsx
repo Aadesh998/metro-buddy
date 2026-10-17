@@ -13,6 +13,7 @@ import type { Comment } from "@/api/types";
 import { Avatar } from "@/components/Avatar";
 import { EmptyState } from "@/components/EmptyState";
 import { PersonaName } from "@/components/PersonaBadge";
+import { useAuthorSheet } from "@/features/social/AuthorSheet";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { SupportSheet } from "@/components/SupportSheet";
 import { Text } from "@/components/ui/Text";
@@ -42,6 +43,7 @@ function CommentRow({
   const { t } = useT();
   const vote = useVote();
   const safety = useSafetySheet();
+  const author = useAuthorSheet();
   const qc = useQueryClient();
   const remove = () =>
     Alert.alert(t("bowls.post.deleteCommentTitle"), undefined, [
@@ -65,11 +67,19 @@ function CommentRow({
         ) : (
           <>
             <View className="flex-row items-center gap-2">
-              <Avatar seed={c.author.avatar_seed} size={22} />
-              <PersonaName p={c.author} />
+              <Pressable
+                onPress={() => !c.is_mine && author.open({ persona: c.author, context: "comment", contextId: c.id })}
+                disabled={c.is_mine}
+                hitSlop={6}
+                className="min-w-0 shrink flex-row items-center gap-2"
+                accessibilityRole="button"
+              >
+                <Avatar seed={c.author.avatar_seed} size={22} />
+                <PersonaName p={c.author} />
+              </Pressable>
               {c.is_op ? (
-                <View className="rounded bg-accent/20 px-1.5">
-                  <Text className="text-[10px] font-bold text-accent">
+                <View className="rounded bg-brand/20 px-1.5">
+                  <Text className="text-[10px] font-bold text-brand">
                     {t("bowls.post.op")}
                   </Text>
                 </View>

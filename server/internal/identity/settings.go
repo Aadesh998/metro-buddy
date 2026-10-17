@@ -12,7 +12,7 @@ import (
 	"metro-buddy/server/internal/model"
 )
 
-var notifKinds = map[string]bool{"dm_request": true, "message": true, "reply": true, "match": true, "trip_reminder": true, "episode_live": true, "mod_notice": true}
+var notifKinds = map[string]bool{"dm_request": true, "message": true, "reply": true, "match": true, "trip_reminder": true, "episode_live": true, "mod_notice": true, "follow": true, "connection": true}
 
 type SettingsDTO struct {
 	MatchSameGenderOnly bool            `json:"match_same_gender_only"`

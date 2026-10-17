@@ -1,7 +1,10 @@
+import { Image } from 'expo-image';
 import { memo } from 'react';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
-const BG = ['#FFC83D', '#3DDC97', '#5AB0FF', '#FF8A5C', '#C08BFF', '#FF6FA8', '#4FD1C5', '#F6E05E'];
+import { AVATARS, isIllustrated } from '@/lib/avatars';
+
+const BG = ['#C9C6E6', '#EADCD4', '#CDAE9F', '#A688AB', '#8FC4BE', '#E7B4A8', '#D9CBE3', '#B9D3C6'];
 const FG = ['#1A1300', '#0E1116', '#1F2630', '#2A1A00'];
 
 function fnv1a(s: string) {
@@ -47,6 +50,17 @@ export const Avatar = memo(function Avatar({ seed, size = 40, deleted }: { seed:
         <Circle cx={50} cy={50} r={50} fill="#2A3340" />
         <Path d="M30 50h40" stroke="#5B6675" strokeWidth={8} strokeLinecap="round" />
       </Svg>
+    );
+  }
+  if (isIllustrated(seed)) {
+    return (
+      <Image
+        source={AVATARS[seed]}
+        style={{ width: size, height: size, borderRadius: size / 2 }}
+        contentFit="cover"
+        transition={0}
+        accessibilityRole="image"
+      />
     );
   }
   const p = avatarParts(seed);

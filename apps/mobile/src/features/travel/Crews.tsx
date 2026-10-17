@@ -76,7 +76,7 @@ export function CrewsSection() {
         {t('travel.crews.title')}
       </Text>
       {inv.map((i) => (
-        <View key={i.id} className="gap-3 rounded-2xl border border-accent/40 bg-accent/5 p-4">
+        <View key={i.id} className="gap-3 rounded-2xl border border-accent/40 bg-brand/5 p-4">
           <Text>
             {t('travel.crews.invitedYou')
               .split(/(\{\w+\})/)
@@ -131,7 +131,7 @@ export function StartCrew({ matchId }: { matchId: string }) {
   return (
     <>
       <Pressable onPress={() => setOpen(true)} className="flex-row items-center gap-3 rounded-2xl border border-dashed border-line p-4">
-        <Users size={20} color={colors.accent} />
+        <Users size={20} color={colors.brand} />
         <View className="flex-1">
           <Text variant="label">{t('travel.crews.rideTogether')}</Text>
           <Text variant="caption">{t('travel.crews.rideBody')}</Text>

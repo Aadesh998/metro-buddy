@@ -19,6 +19,29 @@ import { useMe } from '@/features/me/hooks';
 import { useT } from '@/i18n';
 import { colors } from '@/lib/theme';
 
+function Following() {
+  const { t } = useT();
+  const [sort, setSort] = useState<Sort>('new');
+  const feed = useFeed('following', sort);
+  const posts = useMemo(() => (feed.data?.pages ?? []).flatMap((p) => p.items), [feed.data]);
+  return (
+    <FlashList
+      data={posts}
+      keyExtractor={(p: Post) => p.id}
+      renderItem={({ item }) => <PostCard p={item} showBowl />}
+      ListHeaderComponent={
+        <View className="flex-row justify-end px-4 pb-2">
+          <SortTabs value={sort} onChange={setSort} />
+        </View>
+      }
+      onEndReached={() => feed.hasNextPage && !feed.isFetchingNextPage && feed.fetchNextPage()}
+      onEndReachedThreshold={0.5}
+      refreshControl={<RefreshControl refreshing={feed.isRefetching} onRefresh={() => void feed.refetch()} tintColor={colors.brand} />}
+      ListEmptyComponent={feed.isPending ? null : <EmptyState title={t('social.followingFeed')} body={t('social.followingEmpty')} />}
+    />
+  );
+}
+
 function ForYou({ onDiscover }: { onDiscover: () => void }) {
   const { t } = useT();
   const [sort, setSort] = useState<Sort>('hot');
@@ -34,7 +57,7 @@ function ForYou({ onDiscover }: { onDiscover: () => void }) {
   if (joined.data && joined.data.length === 0) {
     return (
       <EmptyState
-        icon={<Coffee color={colors.accent} size={36} />}
+        icon={<Coffee color={colors.brand} size={36} />}
         title={t('bowls.emptyFeedTitle')}
         body={t('bowls.emptyFeedBody')}
         action={<Button title={t('bowls.findBowls')} onPress={onDiscover} />}
@@ -53,7 +76,7 @@ function ForYou({ onDiscover }: { onDiscover: () => void }) {
       }
       onEndReached={() => feed.hasNextPage && !feed.isFetchingNextPage && feed.fetchNextPage()}
       onEndReachedThreshold={0.5}
-      refreshControl={<RefreshControl refreshing={feed.isRefetching} onRefresh={() => void feed.refetch()} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={feed.isRefetching} onRefresh={() => void feed.refetch()} tintColor={colors.brand} />}
       ListEmptyComponent={feed.isPending ? null : <EmptyState title={t('bowls.quietTitle')} body={t('bowls.quietBody')} />}
     />
   );
@@ -96,7 +119,7 @@ function Discover() {
 
 export default function BowlsTab() {
   const { t } = useT();
-  const [tab, setTab] = useState<'feed' | 'discover'>('feed');
+  const [tab, setTab] = useState<'feed' | 'following' | 'discover'>('feed');
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-bg">
       <TabHeader
@@ -108,13 +131,13 @@ export default function BowlsTab() {
         }
       />
       <View className="mx-4 mb-3 flex-row rounded-xl bg-raised p-1">
-        {(['feed', 'discover'] as const).map((k) => (
+        {(['feed', 'following', 'discover'] as const).map((k) => (
           <Pressable key={k} onPress={() => setTab(k)} className={`flex-1 items-center rounded-lg py-2 ${tab === k ? 'bg-bg' : ''}`} accessibilityState={{ selected: tab === k }}>
-            <Text className={`text-sm font-semibold ${tab === k ? 'text-ink' : 'text-muted'}`}>{k === 'feed' ? t('bowls.forYou') : t('bowls.discover')}</Text>
+            <Text className={`text-sm font-semibold ${tab === k ? 'text-ink' : 'text-muted'}`}>{k === 'feed' ? t('bowls.forYou') : k === 'following' ? t('social.followingFeed') : t('bowls.discover')}</Text>
           </Pressable>
         ))}
       </View>
-      {tab === 'feed' ? <ForYou onDiscover={() => setTab('discover')} /> : <Discover />}
+      {tab === 'feed' ? <ForYou onDiscover={() => setTab('discover')} /> : tab === 'following' ? <Following /> : <Discover />}
     </SafeAreaView>
   );
 }

@@ -1,18 +1,70 @@
 @import 'tailwindcss';
 
+@font-face {
+  font-family: Lora;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/Lora_600SemiBold.ttf') format('truetype');
+}
+@font-face {
+  font-family: Poppins;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Poppins_400Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: Poppins;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/Poppins_600SemiBold.ttf') format('truetype');
+}
+@font-face {
+  font-family: Poppins;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/Poppins_700Bold.ttf') format('truetype');
+}
+
+/* Same palette as the app (apps/mobile/src/lib/theme.ts): light by default, dark with the system. */
 @theme {
-  --color-bg: #0e1116;
-  --color-surface: #161b22;
-  --color-raised: #1f2630;
-  --color-line: #2a3340;
-  --color-ink: #e8edf3;
-  --color-muted: #8a96a6;
-  --color-faint: #5b6675;
-  --color-accent: #ffc83d;
-  --color-accent-ink: #1a1300;
-  --color-mint: #3ddc97;
-  --color-danger: #ff5c6c;
-  --color-sky: #5ab0ff;
+  --color-bg: #faf7f3;
+  --color-surface: #ffffff;
+  --color-raised: #f1eae4;
+  --color-line: #e3dad2;
+  --color-ink: #1b1a19;
+  --color-muted: #5f5a56;
+  --color-faint: #9c948d;
+  --color-accent: #1b1a19;
+  --color-accent-ink: #faf7f3;
+  --color-brand: #5e2b63;
+  --color-mint: #0c6b68;
+  --color-danger: #cb5442;
+  --color-sky: #5b4fa0;
+  --font-serif: Lora, Georgia, serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #141312;
+    --color-surface: #1c1a19;
+    --color-raised: #272422;
+    --color-line: #35302d;
+    --color-ink: #f5f1ec;
+    --color-muted: #ada59e;
+    --color-faint: #766f69;
+    --color-accent: #f5f1ec;
+    --color-accent-ink: #141312;
+    --color-brand: #b993c4;
+    --color-mint: #48b7ab;
+    --color-danger: #e4725f;
+    --color-sky: #a79bdd;
+  }
+}
+
+h1,
+h2 {
+  font-family: var(--font-serif);
+  font-weight: 600;
 }
 
 html,
@@ -24,5 +76,5 @@ body,
 body {
   background: var(--color-bg);
   color: var(--color-ink);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: Poppins, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }

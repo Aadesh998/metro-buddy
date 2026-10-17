@@ -54,7 +54,7 @@ export default function Rooms() {
         title={t('chat.rooms.title')}
         right={
           <Pressable onPress={() => router.push('/rooms/new')} hitSlop={10} accessibilityLabel={t('chat.rooms.schedule')}>
-            <Plus size={22} color={colors.accent} />
+            <Plus size={22} color={colors.brand} />
           </Pressable>
         }
       />
@@ -67,7 +67,7 @@ export default function Rooms() {
           {t('chat.rooms.comingUp')}
         </Text>
         {later.length === 0 ? (
-          <EmptyState icon={<Radio color={colors.accent} size={28} />} title={t('chat.rooms.emptyTitle')} body={t('chat.rooms.emptyBody')} />
+          <EmptyState icon={<Radio color={colors.brand} size={28} />} title={t('chat.rooms.emptyTitle')} body={t('chat.rooms.emptyBody')} />
         ) : (
           later.map((r) => <RoomCard key={r.id} r={r} />)
         )}

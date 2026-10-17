@@ -37,10 +37,10 @@ export function PollView({ p }: { p: Post }) {
             className={`overflow-hidden rounded-xl border ${sel || o.mine ? 'border-accent' : 'border-line'} bg-surface`}
             accessibilityState={{ selected: sel || o.mine }}
           >
-            {showResults ? <View style={{ width: `${pct}%` }} className="absolute bottom-0 left-0 top-0 bg-accent/15" /> : null}
+            {showResults ? <View style={{ width: `${pct}%` }} className="absolute bottom-0 left-0 top-0 bg-brand/15" /> : null}
             <View className="flex-row items-center justify-between px-3 py-2.5">
               <Text className="flex-1 text-sm">{o.label}</Text>
-              {o.mine ? <Check size={14} color={colors.accent} /> : null}
+              {o.mine ? <Check size={14} color={colors.brand} /> : null}
               {showResults ? <Text className="ml-2 text-sm font-semibold">{pct}%</Text> : null}
             </View>
           </Pressable>

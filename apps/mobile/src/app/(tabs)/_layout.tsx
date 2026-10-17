@@ -6,7 +6,7 @@ import { useConversations, useRequests } from '@/features/chat/hooks';
 import { RealtimeBridge } from '@/features/chat/RealtimeBridge';
 import { useT } from '@/i18n';
 import { useNow } from '@/lib/clock';
-import { useFontChoice } from '@/lib/fonts';
+import { fontFamily, useFontChoice } from '@/lib/fonts';
 import { listenForTaps, registerForPush } from '@/lib/push';
 import { colors } from '@/lib/theme';
 
@@ -33,10 +33,10 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.accent,
+        tabBarActiveTintColor: colors.ink,
         tabBarInactiveTintColor: colors.faint,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line },
-        tabBarLabelStyle: font === 'poppins' ? { fontFamily: 'Poppins_500Medium' } : undefined,
+        tabBarLabelStyle: font === 'system' ? undefined : { fontFamily: fontFamily(font, 'medium') },
         sceneStyle: { backgroundColor: colors.bg },
       }}
     >

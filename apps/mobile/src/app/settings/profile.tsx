@@ -2,9 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
 
-import { ApiError, patch, post, put } from '@/api/client';
+import { ApiError, patch, put } from '@/api/client';
 import type { OwnPersona, Station } from '@/api/types';
 import { Avatar } from '@/components/Avatar';
+import { AvatarPicker } from '@/components/AvatarPicker';
+import { AliasField, useAliasCheck } from '@/features/me/AliasField';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { LineDots, StationPicker } from '@/components/StationPicker';
 import { MIN_VIBES, VibePicker } from '@/components/VibePicker';
@@ -47,22 +49,32 @@ function Form({ p, stations }: { p: OwnPersona; stations: Station[] }) {
     },
   });
 
-  const reroll = useMutation({
-    mutationFn: async () => {
-      const r = await post<{ suggestions: { alias: string }[] }>('/v1/me/persona/suggestions', { city_id: p.city_id });
-      return r.suggestions[0].alias;
+  const [newAlias, setNewAlias] = useState('');
+  const [editingAlias, setEditingAlias] = useState(false);
+  const aliasCheck = useAliasCheck(newAlias.trim(), p.city_id, p.alias);
+  const rename = useMutation({
+    mutationFn: () => put('/v1/me/persona/alias', { alias: newAlias.trim() }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: meKeys.persona });
+      setEditingAlias(false);
+      toast(t('settings.profile.aliasChanged'), 'success');
     },
-    onSuccess: (alias) =>
-      Alert.alert(t('settings.profile.becomeTitle', { alias }), t('settings.profile.becomeBody'), [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('settings.profile.change'),
-          onPress: () =>
-            put('/v1/me/persona/alias', { alias })
-              .then(() => qc.invalidateQueries({ queryKey: meKeys.persona }))
-              .catch((e) => toast(e instanceof ApiError ? e.message : t('settings.profile.aliasFailed'))),
-        },
-      ]),
+    onError: (e) => toast(e instanceof ApiError ? e.message : t('settings.profile.aliasFailed')),
+  });
+  const confirmRename = () =>
+    Alert.alert(t('settings.profile.becomeTitle', { alias: newAlias.trim() }), t('settings.profile.becomeBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('settings.profile.change'), onPress: () => rename.mutate() },
+    ]);
+
+  const [pickAvatar, setPickAvatar] = useState(false);
+  const avatar = useMutation({
+    mutationFn: (seed: string) => patch('/v1/me/persona', { avatar_seed: seed }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: meKeys.persona });
+      setPickAvatar(false);
+      toast(t('settings.profile.avatarSaved'), 'success');
+    },
   });
 
   const canChangeAlias = new Date(p.alias_change_available_at) <= new Date();
@@ -71,14 +83,46 @@ function Form({ p, stations }: { p: OwnPersona; stations: Station[] }) {
     <Screen scroll className="gap-6">
       <ScreenHeader title={t('settings.profile.title')} />
       <View className="items-center gap-2">
-        <Avatar seed={p.avatar_seed} size={72} />
+        <Pressable onPress={() => setPickAvatar((v) => !v)} accessibilityRole="button" accessibilityLabel={t('settings.profile.avatar')}>
+          <Avatar seed={p.avatar_seed} size={72} />
+        </Pressable>
+        <Pressable onPress={() => setPickAvatar((v) => !v)} hitSlop={8}>
+          <Text className="text-sm font-semibold text-brand">{t('settings.profile.avatar')}</Text>
+        </Pressable>
         <Text variant="heading">{p.alias}</Text>
         {canChangeAlias ? (
-          <Button title={t('settings.profile.newAlias')} kind="ghost" loading={reroll.isPending} onPress={() => reroll.mutate()} />
+          !editingAlias ? (
+            <Button
+              title={t('settings.profile.newAlias')}
+              kind="ghost"
+              onPress={() => {
+                setNewAlias(p.alias);
+                setEditingAlias(true);
+              }}
+            />
+          ) : null
         ) : (
           <Text variant="caption">{t('settings.profile.aliasAvailable', { date: new Date(p.alias_change_available_at).toLocaleDateString(dateLocale()) })}</Text>
         )}
       </View>
+
+      {editingAlias ? (
+        <View className="gap-3">
+          <AliasField value={newAlias} onChange={setNewAlias} cityId={p.city_id} current={p.alias} />
+          <View className="flex-row gap-2">
+            <Button title={t('common.cancel')} kind="secondary" className="flex-1" onPress={() => setEditingAlias(false)} />
+            <Button
+              title={t('settings.profile.change')}
+              className="flex-1"
+              disabled={aliasCheck.status !== 'available' || newAlias.trim() === p.alias}
+              loading={rename.isPending}
+              onPress={confirmRename}
+            />
+          </View>
+        </View>
+      ) : null}
+
+      {pickAvatar ? <AvatarPicker value={p.avatar_seed} onChange={(seed) => avatar.mutate(seed)} size={48} /> : null}
 
       <Input label={t('settings.profile.bio')} value={bio} onChangeText={(s) => setBio(s.slice(0, 160))} multiline />
 

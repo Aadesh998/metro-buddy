@@ -23,7 +23,7 @@ function Row({ a, onDone }: { a: Appeal; onDone: (rows: Appeal[]) => void }) {
       <div className="mb-2 flex items-center gap-2 text-sm">
         <Badge tone="medium">{a.action.replaceAll('_', ' ')}</Badge>
         <span className={a.overdue ? 'text-danger' : 'text-muted'}>decide {ago(a.sla_due_at)}</span>
-        <button className="ml-auto text-xs text-accent" onClick={() => navigate(`/cases/${a.case_id}`)}>
+        <button className="ml-auto text-xs text-brand" onClick={() => navigate(`/cases/${a.case_id}`)}>
           Open case
         </button>
       </div>
