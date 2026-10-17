@@ -1,15 +1,38 @@
 import { getLocales } from 'expo-localization';
 import { useSyncExternalStore } from 'react';
 
+import de from './de';
 import en from './en';
+import es from './es';
+import fr from './fr';
 import hi from './hi';
+import id from './id';
+import ja from './ja';
+import pt from './pt';
+import ru from './ru';
+import zh from './zh';
 
-export type Locale = 'en' | 'hi';
+export const LOCALES = ['en', 'hi', 'es', 'fr', 'de', 'pt', 'ja', 'zh', 'id', 'ru'] as const;
+export type Locale = (typeof LOCALES)[number];
 
-// Every Hindi dictionary must have exactly the English keys, so a missing translation fails typecheck.
+// Each language's own name, shown in the picker whatever the current language is.
+export const LANGUAGE_NAMES: Record<Locale, string> = {
+  en: 'English',
+  hi: 'हिन्दी',
+  es: 'Español',
+  fr: 'Français',
+  de: 'Deutsch',
+  pt: 'Português',
+  ja: '日本語',
+  zh: '简体中文',
+  id: 'Bahasa Indonesia',
+  ru: 'Русский',
+};
+
+// Every dictionary must have exactly the English keys, so a missing translation fails typecheck.
 type Shape<T> = { [K in keyof T]: T[K] extends string ? string : Shape<T[K]> };
 export type Messages = Shape<typeof en>;
-const dicts: Record<Locale, Messages> = { en, hi };
+const dicts: Record<Locale, Messages> = { en, hi, es, fr, de, pt, ja, zh, id, ru };
 
 type Leaves<T, P extends string = ''> = {
   [K in keyof T & string]: T[K] extends string ? `${P}${K}` : Leaves<T[K], `${P}${K}.`>;
@@ -18,7 +41,8 @@ export type Key = Leaves<typeof en>;
 type PluralBase<K> = K extends `${infer B}_one` ? B : never;
 export type PluralKey = PluralBase<Key>;
 
-let locale: Locale = getLocales()[0]?.languageCode === 'hi' ? 'hi' : 'en';
+const deviceLanguage = getLocales()[0]?.languageCode ?? 'en';
+let locale: Locale = (LOCALES as readonly string[]).includes(deviceLanguage) ? (deviceLanguage as Locale) : 'en';
 const listeners = new Set<() => void>();
 
 export function getLocale() {
@@ -70,7 +94,7 @@ export function tp(key: PluralKey, count: number, vars?: Vars): string {
 // One bound set per language: a new `t` identity on switch is what makes memoized
 // (React Compiler) components re-render with the new strings.
 const bound = Object.fromEntries(
-  (['en', 'hi'] as const).map((l) => [
+  LOCALES.map((l) => [
     l,
     { t: (key: Key, vars?: Vars) => translate(l, key, vars), tp: (key: PluralKey, n: number, vars?: Vars) => plural(l, key, n, vars), locale: l },
   ]),
@@ -80,6 +104,19 @@ export function useT() {
   return bound[useSyncExternalStore(subscribe, getLocale)];
 }
 
+const dateLocales: Record<Locale, string> = {
+  en: 'en-IN',
+  hi: 'hi-IN',
+  es: 'es',
+  fr: 'fr',
+  de: 'de',
+  pt: 'pt-BR',
+  ja: 'ja-JP',
+  zh: 'zh-CN',
+  id: 'id-ID',
+  ru: 'ru-RU',
+};
+
 export function dateLocale() {
-  return locale === 'hi' ? 'hi-IN' : 'en-IN';
+  return dateLocales[locale];
 }

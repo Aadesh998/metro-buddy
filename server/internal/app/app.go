@@ -23,6 +23,7 @@ import (
 	"metro-buddy/server/internal/cache"
 	"metro-buddy/server/internal/chat"
 	"metro-buddy/server/internal/config"
+	"metro-buddy/server/internal/games"
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/identity"
 	"metro-buddy/server/internal/jobs"
@@ -75,6 +76,7 @@ type App struct {
 	Hub          *realtime.Hub
 	Chat         *chat.Service
 	Social       *socialpkg.Service
+	Games        *games.Service
 	Notify       *notify.Service
 	Travel       *travel.Service
 	Studio       *studio.Service
@@ -255,6 +257,8 @@ func (a *App) routes() *echo.Echo {
 	a.Chat.Register(social)
 	a.Social = &socialpkg.Service{DB: a.DB, PII: a.PII, Hub: a.Hub, Limiter: a.Limiter}
 	a.Social.Register(social)
+	a.Games = &games.Service{DB: a.DB, Hub: a.Hub, Limiter: a.Limiter}
+	a.Games.Register(social)
 	a.Notify.Register(authed)
 	a.Travel = &travel.Service{DB: a.DB, Redis: a.Redis, Metro: a.Metro, Chat: a.Chat, Notify: a.Notify, Limiter: a.Limiter,
 		Audit: a.Audit, Box: a.Box, SMS: a.SMS, BaseURL: a.Cfg.PublicBaseURL, AI: a.AI, Log: a.Log}
@@ -335,6 +339,8 @@ func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "dm_request_expiry", time.Hour, a.Chat.ExpireRequests)
 	a.Jobs.Every(ctx, "room_close", time.Minute, a.Chat.CloseExpiredRooms)
 	a.Jobs.Every(ctx, "message_expiry", time.Minute, a.Chat.PurgeExpired)
+	a.Jobs.Every(ctx, "game_tick", 2*time.Second, a.Games.Tick)
+	a.Jobs.Every(ctx, "game_idle", 5*time.Minute, a.Games.CloseIdle)
 	a.Jobs.Every(ctx, "inbox_purge", 6*time.Hour, a.Notify.Purge)
 	a.Jobs.Every(ctx, "plan_intents", time.Minute, a.Travel.SpawnPlanIntents)
 	a.Jobs.Every(ctx, "match_expiry", 5*time.Minute, a.Travel.ExpireMatches)

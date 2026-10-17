@@ -180,7 +180,7 @@ func (h *Handlers) requireOnboarded(next echo.HandlerFunc) echo.HandlerFunc {
 
 type patchMeRequest struct {
 	Gender *model.Gender `json:"gender" validate:"omitempty,oneof=woman man non_binary prefer_not_to_say"`
-	Locale *string       `json:"locale" validate:"omitempty,oneof=en hi"`
+	Locale *string       `json:"locale" validate:"omitempty,oneof=en hi es fr de pt ja zh id ru"`
 }
 
 func (h *Handlers) patchMe(c echo.Context) error {

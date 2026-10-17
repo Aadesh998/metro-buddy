@@ -1,3 +1,4 @@
+import type { Locale } from '@/i18n';
 export type UUID = string;
 
 export type Page<T> = { items: T[]; next_cursor?: string };
@@ -5,7 +6,7 @@ export type Page<T> = { items: T[]; next_cursor?: string };
 export type Me = {
   status: 'active' | 'suspended' | 'banned' | 'pending_deletion' | 'deleted';
   has_persona: boolean;
-  locale: 'en' | 'hi';
+  locale: Locale;
   gender: 'woman' | 'man' | 'non_binary' | 'prefer_not_to_say' | null;
   age_verified: boolean;
   onboarded: boolean;

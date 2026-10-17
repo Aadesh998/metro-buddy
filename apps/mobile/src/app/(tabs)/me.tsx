@@ -12,7 +12,7 @@ import { TabHeader } from '@/components/TabHeader';
 import { Chip } from '@/components/ui/Chip';
 import { Text } from '@/components/ui/Text';
 import { useMyPersona } from '@/features/me/hooks';
-import { setLocale, useT, type Locale } from '@/i18n';
+import { LANGUAGE_NAMES, LOCALES, setLocale, useT, type Locale } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import { confirm } from '@/lib/confirm';
 import { FONT_CHOICES, setFont, useFontChoice } from '@/lib/fonts';
@@ -70,9 +70,9 @@ export default function MeTab() {
 
         <View className="gap-2">
           <Text variant="label">{t('common.language.title')}</Text>
-          <View className="flex-row gap-2">
-            {(['en', 'hi'] as const).map((l) => (
-              <Chip key={l} label={t(`common.language.${l}`)} selected={locale === l} onPress={() => lang.mutate(l)} />
+          <View className="flex-row flex-wrap gap-2">
+            {LOCALES.map((l) => (
+              <Chip key={l} label={LANGUAGE_NAMES[l]} selected={locale === l} onPress={() => lang.mutate(l)} />
             ))}
           </View>
         </View>
