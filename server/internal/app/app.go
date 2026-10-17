@@ -22,6 +22,7 @@ import (
 	"metro-buddy/server/internal/model"
 	"metro-buddy/server/internal/pii"
 	"metro-buddy/server/internal/ratelimit"
+	"metro-buddy/server/internal/safety"
 	"metro-buddy/server/internal/secure"
 	"metro-buddy/server/internal/sms"
 )
@@ -45,6 +46,7 @@ type App struct {
 	OTP     *auth.OTP
 	PII     *pii.Pipeline
 	Metro   *metro.Service
+	Safety  *safety.Handlers
 	Jobs    *jobs.Runner
 }
 
@@ -119,7 +121,10 @@ func (a *App) routes() *echo.Echo {
 	(&metro.Handlers{Svc: a.Metro}).Register(v1.Group("", a.Limiter.Middleware(ratelimit.Rule{Name: "metro", Limit: 120, Window: time.Minute, Key: ratelimit.ByIP})))
 
 	authed := v1.Group("", a.Tokens.Middleware())
-	(&identity.Handlers{DB: a.DB, PII: a.PII}).Register(authed, auth.RequirePersona)
+	(&identity.Handlers{DB: a.DB, PII: a.PII, Visible: safety.Visible(a.DB)}).Register(authed, auth.RequirePersona)
+	social := authed.Group("", auth.RequirePersona)
+	a.Safety = &safety.Handlers{DB: a.DB, Audit: a.Audit, Limiter: a.Limiter}
+	a.Safety.Register(social)
 
 	return e
 }

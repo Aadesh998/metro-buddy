@@ -67,7 +67,7 @@ func New(t *testing.T) *Env {
 	}
 	rdb, mr := testutil.Redis(t)
 	s := &SMS{OTPs: map[string]string{}}
-	a, err := app.New(&app.Deps{Cfg: cfg, DB: testutil.DB(t), Redis: rdb, Log: slog.New(slog.NewTextHandler(io.Discard, nil)), SMS: s})
+	a, err := app.New(&app.Deps{Cfg: cfg, DB: testutil.DB(t), Redis: rdb, Log: slog.New(slog.NewTextHandler(tWriter{t}, &slog.HandlerOptions{Level: slog.LevelWarn})), SMS: s})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -197,4 +197,11 @@ func (e *Env) NewUser(phone string, cityID uuid.UUID) User {
 		"city_id": cityID, "alias": sug.Suggestions[0].Alias, "avatar_seed": sug.Suggestions[0].AvatarSeed,
 	}).Want(http.StatusOK).JSON(&p)
 	return User{Session: s, PersonaID: p.ID, Alias: p.Alias}
+}
+
+type tWriter struct{ t *testing.T }
+
+func (w tWriter) Write(p []byte) (int, error) {
+	w.t.Log(string(bytes.TrimRight(p, "\n")))
+	return len(p), nil
 }
