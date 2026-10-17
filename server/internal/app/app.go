@@ -17,6 +17,7 @@ import (
 	"metro-buddy/server/internal/audit"
 	"metro-buddy/server/internal/auth"
 	"metro-buddy/server/internal/bowls"
+	"metro-buddy/server/internal/chat"
 	"metro-buddy/server/internal/config"
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/identity"
@@ -60,6 +61,7 @@ type App struct {
 	Privacy *privacy.Service
 	Admin   *admin.Handlers
 	Hub     *realtime.Hub
+	Chat    *chat.Service
 	Jobs    *jobs.Runner
 }
 
@@ -192,6 +194,12 @@ func (a *App) routes() *echo.Echo {
 	a.Bowls.Register(social)
 	social.POST("/uploads", a.Media.CreateUpload, a.Limiter.Middleware(ratelimit.Rule{Name: "uploads", Limit: 30, Window: time.Hour, ByTier: true}))
 	a.Media.DevRoutes(e)
+	a.Chat = &chat.Service{DB: a.DB, PII: a.PII, Media: a.Media, Hub: a.Hub, Limiter: a.Limiter}
+	a.Chat.Register(social)
+	receipts := &chat.Receipts{Service: a.Chat, Redis: a.Redis}
+	a.Hub.OnInbound = receipts.HandleInbound
+	a.Hub.OnPresence = receipts.OnPresence
+	a.PII.Second.OnUpdated = a.Chat.OnMaskUpdated
 	social.POST("/ws/ticket", func(c echo.Context) error { return a.Hub.IssueTicket(c, auth.SessionFamily(c)) },
 		a.Limiter.Middleware(ratelimit.Rule{Name: "ws_ticket", Limit: 60, Window: time.Minute}))
 	e.GET("/ws", a.Hub.Serve(context.Background()))
@@ -226,4 +234,6 @@ func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "exports", time.Minute, a.Privacy.RunExports)
 	a.Jobs.Every(ctx, "account_purge", time.Hour, a.Privacy.PurgeDeleted)
 	a.Jobs.Every(ctx, "grievance_overdue", 15*time.Minute, a.Admin.AlertOverdue)
+	a.Jobs.Every(ctx, "dm_request_expiry", time.Hour, a.Chat.ExpireRequests)
+	a.Jobs.Every(ctx, "room_close", time.Minute, a.Chat.CloseExpiredRooms)
 }
