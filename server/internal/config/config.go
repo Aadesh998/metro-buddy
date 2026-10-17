@@ -40,6 +40,9 @@ type Config struct {
 	ExpoPushToken string
 
 	LivenessProvider string
+	PlayIntegrityPkg string
+	PlayIntegrityKey string
+	AppleAppID       string
 	AWSRegion        string
 	AWSAccessKey     string
 	AWSSecretKey     string
@@ -82,6 +85,9 @@ func Load() (*Config, error) {
 		ExpoPushToken: os.Getenv("EXPO_ACCESS_TOKEN"),
 
 		LivenessProvider: os.Getenv("LIVENESS_PROVIDER"),
+		PlayIntegrityPkg: get("PLAY_INTEGRITY_PACKAGE", "in.metrobuddy.app"),
+		PlayIntegrityKey: os.Getenv("PLAY_INTEGRITY_CREDENTIALS_JSON"),
+		AppleAppID:       os.Getenv("APPLE_APP_ID"),
 		AWSRegion:        get("AWS_REGION", "ap-south-1"),
 		AWSAccessKey:     os.Getenv("AWS_ACCESS_KEY_ID"),
 		AWSSecretKey:     os.Getenv("AWS_SECRET_ACCESS_KEY"),

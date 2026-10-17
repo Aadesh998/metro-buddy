@@ -23,6 +23,7 @@ type principalRow struct {
 	TrustTier      int
 	SuspendedUntil *time.Time
 	PersonaID      *uuid.UUID
+	Unattested     int
 }
 
 func (t *Tokens) Middleware() echo.MiddlewareFunc {
@@ -46,7 +47,8 @@ func (t *Tokens) Middleware() echo.MiddlewareFunc {
 			}
 			var row principalRow
 			err = t.DB.WithContext(ctx).Table("users").
-				Select("users.id, users.status, users.trust_tier, users.suspended_until, personas.id AS persona_id").
+				Select("users.id, users.status, users.trust_tier, users.suspended_until, personas.id AS persona_id, "+
+					"(SELECT COUNT(*) FROM refresh_tokens rt JOIN devices d ON d.id = rt.device_id WHERE rt.family_id = ? AND d.attestation_ok = ?) AS unattested", ac.Family, false).
 				Joins("LEFT JOIN personas ON personas.user_id = users.id AND personas.deleted_at IS NULL").
 				Where("users.id = ? AND users.deleted_at IS NULL", ac.UserID).Take(&row).Error
 			if err != nil {
@@ -62,7 +64,7 @@ func (t *Tokens) Middleware() echo.MiddlewareFunc {
 					}
 				}
 			}
-			p := &httpx.Principal{UserID: row.ID, TrustTier: row.TrustTier}
+			p := &httpx.Principal{UserID: row.ID, TrustTier: row.TrustTier, Restricted: row.Unattested > 0}
 			if row.PersonaID != nil {
 				p.PersonaID = *row.PersonaID
 			}

@@ -9,6 +9,8 @@ type Principal struct {
 	UserID    uuid.UUID
 	PersonaID uuid.UUID
 	TrustTier int
+	// Restricted is set when this session's device failed app/device attestation.
+	Restricted bool
 }
 
 const principalKey = "principal"

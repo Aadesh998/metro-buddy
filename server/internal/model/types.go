@@ -393,13 +393,14 @@ const (
 type SecurityEventKind string
 
 const (
-	SecOTPFail          SecurityEventKind = "otp_fail"
-	SecOTPThrottle      SecurityEventKind = "otp_throttle"
-	SecRefreshReuse     SecurityEventKind = "refresh_reuse"
-	SecPermissionDenied SecurityEventKind = "permission_denied"
-	SecRateLimited      SecurityEventKind = "rate_limited"
-	SecVaultAccess      SecurityEventKind = "vault_access"
-	SecAdminLoginFail   SecurityEventKind = "admin_login_fail"
+	SecOTPFail           SecurityEventKind = "otp_fail"
+	SecOTPThrottle       SecurityEventKind = "otp_throttle"
+	SecRefreshReuse      SecurityEventKind = "refresh_reuse"
+	SecPermissionDenied  SecurityEventKind = "permission_denied"
+	SecRateLimited       SecurityEventKind = "rate_limited"
+	SecVaultAccess       SecurityEventKind = "vault_access"
+	SecAdminLoginFail    SecurityEventKind = "admin_login_fail"
+	SecAttestationFailed SecurityEventKind = "attest_fail"
 )
 
 type AIPurpose string

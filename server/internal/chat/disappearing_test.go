@@ -54,4 +54,3 @@ func TestDisappearingMessagesAreHiddenThenPurged(t *testing.T) {
 		t.Fatal("not turned off")
 	}
 }
-

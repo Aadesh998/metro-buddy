@@ -15,6 +15,7 @@ import (
 	"metro-buddy/server/internal/admin"
 	"metro-buddy/server/internal/ai"
 	"metro-buddy/server/internal/analytics"
+	"metro-buddy/server/internal/attest"
 	"metro-buddy/server/internal/audit"
 	"metro-buddy/server/internal/auth"
 	"metro-buddy/server/internal/bowls"
@@ -74,6 +75,7 @@ type App struct {
 	Travel  *travel.Service
 	Studio  *studio.Service
 	Triage  *safety.Triage
+	Attest  *attest.Service
 	Jobs    *jobs.Runner
 }
 
@@ -240,6 +242,12 @@ func (a *App) routes() *echo.Echo {
 		v.Liveness, v.Provider = verify.Dev{}, "dev"
 	}
 	v.Register(authed)
+	at := &attest.Service{DB: a.DB, Redis: a.Redis, Audit: a.Audit, AppleAppID: a.Cfg.AppleAppID, AllowDev: !a.Cfg.IsProd(), Family: auth.SessionFamily}
+	if a.Cfg.PlayIntegrityKey != "" {
+		at.Android = &attest.PlayIntegrity{Package: a.Cfg.PlayIntegrityPkg, Credentials: []byte(a.Cfg.PlayIntegrityKey)}
+	}
+	at.Register(authed)
+	a.Attest = at
 	authed.POST("/events", (&analytics.Handlers{DB: a.DB, Pepper: a.Cfg.IPPepper}).Track,
 		a.Limiter.Middleware(ratelimit.Rule{Name: "events", Limit: 120, Window: time.Minute}))
 	a.wireNotifications()

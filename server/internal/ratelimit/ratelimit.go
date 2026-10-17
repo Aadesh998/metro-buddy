@@ -44,8 +44,13 @@ func (r Rule) limitFor(c echo.Context) int {
 		return r.Limit
 	}
 	tier := 0
-	if p := httpx.PrincipalFrom(c); p != nil {
+	p := httpx.PrincipalFrom(c)
+	if p != nil {
 		tier = max(0, min(p.TrustTier, len(tierMultiplier)-1))
+	}
+	// Failed attestation never blocks, but drops to half the lowest tier's budget.
+	if p != nil && p.Restricted {
+		return max(1, r.Limit/2)
 	}
 	return int(math.Round(float64(r.Limit) * tierMultiplier[tier]))
 }
