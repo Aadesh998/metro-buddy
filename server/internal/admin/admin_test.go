@@ -134,3 +134,14 @@ func TestDeactivationAndCSRFGuard(t *testing.T) {
 		t.Fatalf("deactivated admin still in: %d", rec.Code)
 	}
 }
+
+func TestMetricsAreAggregateOnly(t *testing.T) {
+	env := apitest.New(t)
+	c := console{env}
+	env.NewUser("9000000001", env.City("DEL"))
+	mod := cookieOf(c.login(t, c.newAdmin(t, "mod@m.in", model.AdminModerator), ""))
+	rec := c.do(http.MethodGet, "/admin/api/metrics?days=7", mod, "", "")
+	if rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), `"signups":[{"day":`) || strings.Contains(rec.Body.String(), "persona") {
+		t.Fatalf("%d %s", rec.Code, rec.Body)
+	}
+}
