@@ -2,15 +2,19 @@ package media
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 
+	"metro-buddy/server/internal/cache"
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/model"
 )
@@ -25,6 +29,9 @@ var (
 type Service struct {
 	Store   Store
 	Scanner Scanner
+
+	urlsOnce sync.Once
+	urls     *cache.LRU[string, string]
 }
 
 type uploadRequest struct {
@@ -96,6 +103,8 @@ func (s *Service) Finalize(ctx context.Context, persona uuid.UUID, tmpKey string
 }
 
 type MediaDTO struct {
+	// Stable per image (unlike the signed URL), so clients can cache by it.
+	ID      string `json:"id"`
 	URL     string `json:"url,omitempty"`
 	Width   int    `json:"w"`
 	Height  int    `json:"h"`
@@ -106,16 +115,34 @@ type MediaDTO struct {
 func (s *Service) DTOs(ctx context.Context, ms model.MediaList) []MediaDTO {
 	out := make([]MediaDTO, 0, len(ms))
 	for _, m := range ms {
-		d := MediaDTO{Width: m.Width, Height: m.Height, Pending: !m.Cleared}
+		sum := sha256.Sum256([]byte(m.Key))
+		d := MediaDTO{ID: hex.EncodeToString(sum[:12]), Width: m.Width, Height: m.Height, Pending: !m.Cleared}
 		if m.Cleared {
-			if u, err := s.Store.PresignGet(ctx, m.Key, time.Hour); err == nil {
-				d.URL = u
-			}
+			d.URL = s.signedURL(ctx, m.Key)
 		}
 		out = append(out, d)
 	}
 	return out
 }
+
+// Signed URLs live for an hour; reusing one for 45 minutes keeps image URLs stable across
+// feed refreshes and skips re-signing on every page.
+const signedURLReuse = 45 * time.Minute
+
+func (s *Service) signedURL(ctx context.Context, key string) string {
+	s.urlsOnce.Do(func() { s.urls = cache.New[string, string](20_000, signedURLReuse) })
+	if u, ok := s.urls.Get(key); ok {
+		return u
+	}
+	u, err := s.Store.PresignGet(ctx, key, time.Hour)
+	if err != nil {
+		return ""
+	}
+	s.urls.Set(key, u)
+	return u
+}
+
+func (s *Service) URLCacheStats() cache.Stats { return s.urls.Stats() }
 
 // DevRoutes back the in-memory store so local clients can upload and view images without R2.
 func (s *Service) DevRoutes(e *echo.Echo) {

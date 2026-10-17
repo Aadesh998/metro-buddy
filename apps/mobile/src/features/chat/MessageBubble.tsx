@@ -74,7 +74,7 @@ export const MessageBubble = memo(function MessageBubble({
             <>
               {m.media.map((im, i) =>
                 im.url && !im.pending ? (
-                  <Image key={i} source={{ uri: im.url }} style={{ width: 220, aspectRatio: im.w / im.h, borderRadius: 12, marginBottom: 4 }} />
+                  <Image key={i} source={{ uri: im.url, cacheKey: im.id }} cachePolicy="memory-disk" recyclingKey={im.id} style={{ width: 220, aspectRatio: im.w / im.h, borderRadius: 12, marginBottom: 4 }} />
                 ) : (
                   <Text key={i} variant="caption">
                     {t('chat.bubble.imageReview')}

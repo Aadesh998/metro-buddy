@@ -59,6 +59,11 @@ const common: Messages['common'] = {
     friends: 'दोस्त बनाएँ',
     discuss: 'चर्चाओं में जुड़ें',
   },
+  font: {
+    title: 'फ़ॉन्ट',
+    poppins: 'Poppins',
+    system: 'फ़ोन का डिफ़ॉल्ट',
+  },
   language: {
     title: 'भाषा',
     en: 'English',

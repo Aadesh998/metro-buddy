@@ -16,6 +16,7 @@ import (
 	"gorm.io/gorm"
 
 	"metro-buddy/server/internal/audit"
+	"metro-buddy/server/internal/cache"
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/model"
 	"metro-buddy/server/internal/pii"
@@ -42,6 +43,7 @@ type Handlers struct {
 	NotifyPersona  func(persona uuid.UUID, kind model.NotificationKind, payload model.JSONMap)
 	OnHostApproved func(persona uuid.UUID)
 	EndEpisode     func(ctx context.Context, id uuid.UUID) error
+	MediaStats     func() cache.Stats
 	Triage         func(caseID uuid.UUID)
 	// OnCaseClosed lets domains refresh what clients see (e.g. a held image was released).
 	OnCaseClosed func(caseID uuid.UUID)

@@ -64,6 +64,9 @@ func (h *Handlers) metrics(c echo.Context) error {
 	now := h.now()
 	since := now.AddDate(0, 0, -days)
 	d := MetricsDTO{Days: days, Series: map[string][]Point{}, Now: map[string]int64{}, Cache: map[string]cache.Stats{"profile_refs": identity.RefCacheStats()}}
+	if h.MediaStats != nil {
+		d.Cache["signed_urls"] = h.MediaStats()
+	}
 	d.Series["signups"] = h.series(tx, "users", "created_at", "COUNT(*)", since, "")
 	d.Series["active_sessions"] = h.series(tx, "analytics_events", "created_at", "COUNT(DISTINCT session_hash)", since, "")
 	d.Series["posts"] = h.series(tx, "posts", "created_at", "COUNT(*)", since, "is_prompt = ?", false)

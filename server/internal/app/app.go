@@ -213,7 +213,8 @@ func (a *App) routes() *echo.Echo {
 		RevokeSessions: func(tx *gorm.DB, userID uuid.UUID) error {
 			return a.Tokens.RevokeAllForUser(context.Background(), tx, userID)
 		},
-		EndEpisode: func(ctx context.Context, id uuid.UUID) error { return a.Studio.ForceEnd(ctx, id) }}
+		EndEpisode: func(ctx context.Context, id uuid.UUID) error { return a.Studio.ForceEnd(ctx, id) },
+		MediaStats: a.Media.URLCacheStats}
 	a.Admin.Register(e)
 
 	v1 := e.Group("/v1", func(next echo.HandlerFunc) echo.HandlerFunc {

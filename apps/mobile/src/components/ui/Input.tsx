@@ -1,7 +1,8 @@
 import { forwardRef } from 'react';
-import { TextInput, View, type TextInputInstance, type TextInputProps } from 'react-native';
+import { View, type TextInputInstance, type TextInputProps } from 'react-native';
 
 import { colors } from '@/lib/theme';
+import { FontTextInput } from './FontTextInput';
 import { Text } from './Text';
 
 export const Input = forwardRef<TextInputInstance, TextInputProps & { label?: string; error?: string; className?: string }>(
@@ -9,7 +10,7 @@ export const Input = forwardRef<TextInputInstance, TextInputProps & { label?: st
     return (
       <View className="gap-1.5">
         {label ? <Text variant="label">{label}</Text> : null}
-        <TextInput
+        <FontTextInput
           ref={ref}
           placeholderTextColor={colors.faint}
           className={`min-h-12 rounded-xl border bg-surface px-4 py-3 text-base text-ink ${error ? 'border-danger' : 'border-line'} ${className}`}

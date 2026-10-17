@@ -57,6 +57,11 @@ export default {
     friends: 'Make friends',
     discuss: 'Join discussions',
   },
+  font: {
+    title: 'Font',
+    poppins: 'Poppins',
+    system: 'Phone default',
+  },
   language: {
     title: 'Language',
     en: 'English',

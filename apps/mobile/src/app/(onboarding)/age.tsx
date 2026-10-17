@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
-import { TextInput, View, type TextInputInstance } from 'react-native';
+import { View, type TextInputInstance } from 'react-native';
 
+import { FontTextInput } from '@/components/ui/FontTextInput';
 import { ApiError, put } from '@/api/client';
 import { StepHeader } from '@/components/StepHeader';
 import { Button } from '@/components/ui/Button';
@@ -52,7 +53,7 @@ export default function AgeScreen() {
     <Screen>
       <StepHeader step="age" title={t('onboarding.age.title')} subtitle={t('onboarding.age.subtitle')} />
       <View className="flex-row gap-3">
-        <TextInput
+        <FontTextInput
           value={dd}
           onChangeText={(s) => {
             const v = s.replace(/\D/g, '').slice(0, 2);
@@ -66,7 +67,7 @@ export default function AgeScreen() {
           accessibilityLabel={t('onboarding.age.day')}
           autoFocus
         />
-        <TextInput
+        <FontTextInput
           ref={mRef}
           value={mm}
           onChangeText={(s) => {
@@ -80,7 +81,7 @@ export default function AgeScreen() {
           className={`${field} w-20`}
           accessibilityLabel={t('onboarding.age.month')}
         />
-        <TextInput
+        <FontTextInput
           ref={yRef}
           value={yyyy}
           onChangeText={(s) => setYyyy(s.replace(/\D/g, '').slice(0, 4))}

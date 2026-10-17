@@ -2,9 +2,10 @@ import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { Coffee, PenSquare, Search } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { Pressable, RefreshControl, TextInput, View } from 'react-native';
+import { Pressable, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FontTextInput } from '@/components/ui/FontTextInput';
 import type { Post } from '@/api/types';
 import { EmptyState } from '@/components/EmptyState';
 import { TabHeader } from '@/components/TabHeader';
@@ -69,7 +70,7 @@ function Discover() {
     <View className="flex-1">
       <View className="mx-4 mb-3 h-11 flex-row items-center gap-2 rounded-xl border border-line bg-surface px-3">
         <Search color={colors.faint} size={18} />
-        <TextInput value={q} onChangeText={setQ} placeholder={t('bowls.searchPlaceholder')} placeholderTextColor={colors.faint} className="flex-1 text-base text-ink" />
+        <FontTextInput value={q} onChangeText={setQ} placeholder={t('bowls.searchPlaceholder')} placeholderTextColor={colors.faint} className="flex-1 text-base text-ink" />
       </View>
       <FlashList
         data={list}

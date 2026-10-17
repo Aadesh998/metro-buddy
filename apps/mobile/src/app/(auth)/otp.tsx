@@ -1,7 +1,8 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, TextInput, View, type TextInputInstance } from 'react-native';
+import { Pressable, View, type TextInputInstance } from 'react-native';
 
+import { FontTextInput } from '@/components/ui/FontTextInput';
 import { ApiError } from '@/api/client';
 import { Button } from '@/components/ui/Button';
 import { Screen } from '@/components/ui/Screen';
@@ -77,7 +78,7 @@ export default function OtpScreen() {
             </View>
           ))}
         </Pressable>
-        <TextInput
+        <FontTextInput
           ref={input}
           value={code}
           onChangeText={(s) => {

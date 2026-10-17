@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { post } from '@/api/client';
@@ -32,7 +33,7 @@ export default function NewShow() {
   return (
     <SafeAreaView className="flex-1 bg-bg">
       <ScreenHeader title={t('studio.newShow')} />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
+      <KeyboardAvoidingView behavior="padding" className="flex-1">
         <ScrollView contentContainerClassName="gap-5 p-4" keyboardShouldPersistTaps="handled">
           <Input label={t('studio.create.titleLabel')} value={title} onChangeText={(v) => setTitle(v.slice(0, 60))} placeholder={t('studio.create.titlePlaceholder')} />
           <Input

@@ -3,16 +3,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { Lock, MoreHorizontal, Send, Trash2, X } from "lucide-react-native";
 import { useState } from "react";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  TextInput,
-  View,
-} from "react-native";
+import { Alert, Pressable, View } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { FontTextInput } from "@/components/ui/FontTextInput";
 import { del, post } from "@/api/client";
 import type { Comment } from "@/api/types";
 import { Avatar } from "@/components/Avatar";
@@ -205,7 +200,7 @@ export default function PostScreen() {
       />
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior="padding"
       >
         <FlashList
           data={comments.data ?? []}
@@ -246,7 +241,7 @@ export default function PostScreen() {
               </View>
             ) : null}
             <View className="flex-row items-end gap-2">
-              <TextInput
+              <FontTextInput
                 value={text}
                 onChangeText={(v) => setText(v.slice(0, 2000))}
                 placeholder={t("bowls.post.commentPlaceholder")}

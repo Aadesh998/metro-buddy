@@ -14,6 +14,7 @@ import { Text } from '@/components/ui/Text';
 import { useMyPersona } from '@/features/me/hooks';
 import { setLocale, useT, type Locale } from '@/i18n';
 import { useAuth } from '@/lib/auth';
+import { setFont, useFontChoice } from '@/lib/fonts';
 import { colors } from '@/lib/theme';
 
 export function SettingsRow({ icon, label, onPress, danger }: { icon: ReactNode; label: string; onPress: () => void; danger?: boolean }) {
@@ -30,6 +31,7 @@ export default function MeTab() {
   const { logout } = useAuth();
   const { data: p } = useMyPersona();
   const { t, locale } = useT();
+  const font = useFontChoice();
   const qc = useQueryClient();
   const lang = useMutation({
     mutationFn: (l: Locale) => patch('/v1/me', { locale: l }),
@@ -68,6 +70,15 @@ export default function MeTab() {
           <View className="flex-row gap-2">
             {(['en', 'hi'] as const).map((l) => (
               <Chip key={l} label={t(`common.language.${l}`)} selected={locale === l} onPress={() => lang.mutate(l)} />
+            ))}
+          </View>
+        </View>
+
+        <View className="gap-2">
+          <Text variant="label">{t('common.font.title')}</Text>
+          <View className="flex-row gap-2">
+            {(['poppins', 'system'] as const).map((f) => (
+              <Chip key={f} label={t(`common.font.${f}`)} selected={font === f} onPress={() => setFont(f)} />
             ))}
           </View>
         </View>

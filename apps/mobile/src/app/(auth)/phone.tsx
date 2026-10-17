@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Linking, Pressable, TextInput, View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
 
+import { FontTextInput } from '@/components/ui/FontTextInput';
 import { ApiError } from '@/api/client';
 import { Button } from '@/components/ui/Button';
 import { Screen } from '@/components/ui/Screen';
@@ -49,7 +50,7 @@ export default function PhoneScreen() {
           <Text variant="label">{t('auth.phone.label')}</Text>
           <View className={`h-14 flex-row items-center rounded-xl border bg-surface px-4 ${error ? 'border-danger' : 'border-line'}`}>
             <Text className="mr-3 text-base text-muted">+91</Text>
-            <TextInput
+            <FontTextInput
               value={digits}
               onChangeText={(s) => setDigits(s.replace(/\D/g, '').slice(0, 10))}
               keyboardType="phone-pad"

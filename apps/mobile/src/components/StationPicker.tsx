@@ -1,9 +1,10 @@
 import { FlashList } from '@shopify/flash-list';
 import { Search, X } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { Modal, Pressable, TextInput, View } from 'react-native';
+import { Modal, Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FontTextInput } from '@/components/ui/FontTextInput';
 import type { Station } from '@/api/types';
 import { Text } from '@/components/ui/Text';
 import { searchStations, useStations } from '@/features/metro/hooks';
@@ -49,7 +50,7 @@ export function StationPicker({
         </View>
         <View className="mx-5 mb-2 h-12 flex-row items-center gap-2 rounded-xl border border-line bg-surface px-3">
           <Search color={colors.faint} size={18} />
-          <TextInput
+          <FontTextInput
             value={q}
             onChangeText={setQ}
             placeholder={t('onboarding.stationPicker.search')}

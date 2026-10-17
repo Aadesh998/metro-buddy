@@ -5,9 +5,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, ImagePlus, Info, MoreHorizontal, Send } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FontTextInput } from '@/components/ui/FontTextInput';
 import { del, post } from '@/api/client';
 import type { Conversation, Message } from '@/api/types';
 import { SupportSheet } from '@/components/SupportSheet';
@@ -149,7 +151,7 @@ export default function ChatScreen() {
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-bg">
       <Header c={c} id={id} />
-      <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={0}>
+      <KeyboardAvoidingView className="flex-1" behavior="padding" keyboardVerticalOffset={0}>
         {notJoined ? (
           <View className="flex-1 items-center justify-center gap-3 px-8">
             <Text className="text-center text-muted">{t('chat.notInConversation')}</Text>
@@ -186,7 +188,7 @@ export default function ChatScreen() {
                 {sendImage.isPending ? <ActivityIndicator color={colors.accent} /> : <ImagePlus size={20} color={colors.muted} />}
               </Pressable>
             ) : null}
-            <TextInput
+            <FontTextInput
               value={text}
               onChangeText={onChange}
               placeholder={c.slow_mode_sec ? t('chat.slowModePlaceholder', { n: c.slow_mode_sec }) : t('chat.messagePlaceholder')}

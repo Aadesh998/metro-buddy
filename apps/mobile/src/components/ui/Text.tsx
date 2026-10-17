@@ -1,6 +1,7 @@
 import { Text as RNText, type TextProps } from 'react-native';
 
 import { cn } from '@/lib/cn';
+import { fontStyle, useFontChoice } from '@/lib/fonts';
 
 type Variant = 'title' | 'heading' | 'body' | 'label' | 'caption';
 
@@ -12,6 +13,8 @@ const variants: Record<Variant, string> = {
   caption: 'text-xs text-muted',
 };
 
-export function Text({ variant = 'body', className = '', ...rest }: TextProps & { variant?: Variant; className?: string }) {
-  return <RNText className={cn(variants[variant], className)} {...rest} />;
+export function Text({ variant = 'body', className = '', style, ...rest }: TextProps & { variant?: Variant; className?: string }) {
+  const font = useFontChoice();
+  const cls = cn(variants[variant], className);
+  return <RNText className={cls} style={[fontStyle(font, cls), style]} {...rest} />;
 }

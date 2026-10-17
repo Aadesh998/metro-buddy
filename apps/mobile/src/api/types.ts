@@ -78,7 +78,7 @@ export type Bowl = {
   reason?: string;
 };
 
-export type MediaItem = { url?: string; w: number; h: number; pending: boolean };
+export type MediaItem = { id: string; url?: string; w: number; h: number; pending: boolean };
 
 export type Poll = {
   closes_at: string;

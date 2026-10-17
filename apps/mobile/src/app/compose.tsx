@@ -4,9 +4,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { BarChart3, EyeOff, ImagePlus, Plus, Type, X } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FontTextInput } from '@/components/ui/FontTextInput';
 import { post as apiPost } from '@/api/client';
 import type { Post } from '@/api/types';
 import { SupportSheet } from '@/components/SupportSheet';
@@ -114,8 +115,8 @@ export default function Compose() {
           ))}
         </View>
 
-        <TextInput value={title} onChangeText={(v) => setTitle(v.slice(0, 140))} placeholder={t('bowls.compose.titlePlaceholder')} placeholderTextColor={colors.faint} className="text-xl font-semibold text-ink" multiline />
-        <TextInput
+        <FontTextInput value={title} onChangeText={(v) => setTitle(v.slice(0, 140))} placeholder={t('bowls.compose.titlePlaceholder')} placeholderTextColor={colors.faint} className="text-xl font-semibold text-ink" multiline />
+        <FontTextInput
           value={body}
           onChangeText={(v) => setBody(v.slice(0, 5000))}
           placeholder={kind === 'poll' ? t('bowls.compose.pollBodyPlaceholder') : t('bowls.compose.bodyPlaceholder')}
@@ -149,7 +150,7 @@ export default function Compose() {
         {kind === 'poll' ? (
           <View className="gap-2">
             {options.map((o, i) => (
-              <TextInput
+              <FontTextInput
                 key={i}
                 value={o}
                 onChangeText={(v) => setOptions(options.map((x, j) => (j === i ? v.slice(0, 60) : x)))}

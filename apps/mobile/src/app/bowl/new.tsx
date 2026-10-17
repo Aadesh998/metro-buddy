@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { post } from '@/api/client';
@@ -39,7 +40,7 @@ export default function NewBowl() {
   return (
     <SafeAreaView className="flex-1 bg-bg">
       <ScreenHeader title={t('bowls.create.title')} />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
+      <KeyboardAvoidingView behavior="padding" className="flex-1">
         <ScrollView contentContainerClassName="gap-5 p-4" keyboardShouldPersistTaps="handled">
           <Input label={t('bowls.create.name')} value={name} onChangeText={(v) => setName(v.slice(0, 60))} placeholder={t('bowls.create.namePlaceholder')} />
           <View className="gap-2">

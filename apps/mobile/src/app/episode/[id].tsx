@@ -3,7 +3,8 @@ import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Headphones, Mic, MicOff, MoreHorizontal, PhoneCall, Send } from 'lucide-react-native';
 import { useCallback, useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Switch, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Switch, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { del, post } from '@/api/client';
@@ -72,7 +73,7 @@ function CallInSheet({ ep, visible, onClose, onMasked }: { ep: Episode; visible:
   });
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1 justify-end bg-black/60">
+      <KeyboardAvoidingView behavior="padding" className="flex-1 justify-end bg-black/60">
         <Pressable className="flex-1" onPress={onClose} accessibilityLabel={t('common.close')} />
         <View className="gap-4 rounded-t-3xl bg-surface p-5" style={{ paddingBottom: insets.bottom + 20 }}>
           <Text variant="heading">{t('studio.episode.callInTitle', { show: ep.show_title })}</Text>

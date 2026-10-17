@@ -6,6 +6,7 @@ import { useConversations, useRequests } from '@/features/chat/hooks';
 import { RealtimeBridge } from '@/features/chat/RealtimeBridge';
 import { useT } from '@/i18n';
 import { useNow } from '@/lib/clock';
+import { useFontChoice } from '@/lib/fonts';
 import { listenForTaps, registerForPush } from '@/lib/push';
 import { colors } from '@/lib/theme';
 
@@ -21,6 +22,7 @@ function useChatBadge() {
 export default function TabsLayout() {
   const badge = useChatBadge();
   const { t } = useT();
+  const font = useFontChoice();
   useEffect(() => {
     registerForPush(false).catch(() => {});
     return listenForTaps();
@@ -34,6 +36,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.faint,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line },
+        tabBarLabelStyle: font === 'poppins' ? { fontFamily: 'Poppins_500Medium' } : undefined,
         sceneStyle: { backgroundColor: colors.bg },
       }}
     >

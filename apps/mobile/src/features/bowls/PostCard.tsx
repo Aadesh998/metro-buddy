@@ -88,7 +88,9 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinne
             ) : (
               <Image
                 key={i}
-                source={{ uri: m.url }}
+                source={{ uri: m.url, cacheKey: m.id }}
+                cachePolicy="memory-disk"
+                recyclingKey={m.id}
                 style={{ flex: 1, aspectRatio: p.media.length === 1 ? m.w / m.h : 1, borderRadius: 12, maxHeight: 420 }}
                 contentFit="cover"
                 accessibilityLabel={t('bowls.card.postImage')}

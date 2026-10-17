@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { post } from '@/api/client';
@@ -29,7 +30,7 @@ export default function ApplyToHost() {
   return (
     <SafeAreaView className="flex-1 bg-bg">
       <ScreenHeader title={t('studio.apply.title')} />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
+      <KeyboardAvoidingView behavior="padding" className="flex-1">
         <ScrollView contentContainerClassName="gap-5 p-4" keyboardShouldPersistTaps="handled">
           <Text className="text-muted">{t('studio.apply.intro')}</Text>
           <Input label={t('studio.apply.tagline')} value={tagline} onChangeText={(v) => setTagline(v.slice(0, 80))} placeholder={t('studio.apply.taglinePlaceholder')} />
