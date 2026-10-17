@@ -18,6 +18,7 @@ import (
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/identity"
 	"metro-buddy/server/internal/jobs"
+	"metro-buddy/server/internal/metro"
 	"metro-buddy/server/internal/model"
 	"metro-buddy/server/internal/pii"
 	"metro-buddy/server/internal/ratelimit"
@@ -43,6 +44,7 @@ type App struct {
 	Tokens  *auth.Tokens
 	OTP     *auth.OTP
 	PII     *pii.Pipeline
+	Metro   *metro.Service
 	Jobs    *jobs.Runner
 }
 
@@ -71,6 +73,7 @@ func New(d *Deps) (*App, error) {
 		DevCode: d.Cfg.OTPDevCode, AllowDev: d.Cfg.IsDev(),
 	}
 	a.PII = &pii.Pipeline{DB: d.DB, Box: box, Audit: a.Audit}
+	a.Metro = &metro.Service{DB: d.DB}
 	a.Jobs = &jobs.Runner{Redis: d.Redis, Log: d.Log}
 	a.Echo = a.routes()
 	return a, nil
@@ -112,6 +115,8 @@ func (a *App) routes() *echo.Echo {
 
 	v1 := e.Group("/v1")
 	(&auth.Handlers{DB: a.DB, OTP: a.OTP, Tokens: a.Tokens, Limiter: a.Limiter}).Register(v1)
+
+	(&metro.Handlers{Svc: a.Metro}).Register(v1.Group("", a.Limiter.Middleware(ratelimit.Rule{Name: "metro", Limit: 120, Window: time.Minute, Key: ratelimit.ByIP})))
 
 	authed := v1.Group("", a.Tokens.Middleware())
 	(&identity.Handlers{DB: a.DB, PII: a.PII}).Register(authed, auth.RequirePersona)

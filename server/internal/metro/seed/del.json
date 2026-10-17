@@ -1,0 +1,76 @@
+{
+  "city": {"name": "Delhi NCR", "code": "DEL", "is_live": true},
+  "womens_coach_note": "First coach in the direction of travel is reserved for women",
+  "lines": [
+    {
+      "gtfs_route_id": "DEL-YELLOW", "name": "Yellow Line", "color": "#FFCC00",
+      "stations": ["Samaypur Badli", "Rohini Sector 18-19", "Haiderpur Badli Mor", "Jahangirpuri", "Adarsh Nagar", "Azadpur", "Model Town", "GTB Nagar", "Vishwavidyalaya", "Vidhan Sabha", "Civil Lines", "Kashmere Gate", "Chandni Chowk", "Chawri Bazar", "New Delhi", "Rajiv Chowk", "Patel Chowk", "Central Secretariat", "Udyog Bhawan", "Lok Kalyan Marg", "Jor Bagh", "Dilli Haat - INA", "AIIMS", "Green Park", "Hauz Khas", "Malviya Nagar", "Saket", "Qutab Minar", "Chhattarpur", "Sultanpur", "Ghitorni", "Arjan Garh", "Guru Dronacharya", "Sikanderpur", "MG Road", "IFFCO Chowk", "Millennium City Centre Gurugram"]
+    },
+    {
+      "gtfs_route_id": "DEL-BLUE", "name": "Blue Line", "color": "#1E64C8",
+      "stations": ["Dwarka Sector 21", "Dwarka Sector 8", "Dwarka Sector 9", "Dwarka Sector 10", "Dwarka Sector 11", "Dwarka Sector 12", "Dwarka Sector 13", "Dwarka Sector 14", "Dwarka", "Dwarka Mor", "Nawada", "Uttam Nagar West", "Uttam Nagar East", "Janakpuri West", "Janakpuri East", "Tilak Nagar", "Subhash Nagar", "Tagore Garden", "Rajouri Garden", "Ramesh Nagar", "Moti Nagar", "Kirti Nagar", "Shadipur", "Patel Nagar", "Rajendra Place", "Karol Bagh", "Jhandewalan", "Ramakrishna Ashram Marg", "Rajiv Chowk", "Barakhamba Road", "Mandi House", "Supreme Court", "Indraprastha", "Yamuna Bank", "Akshardham", "Mayur Vihar Phase-1", "Mayur Vihar Extension", "New Ashok Nagar", "Noida Sector 15", "Noida Sector 16", "Noida Sector 18", "Botanical Garden", "Golf Course", "Noida City Centre", "Noida Sector 34", "Noida Sector 52", "Noida Sector 61", "Noida Sector 59", "Noida Sector 62", "Noida Electronic City"]
+    },
+    {
+      "gtfs_route_id": "DEL-BLUE-VAISHALI", "name": "Blue Line (Vaishali)", "color": "#1E64C8",
+      "stations": ["Yamuna Bank", "Laxmi Nagar", "Nirman Vihar", "Preet Vihar", "Karkarduma", "Anand Vihar ISBT", "Kaushambi", "Vaishali"]
+    },
+    {
+      "gtfs_route_id": "DEL-RED", "name": "Red Line", "color": "#E2231A",
+      "stations": ["Rithala", "Rohini West", "Rohini East", "Pitampura", "Kohat Enclave", "Netaji Subhash Place", "Keshav Puram", "Kanhaiya Nagar", "Inderlok", "Shastri Nagar", "Pratap Nagar", "Pulbangash", "Tis Hazari", "Kashmere Gate", "Shastri Park", "Seelampur", "Welcome", "Shahdara", "Mansarovar Park", "Jhilmil", "Dilshad Garden", "Shaheed Nagar", "Raj Bagh", "Major Mohit Sharma Rajendra Nagar", "Shyam Park", "Mohan Nagar", "Arthala", "Hindon River", "Shaheed Sthal (New Bus Adda)"]
+    },
+    {
+      "gtfs_route_id": "DEL-GREEN", "name": "Green Line", "color": "#00A651",
+      "stations": ["Inderlok", "Ashok Park Main", "Punjabi Bagh", "Shivaji Park", "Madipur", "Paschim Vihar East", "Paschim Vihar West", "Peeragarhi", "Udyog Nagar", "Maharaja Surajmal Stadium", "Nangloi", "Nangloi Railway Station", "Rajdhani Park", "Mundka", "Mundka Industrial Area", "Ghevra", "Tikri Kalan", "Tikri Border", "Pandit Shree Ram Sharma", "Bahadurgarh City", "Brigadier Hoshiyar Singh"]
+    },
+    {
+      "gtfs_route_id": "DEL-GREEN-KIRTI", "name": "Green Line (Kirti Nagar)", "color": "#00A651",
+      "stations": ["Kirti Nagar", "Satguru Ram Singh Marg", "Ashok Park Main"]
+    },
+    {
+      "gtfs_route_id": "DEL-VIOLET", "name": "Violet Line", "color": "#8E3A96",
+      "stations": ["Kashmere Gate", "Lal Qila", "Jama Masjid", "Delhi Gate", "ITO", "Mandi House", "Janpath", "Central Secretariat", "Khan Market", "Jawaharlal Nehru Stadium", "Jangpura", "Lajpat Nagar", "Moolchand", "Kailash Colony", "Nehru Place", "Kalkaji Mandir", "Govind Puri", "Harkesh Nagar Okhla", "Jasola Apollo", "Sarita Vihar", "Mohan Estate", "Tughlakabad Station", "Badarpur Border", "Sarai", "NHPC Chowk", "Mewala Maharajpur", "Sector 28 Faridabad", "Badkal Mor", "Old Faridabad", "Neelam Chowk Ajronda", "Bata Chowk", "Escorts Mujesar", "Sant Surdas (Sihi)", "Raja Nahar Singh (Ballabhgarh)"]
+    },
+    {
+      "gtfs_route_id": "DEL-MAGENTA", "name": "Magenta Line", "color": "#CC0066",
+      "stations": ["Janakpuri West", "Dabri Mor - Janakpuri South", "Dashrath Puri", "Palam", "Sadar Bazar Cantonment", "Terminal 1 IGI Airport", "Shankar Vihar", "Vasant Vihar", "Munirka", "R.K. Puram", "IIT Delhi", "Hauz Khas", "Panchsheel Park", "Chirag Delhi", "Greater Kailash", "Nehru Enclave", "Kalkaji Mandir", "Okhla NSIC", "Sukhdev Vihar", "Jamia Millia Islamia", "Okhla Vihar", "Jasola Vihar Shaheen Bagh", "Kalindi Kunj", "Okhla Bird Sanctuary", "Botanical Garden"]
+    },
+    {
+      "gtfs_route_id": "DEL-PINK", "name": "Pink Line", "color": "#F49AC1",
+      "stations": ["Majlis Park", "Azadpur", "Shalimar Bagh", "Netaji Subhash Place", "Shakurpur", "Punjabi Bagh West", "ESI - Basaidarapur", "Rajouri Garden", "Mayapuri", "Naraina Vihar", "Delhi Cantt", "Durgabai Deshmukh South Campus", "Sir M. Vishweshwaraiah Moti Bagh", "Bhikaji Cama Place", "Sarojini Nagar", "Dilli Haat - INA", "South Extension", "Lajpat Nagar", "Vinobapuri", "Ashram", "Sarai Kale Khan - Hazrat Nizamuddin", "Mayur Vihar Phase-1", "Mayur Vihar Pocket 1", "Trilokpuri Sanjay Lake", "East Vinod Nagar - Mayur Vihar-II", "Mandawali - West Vinod Nagar", "IP Extension", "Anand Vihar ISBT", "Karkarduma", "Karkarduma Court", "Krishna Nagar", "East Azad Nagar", "Welcome", "Jaffrabad", "Maujpur - Babarpur", "Gokulpuri", "Johri Enclave", "Shiv Vihar"]
+    },
+    {
+      "gtfs_route_id": "DEL-GREY", "name": "Grey Line", "color": "#9E9E9E",
+      "stations": ["Dwarka", "Nangli", "Najafgarh", "Dhansa Bus Stand"]
+    },
+    {
+      "gtfs_route_id": "DEL-AIRPORT", "name": "Airport Express", "color": "#F7941D",
+      "stations": ["New Delhi", "Shivaji Stadium", "Dhaula Kuan", "Delhi Aerocity", "IGI Airport (T3)", "Dwarka Sector 21", "Yashobhoomi Dwarka Sector 25"]
+    },
+    {
+      "gtfs_route_id": "DEL-AQUA", "name": "Aqua Line", "color": "#00B5E2",
+      "stations": ["Noida Sector 51", "Noida Sector 50", "Noida Sector 76", "Noida Sector 101", "Noida Sector 81", "NSEZ", "Noida Sector 83", "Noida Sector 137", "Noida Sector 142", "Noida Sector 143", "Noida Sector 144", "Noida Sector 145", "Noida Sector 146", "Noida Sector 147", "Noida Sector 148", "Knowledge Park II", "Pari Chowk", "Alpha 1", "Delta 1", "GNIDA Office", "Depot"]
+    },
+    {
+      "gtfs_route_id": "DEL-RAPID", "name": "Rapid Metro Gurugram", "color": "#0089CF",
+      "stations": ["Phase 3", "Moulsari Avenue", "Cyber City", "Belvedere Towers", "Phase 2", "Sikanderpur", "Sector 42-43", "Sector 53-54", "Sector 54 Chowk", "Sector 55-56"]
+    }
+  ],
+  "transfers": [
+    ["Noida Sector 51", "Noida Sector 52"],
+    ["Punjabi Bagh", "Punjabi Bagh West"],
+    ["Dhaula Kuan", "Durgabai Deshmukh South Campus"],
+    ["Shivaji Stadium", "Rajiv Chowk"]
+  ],
+  "aliases": {
+    "HUDA City Centre": "Millennium City Centre Gurugram",
+    "Huda City Centre": "Millennium City Centre Gurugram",
+    "Race Course": "Lok Kalyan Marg",
+    "Pragati Maidan": "Supreme Court",
+    "INA": "Dilli Haat - INA",
+    "Ballabhgarh": "Raja Nahar Singh (Ballabhgarh)",
+    "New Bus Adda": "Shaheed Sthal (New Bus Adda)",
+    "Mayur Vihar-I": "Mayur Vihar Phase-1",
+    "T3": "IGI Airport (T3)",
+    "Aerocity": "Delhi Aerocity"
+  }
+}

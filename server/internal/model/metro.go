@@ -21,11 +21,19 @@ type Station struct {
 	Base
 	CityID          uuid.UUID `gorm:"type:uuid;not null;index"`
 	Name            string    `gorm:"size:80;not null;index"`
-	Code            string    `gorm:"size:16;not null;uniqueIndex"`
+	Code            string    `gorm:"size:40;not null;uniqueIndex"`
 	Lat             float64
 	Lng             float64
 	IsInterchange   bool    `gorm:"not null;default:false"`
 	WomensCoachNote *string `gorm:"size:120"`
+	// Lowercased name plus former names, for search.
+	SearchText string `gorm:"type:text;not null;default:''"`
+}
+
+// Walkway connection between two distinct stations (e.g. Noida Sector 51 <-> 52).
+type StationTransfer struct {
+	FromStationID uuid.UUID `gorm:"type:uuid;primaryKey"`
+	ToStationID   uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 type LineStation struct {
@@ -49,5 +57,5 @@ type PersonaVibe struct {
 }
 
 func init() {
-	register(&City{}, &MetroLine{}, &Station{}, &LineStation{}, &VibeTag{}, &PersonaVibe{})
+	register(&City{}, &MetroLine{}, &Station{}, &LineStation{}, &StationTransfer{}, &VibeTag{}, &PersonaVibe{})
 }

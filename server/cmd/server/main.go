@@ -15,6 +15,7 @@ import (
 	"metro-buddy/server/internal/db"
 	"metro-buddy/server/internal/logx"
 	"metro-buddy/server/internal/redisx"
+	"metro-buddy/server/internal/seed"
 )
 
 func main() {
@@ -35,6 +36,9 @@ func run(log *slog.Logger) error {
 		return err
 	}
 	if err := db.Migrate(gdb); err != nil {
+		return err
+	}
+	if err := seed.All(gdb); err != nil {
 		return err
 	}
 	rdb, err := redisx.New(cfg.RedisURL)

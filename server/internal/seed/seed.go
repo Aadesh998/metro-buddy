@@ -1,0 +1,12 @@
+package seed
+
+import (
+	"gorm.io/gorm"
+
+	"metro-buddy/server/internal/metro"
+)
+
+// All loads reference data; every step is idempotent and safe on each boot.
+func All(db *gorm.DB) error {
+	return metro.SeedAll(db)
+}
