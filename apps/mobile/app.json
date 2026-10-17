@@ -12,7 +12,11 @@
       "bundleIdentifier": "in.metrobuddy.app",
       "supportsTablet": false,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": [
+          "audio"
+        ],
+        "NSMicrophoneUsageDescription": "Metro Buddy uses the microphone only while you are on air in a Vent Studio show."
       }
     },
     "android": {
@@ -23,7 +27,10 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "in.metrobuddy.app"
+      "package": "in.metrobuddy.app",
+      "blockedPermissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -47,6 +54,13 @@
           "photosPermission": "Metro Buddy needs your photos only when you choose to attach one to a post.",
           "cameraPermission": false,
           "microphonePermission": false
+        }
+      ],
+      "@livekit/react-native-expo-plugin",
+      [
+        "@config-plugins/react-native-webrtc",
+        {
+          "microphonePermission": "Metro Buddy uses the microphone only while you are on air in a Vent Studio show."
         }
       ]
     ],

@@ -237,3 +237,51 @@ export type Trip = {
 };
 
 export type TrustedContact = { id: UUID; name: string; phone_masked: string };
+
+export type StageRole = 'host' | 'co_host' | 'on_air' | 'listener';
+
+export type CallIn = {
+  id: UUID;
+  persona: PersonaRef;
+  topic?: string;
+  status: 'queued' | 'on_air' | 'done' | 'dropped' | 'withdrawn';
+  on_air_at: string | null;
+  ends_at: string | null;
+  created_at: string;
+};
+
+export type Episode = {
+  id: UUID;
+  show_id: UUID;
+  show_title: string;
+  host: PersonaRef;
+  title: string;
+  scheduled_at: string;
+  status: 'scheduled' | 'live' | 'ended' | 'cancelled';
+  listeners: number;
+  peak_listeners: number;
+  my_role: StageRole | null;
+  on_air: CallIn | null;
+  my_call_in: CallIn | null;
+  queue_length: number;
+  auto_muted: boolean;
+};
+
+export type Show = {
+  id: UUID;
+  host: PersonaRef;
+  title: string;
+  description: string;
+  topic_tags: string[];
+  schedule: string | null;
+  follower_count: number;
+  following: boolean;
+  is_mine: boolean;
+  next_episode: Episode | null;
+};
+
+export type HostApplication = { status: 'applied' | 'approved' | 'suspended' | 'rejected'; tagline: string; created_at: string };
+
+export type EpisodeQuestion = { id: UUID; persona: PersonaRef; text: string; answered: boolean; created_at: string };
+
+export type JoinGrant = { url: string; token: string; room: string; role: StageRole };

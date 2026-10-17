@@ -184,6 +184,8 @@ type EpisodeDTO struct {
 	PeakListeners int                 `json:"peak_listeners"`
 	MyRole        *model.StageRole    `json:"my_role"`
 	OnAir         *CallInDTO          `json:"on_air"`
+	MyCallIn      *CallInDTO          `json:"my_call_in"`
+	QueueLength   int64               `json:"queue_length"`
 	AutoMuted     bool                `json:"auto_muted"`
 }
 
@@ -397,6 +399,15 @@ func (s *Service) episodeDTOs(tx *gorm.DB, viewer uuid.UUID, eps []model.ShowEpi
 			}
 			d.OnAir = cd
 		}
+		var mine model.CallInRequest
+		if tx.Where("episode_id = ? AND persona_id = ? AND status IN ?", ep.ID, viewer, []model.CallInStatus{model.CallInQueued, model.CallInOnAir}).Limit(1).Find(&mine).RowsAffected == 1 {
+			cd, err := s.callInDTO(tx, &mine, true)
+			if err != nil {
+				return nil, err
+			}
+			d.MyCallIn = cd
+		}
+		tx.Model(&model.CallInRequest{}).Where("episode_id = ? AND status = ?", ep.ID, model.CallInQueued).Count(&d.QueueLength)
 		out[i] = d
 	}
 	return out, nil
@@ -548,6 +559,7 @@ func (s *Service) end(c echo.Context) error {
 
 func (s *Service) finish(ctx context.Context, ep *model.ShowEpisode) error {
 	now := s.now()
+	audience := s.listeners(s.DB.WithContext(ctx), ep.ID)
 	err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		res := tx.Model(&model.ShowEpisode{}).Where("id = ? AND status = ?", ep.ID, model.EpisodeLive).Updates(map[string]any{"status": model.EpisodeEnded, "ended_at": now})
 		if res.Error != nil || res.RowsAffected == 0 {
@@ -563,7 +575,7 @@ func (s *Service) finish(ctx context.Context, ep *model.ShowEpisode) error {
 		return err
 	}
 	ep.Status = model.EpisodeEnded
-	s.broadcast(ctx, ep.ID, "episode.ended", map[string]any{"episode_id": ep.ID})
+	s.Hub.Publish(ctx, audience, "episode.ended", map[string]any{"episode_id": ep.ID})
 	return nil
 }
 

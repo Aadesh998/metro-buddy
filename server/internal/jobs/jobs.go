@@ -31,7 +31,7 @@ func (r *Runner) Every(ctx context.Context, name string, interval time.Duration,
 }
 
 func (r *Runner) runOnce(ctx context.Context, name string, interval time.Duration, fn func(context.Context) error) {
-	ok, err := r.Redis.SetNX(ctx, "job:"+name, "1", interval-time.Second).Result()
+	ok, err := r.Redis.SetNX(ctx, "job:"+name, "1", max(interval-time.Second, interval/2)).Result()
 	if err != nil || !ok {
 		return
 	}
@@ -45,5 +45,9 @@ func (r *Runner) runOnce(ctx context.Context, name string, interval time.Duratio
 		r.Log.Error("job failed", "job", name, "err", err.Error())
 		return
 	}
-	r.Log.Info("job done", "job", name, "dur_ms", time.Since(start).Milliseconds())
+	level := slog.LevelInfo
+	if interval < time.Minute {
+		level = slog.LevelDebug
+	}
+	r.Log.Log(ctx, level, "job done", "job", name, "dur_ms", time.Since(start).Milliseconds())
 }
