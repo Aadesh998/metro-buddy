@@ -1,0 +1,38 @@
+{{define "content"}}
+<div class="wrap doc">
+<h1>Privacy policy</h1>
+<p class="meta">Version {{.PolicyVersion}} · Applies to the Metro Buddy apps and website.</p>
+<h2>Who we are</h2>
+<p>Metro Buddy ("we") is the Data Fiduciary for personal data processed through the Metro Buddy apps, under the Digital Personal Data Protection Act, 2023 (DPDP Act).</p>
+<h2>What we collect and why</h2>
+<table>
+<tr><th>Data</th><th>Purpose</th><th>Consent</th></tr>
+<tr><td>Mobile number (stored encrypted, plus a one-way hash for login)</td><td>Logging you in; SOS messages to your trusted contacts</td><td>Run my account (required)</td></tr>
+<tr><td>Birth year</td><td>Confirming you are 18+ and age-band filters you set</td><td>Run my account (required)</td></tr>
+<tr><td>Anonymous persona, posts, comments, chats</td><td>Providing the service; safety review</td><td>Run my account (required)</td></tr>
+<tr><td>Home, work and commute stations and times</td><td>Suggesting bowls; Travel Buddy matching</td><td>Travel Buddy matching</td></tr>
+<tr><td>Message text sent to an AI model for a second safety check</td><td>Hiding phone numbers and handles our filter missed</td><td>AI safety checks</td></tr>
+<tr><td>Usage counts without any link to you</td><td>Improving the app</td><td>Anonymous usage stats</td></tr>
+</table>
+<h2>What we never do</h2>
+<ul><li>We never store your GPS coordinates. Location is reduced to the nearest station on your device or our server, then discarded.</li>
+<li>We never show your number, real name, photo or stations to other users, unless both of you choose to reveal at a given level.</li>
+<li>We never sell personal data or use it for third-party advertising.</li></ul>
+<h2>The raw-text vault</h2>
+<p>What other users see is the masked version of what you write. The original is kept encrypted for 90 days for legal requests and safety investigations only, then deleted. Access requires a senior trust &amp; safety role and every access is logged.</p>
+<h2>Retention</h2>
+<p>Account data is kept while your account is active. After you delete your account, we erase identifying data within 30 days. Posts may remain, attributed to "[deleted]". Consent records are kept for 3 years to show we honoured your choices.</p>
+<h2>Your rights</h2>
+<ul><li>See and change your consents any time in Me → Privacy &amp; your data.</li>
+<li>Download a copy of your data (Me → Privacy &amp; your data → Export).</li>
+<li>Delete your account (30-day grace period during which you can restore it).</li>
+<li>Correct your information, and nominate someone to exercise your rights.</li>
+<li>Complain to our <a href="/grievance">Grievance Officer</a>, and then to the Data Protection Board of India.</li></ul>
+<h2>Processors</h2>
+<p>We use processors for hosting (Railway), storage (Cloudflare R2), SMS (MSG91, Twilio), push notifications (Expo), live audio (LiveKit) and AI safety checks (Anthropic). They process data only on our instructions.</p>
+<h2>Children</h2>
+<p>Metro Buddy is not for anyone under 18.</p>
+<h2>Contact</h2>
+<p>Data Protection Officer and Grievance Officer: <a href="mailto:grievance@metrobuddy.in">grievance@metrobuddy.in</a></p>
+</div>
+{{end}}

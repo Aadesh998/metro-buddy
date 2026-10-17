@@ -1,0 +1,35 @@
+{{define "layout"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Meta.Title}}</title>
+<meta name="description" content="{{.Meta.Description}}">
+<link rel="canonical" href="{{.Meta.Canonical}}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Metro Buddy">
+<meta property="og:title" content="{{.Meta.Title}}">
+<meta property="og:description" content="{{.Meta.Description}}">
+<meta property="og:url" content="{{.Meta.Canonical}}">
+<meta property="og:image" content="{{.Base}}/static/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0E1116">
+<meta name="htmx-config" content='{"includeIndicatorStyles":false,"allowEval":false,"responseHandling":[{"code":"204","swap":false},{"code":"[23]..","swap":true},{"code":"422","swap":true},{"code":"[45]..","swap":false,"error":true}]}'>
+{{if .Meta.NoIndex}}<meta name="robots" content="noindex">{{end}}
+<link rel="stylesheet" href="/static/site.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+{{with .Meta.JSONLD}}<script type="application/ld+json">{{.}}</script>{{end}}
+</head>
+<body>
+<header class="top"><div class="wrap">
+<a class="brand" href="/"><i>M</i>Metro Buddy</a>
+<nav><a href="/guidelines" class="hide-sm">Guidelines</a><a href="/privacy">Privacy</a><a href="/grievance">Grievance</a></nav>
+</div></header>
+<main>{{template "content" .}}</main>
+<footer><div class="wrap">
+<div><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/guidelines">Community guidelines</a><a href="/grievance">Grievance officer</a></div>
+<div>© {{.Year}} Metro Buddy · Made for Indian commuters</div>
+</div></footer>
+<script src="/static/htmx.min.js"></script>
+</body>
+</html>{{end}}

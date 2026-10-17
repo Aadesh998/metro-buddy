@@ -29,6 +29,7 @@ import (
 	"metro-buddy/server/internal/safety"
 	"metro-buddy/server/internal/secure"
 	"metro-buddy/server/internal/sms"
+	"metro-buddy/server/internal/web"
 )
 
 type Deps struct {
@@ -149,7 +150,16 @@ func (a *App) routes() *echo.Echo {
 
 	e.GET("/healthz", a.health)
 
-	v1 := e.Group("/v1")
+	if err := (&web.Handlers{DB: a.DB, Box: a.Box, Limiter: a.Limiter, Base: a.Cfg.PublicBaseURL}).Register(e); err != nil {
+		panic(err)
+	}
+
+	v1 := e.Group("/v1", func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Response().Header().Set("X-Robots-Tag", "noindex")
+			return next(c)
+		}
+	})
 	(&auth.Handlers{DB: a.DB, OTP: a.OTP, Tokens: a.Tokens, Limiter: a.Limiter}).Register(v1)
 
 	(&metro.Handlers{Svc: a.Metro}).Register(v1.Group("", a.Limiter.Middleware(ratelimit.Rule{Name: "metro", Limit: 120, Window: time.Minute, Key: ratelimit.ByIP})))

@@ -1,0 +1,1 @@
+{{define "grievance_result"}}{{if .Error}}<div class="notice err">{{.Error}}</div>{{else}}<div id="grievance-result" hx-swap-oob="true"></div><div class="notice">Received. Your reference is <strong>{{.Ref}}</strong>. We'll acknowledge within 24 hours{{if .HasEmail}} by email{{end}}.</div>{{end}}{{end}}

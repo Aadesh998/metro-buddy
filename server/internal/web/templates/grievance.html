@@ -1,0 +1,30 @@
+{{define "content"}}
+<div class="wrap doc">
+<h1>Grievance officer</h1>
+<p class="meta">Under the IT Rules, 2021 and the DPDP Act, 2023.</p>
+<p><strong>Grievance Officer &amp; Data Protection Officer</strong><br>Metro Buddy<br>Email: <a href="mailto:grievance@metrobuddy.in">grievance@metrobuddy.in</a></p>
+<p>We acknowledge every complaint within 24 hours and resolve it within 15 days. Complaints about non-consensual intimate images are acted on within 24 hours.</p>
+<h2>File a complaint</h2>
+<div id="grievance-result"></div>
+<div id="grievance-box">
+<form class="g" hx-post="/grievance" hx-target="#grievance-box" hx-swap="innerHTML">
+  <label>What is this about?
+    <select name="category" required>
+      <option value="content">Content I want removed</option>
+      <option value="ncii">Intimate images shared without consent</option>
+      <option value="impersonation">Someone is impersonating me</option>
+      <option value="privacy">My personal data</option>
+      <option value="other">Something else</option>
+    </select>
+  </label>
+  <label>Email to reach you (optional if you have the app)
+    <input type="email" name="email" maxlength="120" autocomplete="email">
+  </label>
+  <label>Tell us what happened
+    <textarea name="body" required maxlength="4000" placeholder="Include links or the alias involved if you can."></textarea>
+  </label>
+  <button class="btn" type="submit">Submit complaint</button>
+</form>
+</div>
+</div>
+{{end}}
