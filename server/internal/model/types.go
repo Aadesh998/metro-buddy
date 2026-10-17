@@ -394,6 +394,7 @@ type SecurityEventKind string
 
 const (
 	SecOTPFail           SecurityEventKind = "otp_fail"
+	SecLoginFail         SecurityEventKind = "login_fail"
 	SecOTPThrottle       SecurityEventKind = "otp_throttle"
 	SecRefreshReuse      SecurityEventKind = "refresh_reuse"
 	SecPermissionDenied  SecurityEventKind = "permission_denied"

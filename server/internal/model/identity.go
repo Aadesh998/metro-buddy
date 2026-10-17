@@ -8,8 +8,15 @@ import (
 
 type User struct {
 	SoftBase
-	PhoneHash           []byte     `gorm:"uniqueIndex;not null"`
-	PhoneEnc            []byte     `gorm:"not null"`
+	// Phone is optional (older accounts and SOS); new accounts sign in with email or Google.
+	PhoneHash []byte `gorm:"uniqueIndex"`
+	PhoneEnc  []byte
+	// Email is stored like the phone: a keyed hash for lookup, the address itself encrypted.
+	EmailHash           []byte `gorm:"uniqueIndex"`
+	EmailEnc            []byte
+	EmailVerifiedAt     *time.Time
+	PasswordHash        *string    `gorm:"size:200"`
+	GoogleSub           *string    `gorm:"size:64;uniqueIndex"`
 	Status              UserStatus `gorm:"size:20;not null;index;default:active"`
 	BirthYear           *int16
 	Gender              *Gender    `gorm:"size:20"`

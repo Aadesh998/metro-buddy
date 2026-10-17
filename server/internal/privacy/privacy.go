@@ -134,11 +134,17 @@ func (s *Service) collect(ctx context.Context, uid uuid.UUID) ([]byte, error) {
 	if err := db.Unscoped().First(&u, "id = ?", uid).Error; err != nil {
 		return nil, err
 	}
-	phone, _ := s.Box.OpenString(u.PhoneEnc)
+	var phone, email string
+	if len(u.PhoneEnc) > 0 {
+		phone, _ = s.Box.OpenString(u.PhoneEnc)
+	}
+	if len(u.EmailEnc) > 0 {
+		email, _ = s.Box.OpenString(u.EmailEnc)
+	}
 	out := map[string]any{
 		"generated_at": s.now(),
 		"account": map[string]any{
-			"phone": phone, "status": u.Status, "birth_year": u.BirthYear, "gender": u.Gender, "locale": u.Locale,
+			"phone": phone, "email": email, "google_linked": u.GoogleSub != nil, "status": u.Status, "birth_year": u.BirthYear, "gender": u.Gender, "locale": u.Locale,
 			"verified": u.VerifiedAt != nil, "created_at": u.CreatedAt,
 		},
 	}
@@ -308,9 +314,10 @@ func (s *Service) PurgeDeleted(ctx context.Context) error {
 					return err
 				}
 			}
-			// The phone hash is replaced so the number can sign up fresh; nothing links back.
+			// Sign-in identifiers are cleared so the person can sign up fresh; nothing links back.
 			return tx.Model(&model.User{}).Where("id = ?", uid).Updates(map[string]any{
-				"status": model.UserDeleted, "phone_hash": secure.SHA256([]byte(model.NewID().String())), "phone_enc": []byte{},
+				"status": model.UserDeleted, "phone_hash": nil, "phone_enc": nil,
+				"email_hash": nil, "email_enc": nil, "email_verified_at": nil, "password_hash": nil, "google_sub": nil,
 				"birth_year": nil, "gender": nil, "verified_at": nil, "city_id": nil,
 			}).Error
 		})

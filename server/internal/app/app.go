@@ -57,30 +57,31 @@ type Deps struct {
 
 type App struct {
 	*Deps
-	Echo    *echo.Echo
-	Box     *secure.Box
-	Audit   *audit.Recorder
-	Limiter *ratelimit.Limiter
-	Tokens  *auth.Tokens
-	OTP     *auth.OTP
-	PII     *pii.Pipeline
-	AI      *ai.Client
-	Metro   *metro.Service
-	Safety  *safety.Handlers
-	Bowls   *bowls.Handlers
-	Media   *media.Service
-	Privacy *privacy.Service
-	Admin   *admin.Handlers
-	Hub     *realtime.Hub
-	Chat    *chat.Service
-	Notify  *notify.Service
-	Travel  *travel.Service
-	Studio  *studio.Service
-	Triage  *safety.Triage
-	Attest  *attest.Service
-	Aliases *identity.AliasIndex
-	Cache   *cache.Bus
-	Jobs    *jobs.Runner
+	Echo         *echo.Echo
+	Box          *secure.Box
+	Audit        *audit.Recorder
+	Limiter      *ratelimit.Limiter
+	Tokens       *auth.Tokens
+	OTP          *auth.OTP
+	PII          *pii.Pipeline
+	AI           *ai.Client
+	Metro        *metro.Service
+	Safety       *safety.Handlers
+	Bowls        *bowls.Handlers
+	Media        *media.Service
+	Privacy      *privacy.Service
+	Admin        *admin.Handlers
+	Hub          *realtime.Hub
+	Chat         *chat.Service
+	Notify       *notify.Service
+	Travel       *travel.Service
+	Studio       *studio.Service
+	Triage       *safety.Triage
+	Attest       *attest.Service
+	Aliases      *identity.AliasIndex
+	Cache        *cache.Bus
+	AuthHandlers *auth.Handlers
+	Jobs         *jobs.Runner
 }
 
 func New(d *Deps) (*App, error) {
@@ -223,12 +224,16 @@ func (a *App) routes() *echo.Echo {
 			return next(c)
 		}
 	})
-	(&auth.Handlers{DB: a.DB, OTP: a.OTP, Tokens: a.Tokens, Limiter: a.Limiter}).Register(v1)
+	a.AuthHandlers = &auth.Handlers{DB: a.DB, OTP: a.OTP, Tokens: a.Tokens, Limiter: a.Limiter}
+	if len(a.Cfg.GoogleClientIDs) > 0 {
+		a.AuthHandlers.Google = auth.NewGoogleVerifier(a.Cfg.GoogleClientIDs)
+	}
+	a.AuthHandlers.Register(v1)
 
 	(&metro.Handlers{Svc: a.Metro}).Register(v1.Group("", a.Limiter.Middleware(ratelimit.Rule{Name: "metro", Limit: 120, Window: time.Minute, Key: ratelimit.ByIP})))
 
 	authed := v1.Group("", a.Tokens.Middleware())
-	(&identity.Handlers{DB: a.DB, PII: a.PII, Visible: safety.Visible(a.DB), Aliases: a.Aliases}).Register(authed, auth.RequirePersona)
+	(&identity.Handlers{DB: a.DB, PII: a.PII, Box: a.Box, Visible: safety.Visible(a.DB), Aliases: a.Aliases}).Register(authed, auth.RequirePersona)
 	a.Privacy = &privacy.Service{DB: a.DB, Box: a.Box, Store: a.Media.Store, Tokens: a.Tokens, Audit: a.Audit, Log: a.Log}
 	a.Privacy.Register(authed)
 	(&safety.Appeals{DB: a.DB, Box: a.Box, Limiter: a.Limiter}).Register(authed)

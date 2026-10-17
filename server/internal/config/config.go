@@ -48,6 +48,7 @@ type Config struct {
 	AnthropicKey       string
 	ExpoPushToken      string
 
+	GoogleClientIDs  []string
 	LivenessProvider string
 	PlayIntegrityPkg string
 	PlayIntegrityKey string
@@ -103,6 +104,7 @@ func Load() (*Config, error) {
 
 		ExpoPushToken: os.Getenv("EXPO_ACCESS_TOKEN"),
 
+		GoogleClientIDs:  splitList(os.Getenv("GOOGLE_CLIENT_IDS")),
 		LivenessProvider: os.Getenv("LIVENESS_PROVIDER"),
 		PlayIntegrityPkg: get("PLAY_INTEGRITY_PACKAGE", "in.metrobuddy.app"),
 		PlayIntegrityKey: os.Getenv("PLAY_INTEGRITY_CREDENTIALS_JSON"),
@@ -173,4 +175,14 @@ func key32(k string, c *Config, errs *[]error) []byte {
 		*errs = append(*errs, fmt.Errorf("%s must be 32 bytes, base64-encoded", k))
 	}
 	return b
+}
+
+func splitList(s string) []string {
+	var out []string
+	for _, p := range strings.Split(s, ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }

@@ -12,11 +12,13 @@ import (
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/model"
 	"metro-buddy/server/internal/pii"
+	"metro-buddy/server/internal/secure"
 )
 
 type Handlers struct {
 	DB  *gorm.DB
 	PII *pii.Pipeline
+	Box *secure.Box
 	// Aliases speeds up alias uniqueness checks; nil falls back to the database alone.
 	Aliases *AliasIndex
 	// Visible reports whether viewer may see target; wired to the block check by the safety domain.
@@ -64,6 +66,11 @@ type meResponse struct {
 	DeletionScheduledAt *time.Time       `json:"deletion_scheduled_at"`
 	// Own tier only, so the app can show what's unlocked. Never exposed to other users.
 	TrustTier int16 `json:"trust_tier"`
+	// Own sign-in details, shown only to the account holder.
+	Email         string `json:"email"`
+	EmailVerified bool   `json:"email_verified"`
+	GoogleLinked  bool   `json:"google_linked"`
+	HasPassword   bool   `json:"has_password"`
 }
 
 const DeletionGrace = 30 * 24 * time.Hour
@@ -87,5 +94,14 @@ func (h *Handlers) me(c echo.Context) error {
 		Status: u.Status, HasPersona: p.PersonaID != uuid.Nil, Locale: u.Locale, Gender: u.Gender,
 		AgeVerified: u.BirthYear != nil, Onboarded: u.OnboardedAt != nil, CoreConsent: core,
 		Verified: u.VerifiedAt != nil, PolicyVersion: PolicyVersion, DeletionScheduledAt: del, TrustTier: u.TrustTier,
+		Email: h.openEmail(u.EmailEnc), EmailVerified: u.EmailVerifiedAt != nil, GoogleLinked: u.GoogleSub != nil, HasPassword: u.PasswordHash != nil,
 	})
+}
+
+func (h *Handlers) openEmail(enc []byte) string {
+	if h.Box == nil || len(enc) == 0 {
+		return ""
+	}
+	e, _ := h.Box.OpenString(enc)
+	return e
 }

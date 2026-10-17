@@ -18,6 +18,8 @@ type Handlers struct {
 	OTP     *OTP
 	Tokens  *Tokens
 	Limiter *ratelimit.Limiter
+	// Google verifies Google ID tokens; nil when no OAuth client is configured.
+	Google GoogleVerifier
 }
 
 func (h *Handlers) Register(g *echo.Group) {
@@ -26,6 +28,9 @@ func (h *Handlers) Register(g *echo.Group) {
 	}
 	g.POST("/auth/otp/request", h.requestOTP)
 	g.POST("/auth/otp/verify", h.verifyOTP, ip("otp_verify", 20, 10*time.Minute))
+	g.POST("/auth/email/signup", h.emailSignup, ip("email_signup", 10, time.Hour))
+	g.POST("/auth/email/login", h.emailLogin, ip("email_login", 30, 15*time.Minute))
+	g.POST("/auth/google", h.google, ip("google_login", 30, 15*time.Minute))
 	g.POST("/auth/refresh", h.refresh, ip("refresh", 30, time.Minute))
 	g.POST("/auth/logout", h.logout, ip("logout", 30, time.Minute))
 }
