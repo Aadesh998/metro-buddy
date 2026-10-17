@@ -36,6 +36,7 @@ import (
 	"metro-buddy/server/internal/sms"
 	"metro-buddy/server/internal/studio"
 	"metro-buddy/server/internal/travel"
+	"metro-buddy/server/internal/trust"
 	"metro-buddy/server/internal/web"
 )
 
@@ -268,6 +269,7 @@ func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "plan_intents", time.Minute, a.Travel.SpawnPlanIntents)
 	a.Jobs.Every(ctx, "match_expiry", 5*time.Minute, a.Travel.ExpireMatches)
 	a.Jobs.Every(ctx, "trip_lifecycle", time.Minute, a.Travel.TripLifecycle)
+	a.Jobs.Every(ctx, "trust_recompute", 24*time.Hour, (&trust.Service{DB: a.DB}).RecomputeAll)
 	a.Jobs.Every(ctx, "episode_reminders", time.Minute, a.Studio.SendReminders)
 	a.Jobs.Every(ctx, "on_air_cap", 2*time.Second, a.Studio.EnforceOnAirCap)
 	a.Jobs.Every(ctx, "stale_episodes", 10*time.Minute, a.Studio.EndStale)

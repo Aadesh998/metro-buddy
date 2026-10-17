@@ -12,6 +12,7 @@ import (
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/identity"
 	"metro-buddy/server/internal/model"
+	"metro-buddy/server/internal/trust"
 	"metro-buddy/server/internal/notify"
 	"metro-buddy/server/internal/pii"
 	"metro-buddy/server/internal/safety"
@@ -281,10 +282,10 @@ func (s *Service) feedback(c echo.Context) error {
 			if _, err := safety.OpenCase(tx, s.now(), model.CTTrip, t.ID, &other.PersonaID, model.SevHigh, "safety_flag"); err != nil {
 				return err
 			}
-			return tx.Create(&model.TrustEvent{UserID: otherUser.UserID, Kind: model.TrustSafetyFlag, Delta: -10, RefID: &t.ID}).Error
+			return trust.Record(tx, otherUser.UserID, model.TrustSafetyFlag, -10, &t.ID)
 		}
 		if req.Thumbs == 1 {
-			return tx.Create(&model.TrustEvent{UserID: otherUser.UserID, Kind: model.TrustPositiveFeedback, Delta: 2, RefID: &t.ID}).Error
+			return trust.Record(tx, otherUser.UserID, model.TrustPositiveFeedback, 2, &t.ID)
 		}
 		return nil
 	})
@@ -316,7 +317,7 @@ func (s *Service) TripLifecycle(ctx context.Context) error {
 			tx.Model(&model.TripParticipant{}).Where("trip_id = ? AND persona_id = ?", t.ID, a.PersonaID).Update("no_show", true)
 			var per model.Persona
 			if tx.Select("user_id").First(&per, "id = ?", a.PersonaID).Error == nil {
-				tx.Create(&model.TrustEvent{UserID: per.UserID, Kind: model.TrustNoShow, Delta: -5, RefID: &t.ID})
+				trust.Record(tx, per.UserID, model.TrustNoShow, -5, &t.ID)
 			}
 		}
 		tx.Model(&t).Update("status", model.TripNoShow)

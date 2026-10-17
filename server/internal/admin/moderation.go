@@ -11,6 +11,7 @@ import (
 
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/model"
+	"metro-buddy/server/internal/trust"
 )
 
 func (h *Handlers) registerModeration(g *echo.Group, lead echo.MiddlewareFunc) {
@@ -367,7 +368,7 @@ func (h *Handlers) actOnCase(c echo.Context) error {
 			return err
 		}
 		if userID != nil && req.Action != model.ActRestore {
-			if err := tx.Create(&model.TrustEvent{UserID: *userID, Kind: model.TrustModAction, Delta: actionDelta[req.Action], RefID: &act.ID}).Error; err != nil {
+			if err := trust.Record(tx, *userID, model.TrustModAction, actionDelta[req.Action], &act.ID); err != nil {
 				return err
 			}
 		}
@@ -480,7 +481,7 @@ func (h *Handlers) creditReporters(tx *gorm.DB, mc *model.ModerationCase, upheld
 		if err := tx.Unscoped().Select("user_id").First(&per, "id = ?", rp).Error; err != nil {
 			continue
 		}
-		if err := tx.Create(&model.TrustEvent{UserID: per.UserID, Kind: kind, Delta: delta, RefID: &mc.ID}).Error; err != nil {
+		if err := trust.Record(tx, per.UserID, kind, delta, &mc.ID); err != nil {
 			return err
 		}
 	}

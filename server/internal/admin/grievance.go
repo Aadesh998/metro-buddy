@@ -11,6 +11,7 @@ import (
 
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/model"
+	"metro-buddy/server/internal/trust"
 	"metro-buddy/server/internal/web"
 )
 
@@ -232,6 +233,9 @@ func (h *Handlers) decideAppeal(c echo.Context) error {
 			}
 			if act.TargetUserID != nil {
 				if err := tx.Where("ref_id = ? AND kind = ?", act.ID, model.TrustModAction).Delete(&model.TrustEvent{}).Error; err != nil {
+					return err
+				}
+				if err := trust.Recompute(tx, *act.TargetUserID); err != nil {
 					return err
 				}
 			}
