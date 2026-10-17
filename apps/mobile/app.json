@@ -30,7 +30,8 @@
       "package": "in.metrobuddy.app",
       "blockedPermissions": [
         "android.permission.CAMERA"
-      ]
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
