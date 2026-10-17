@@ -15,6 +15,7 @@ import (
 	"metro-buddy/server/internal/ai"
 	"metro-buddy/server/internal/audit"
 	"metro-buddy/server/internal/auth"
+	"metro-buddy/server/internal/bowls"
 	"metro-buddy/server/internal/config"
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/identity"
@@ -49,6 +50,7 @@ type App struct {
 	AI      *ai.Client
 	Metro   *metro.Service
 	Safety  *safety.Handlers
+	Bowls   *bowls.Handlers
 	Jobs    *jobs.Runner
 }
 
@@ -137,6 +139,8 @@ func (a *App) routes() *echo.Echo {
 	social := authed.Group("", auth.RequirePersona)
 	a.Safety = &safety.Handlers{DB: a.DB, Audit: a.Audit, Limiter: a.Limiter}
 	a.Safety.Register(social)
+	a.Bowls = &bowls.Handlers{DB: a.DB, PII: a.PII, Limiter: a.Limiter}
+	a.Bowls.Register(social)
 
 	return e
 }

@@ -3,6 +3,7 @@ package seed
 import (
 	"gorm.io/gorm"
 
+	"metro-buddy/server/internal/bowls"
 	"metro-buddy/server/internal/identity"
 	"metro-buddy/server/internal/metro"
 )
@@ -12,5 +13,8 @@ func All(db *gorm.DB) error {
 	if err := metro.SeedAll(db); err != nil {
 		return err
 	}
-	return identity.SeedVibes(db)
+	if err := identity.SeedVibes(db); err != nil {
+		return err
+	}
+	return bowls.Seed(db)
 }

@@ -19,6 +19,7 @@ import (
 	"metro-buddy/server/internal/config"
 	"metro-buddy/server/internal/identity"
 	"metro-buddy/server/internal/model"
+	"metro-buddy/server/internal/seed"
 	"metro-buddy/server/internal/testutil"
 )
 
@@ -162,6 +163,26 @@ func mustE164(phone string) string {
 func itoa(n int) string {
 	b, _ := json.Marshal(n)
 	return string(b)
+}
+
+// Seeded loads all reference data (Delhi metro, vibes, bowls) and returns the Delhi city id.
+func (e *Env) Seeded() uuid.UUID {
+	e.T.Helper()
+	if err := seed.All(e.App.DB); err != nil {
+		e.T.Fatal(err)
+	}
+	var c model.City
+	e.App.DB.First(&c, "code = ?", "DEL")
+	return c.ID
+}
+
+func (e *Env) StationID(name string) uuid.UUID {
+	e.T.Helper()
+	var s model.Station
+	if err := e.App.DB.First(&s, "name = ?", name).Error; err != nil {
+		e.T.Fatalf("station %q: %v", name, err)
+	}
+	return s.ID
 }
 
 func (e *Env) City(code string) uuid.UUID {
