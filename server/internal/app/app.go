@@ -157,7 +157,10 @@ func (a *App) routes() *echo.Echo {
 	}
 
 	a.Admin = &admin.Handlers{DB: a.DB, Box: a.Box, Audit: a.Audit, Limiter: a.Limiter, PII: a.PII,
-		Secret: a.Cfg.JWTSecret, SecureCookie: a.Cfg.IsProd()}
+		Secret: a.Cfg.JWTSecret, SecureCookie: a.Cfg.IsProd(),
+		RevokeSessions: func(tx *gorm.DB, userID uuid.UUID) error {
+			return a.Tokens.RevokeAllForUser(context.Background(), tx, userID)
+		}}
 	a.Admin.Register(e)
 
 	v1 := e.Group("/v1", func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -174,6 +177,7 @@ func (a *App) routes() *echo.Echo {
 	(&identity.Handlers{DB: a.DB, PII: a.PII, Visible: safety.Visible(a.DB)}).Register(authed, auth.RequirePersona)
 	a.Privacy = &privacy.Service{DB: a.DB, Box: a.Box, Store: a.Media.Store, Tokens: a.Tokens, Audit: a.Audit, Log: a.Log}
 	a.Privacy.Register(authed)
+	(&safety.Appeals{DB: a.DB, Box: a.Box, Limiter: a.Limiter}).Register(authed)
 	social := authed.Group("", auth.RequirePersona)
 	a.Safety = &safety.Handlers{DB: a.DB, Audit: a.Audit, Limiter: a.Limiter}
 	a.Safety.Register(social)
@@ -210,4 +214,5 @@ func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "daily_prompts", 30*time.Minute, a.Bowls.PostDailyPrompts)
 	a.Jobs.Every(ctx, "exports", time.Minute, a.Privacy.RunExports)
 	a.Jobs.Every(ctx, "account_purge", time.Hour, a.Privacy.PurgeDeleted)
+	a.Jobs.Every(ctx, "grievance_overdue", 15*time.Minute, a.Admin.AlertOverdue)
 }

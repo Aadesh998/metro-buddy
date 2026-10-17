@@ -81,7 +81,7 @@ func TestAliasChangeEvery30DaysKeepsHistoryAndReservesOldAlias(t *testing.T) {
 	if r := env.Do(http.MethodPut, "/v1/me/persona/alias", u.AccessToken, map[string]string{"alias": "Brave Otter 12"}); r.ErrCode() != "alias_change_too_soon" {
 		t.Fatalf("second change within 30 days: %s", r.Body)
 	}
-	env.App.DB.Model(&model.Persona{}).Where("id = ?", u.PersonaID).Update("alias_changed_at", time.Now().Add(-31*24*time.Hour))
+	env.App.DB.Model(&model.Persona{}).Where("id = ?", u.PersonaID).Update("alias_changed_at", time.Now().UTC().Add(-31*24*time.Hour))
 	env.Do(http.MethodPut, "/v1/me/persona/alias", u.AccessToken, map[string]string{"alias": "Brave Otter 12"}).Want(http.StatusOK)
 
 	var hist []model.PersonaAliasHistory

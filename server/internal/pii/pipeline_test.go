@@ -48,7 +48,7 @@ func TestProcessVaultsEncryptedRawAndRecordsDetections(t *testing.T) {
 
 func TestPurgeDeletesExpiredRows(t *testing.T) {
 	p := newPipeline(t)
-	now := time.Now()
+	now := time.Now().UTC()
 	p.Now = func() time.Time { return now }
 	old, fresh := model.NewID(), model.NewID()
 	p.Process(p.DB, model.CTMessage, old, "a@b.com", Options{})

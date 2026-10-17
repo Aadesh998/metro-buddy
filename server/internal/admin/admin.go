@@ -41,6 +41,7 @@ type Handlers struct {
 	NotifyPersona  func(persona uuid.UUID, kind model.NotificationKind, payload model.JSONMap)
 	OnHostApproved func(persona uuid.UUID)
 	Triage         func(caseID uuid.UUID)
+	OnOverdue      func(n int)
 }
 
 func (h *Handlers) now() time.Time {

@@ -81,7 +81,7 @@ func TestDeletionTombstonesPersonaAllowsRestoreThenPurges(t *testing.T) {
 
 	env.Do(http.MethodDelete, "/v1/me", again.AccessToken, nil).Want(http.StatusAccepted)
 	env.App.DB.Model(&model.User{}).Where("id IN (SELECT user_id FROM personas WHERE id = ?)", a.PersonaID).
-		Update("deletion_requested_at", time.Now().Add(-31*24*time.Hour))
+		Update("deletion_requested_at", time.Now().UTC().Add(-31*24*time.Hour))
 	if err := env.App.Privacy.PurgeDeleted(t.Context()); err != nil {
 		t.Fatal(err)
 	}

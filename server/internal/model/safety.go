@@ -102,6 +102,7 @@ type GrievanceTicket struct {
 	AckDueAt        time.Time  `gorm:"not null;index"`
 	ResolveDueAt    time.Time  `gorm:"not null;index"`
 	Resolution      *string    `gorm:"type:text"`
+	OverdueAlertAt  *time.Time
 }
 
 type TrustEvent struct {
