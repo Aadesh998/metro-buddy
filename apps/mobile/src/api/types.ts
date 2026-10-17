@@ -287,3 +287,7 @@ export type HostApplication = { status: 'applied' | 'approved' | 'suspended' | '
 export type EpisodeQuestion = { id: UUID; persona: PersonaRef; text: string; answered: boolean; created_at: string };
 
 export type JoinGrant = { url: string; token: string; room: string; role: StageRole };
+
+export type RevealLevel = 'none' | 'first_name' | 'photo' | 'contact';
+export type RevealCard = { first_name: string; photo_url: string | null; contact: string };
+export type RevealState = { mine: RevealLevel; theirs: RevealLevel; mutual: RevealLevel; revealed: RevealCard; can_offer: RevealLevel[] };

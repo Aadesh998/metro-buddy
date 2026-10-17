@@ -62,6 +62,7 @@ function Navigation() {
         <Stack.Screen name="settings/blocked" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="settings/profile" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="settings/privacy" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="settings/reveal" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="bowl/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="bowl/new" options={{ presentation: 'modal' }} />
         <Stack.Screen name="bowl/mod" options={{ animation: 'slide_from_right' }} />

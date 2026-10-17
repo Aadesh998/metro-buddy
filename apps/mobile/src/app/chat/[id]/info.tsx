@@ -13,6 +13,7 @@ import { Screen } from '@/components/ui/Screen';
 import { Text } from '@/components/ui/Text';
 import { toast } from '@/components/ui/Toast';
 import { chatKeys, useConversation } from '@/features/chat/hooks';
+import { RevealPanel } from '@/features/chat/RevealPanel';
 import { useMyPersona } from '@/features/me/hooks';
 import { useNow } from '@/lib/clock';
 import { colors } from '@/lib/theme';
@@ -91,6 +92,10 @@ export default function ChatInfo() {
           </View>
           <Text variant="caption">Anyone with the code can join, up to 50 people. Make a new code to stop old invites working.</Text>
         </View>
+      ) : null}
+
+      {c.kind === 'dm' || c.kind === 'travel' ? (
+        <RevealPanel conversationId={id} otherAlias={c.members.find((m) => m.id !== me)?.alias ?? 'They'} />
       ) : null}
 
       <View className="flex-row items-center justify-between rounded-2xl border border-line bg-surface p-4">

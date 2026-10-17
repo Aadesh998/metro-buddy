@@ -212,7 +212,10 @@ func (a *App) routes() *echo.Echo {
 	a.Bowls.Register(social)
 	social.POST("/uploads", a.Media.CreateUpload, a.Limiter.Middleware(ratelimit.Rule{Name: "uploads", Limit: 30, Window: time.Hour, ByTier: true}))
 	a.Media.DevRoutes(e)
-	a.Chat = &chat.Service{DB: a.DB, PII: a.PII, Media: a.Media, Hub: a.Hub, Limiter: a.Limiter}
+	a.Chat = &chat.Service{DB: a.DB, PII: a.PII, Media: a.Media, Hub: a.Hub, Limiter: a.Limiter, Box: a.Box, MaskOptions: chat.RevealMaskOptions,
+		Audit: func(tx *gorm.DB, userID uuid.UUID, verb string, conv uuid.UUID, meta model.JSONMap) {
+			a.Audit.Log(tx, model.ActorUser, &userID, verb, "conversation", &conv, meta)
+		}}
 	a.Chat.Register(social)
 	a.Notify.Register(authed)
 	a.Travel = &travel.Service{DB: a.DB, Redis: a.Redis, Metro: a.Metro, Chat: a.Chat, Notify: a.Notify, Limiter: a.Limiter,

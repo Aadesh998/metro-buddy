@@ -22,6 +22,7 @@ import (
 	"metro-buddy/server/internal/pii"
 	"metro-buddy/server/internal/ratelimit"
 	"metro-buddy/server/internal/safety"
+	"metro-buddy/server/internal/secure"
 )
 
 var (
@@ -44,6 +45,9 @@ type Service struct {
 	Limiter *ratelimit.Limiter
 	// MaskOptions returns PII masking exemptions for a conversation (the reveal ladder lifts some).
 	MaskOptions func(tx *gorm.DB, convID uuid.UUID) pii.Options
+	Box         *secure.Box
+	// Audit records identity-boundary crossings (reveals); nil-safe.
+	Audit func(tx *gorm.DB, userID uuid.UUID, verb string, conv uuid.UUID, meta model.JSONMap)
 	// OnMessage lets push notifications fire for offline members.
 	OnMessage func(ctx context.Context, conv *model.Conversation, msg *model.Message, recipients []uuid.UUID)
 	// OnRequest and OnAccepted notify about DM requests.
@@ -65,6 +69,7 @@ func (s *Service) Register(g *echo.Group) {
 	g.GET("/conversations/:id", s.get)
 	g.PATCH("/conversations/:id", s.patch)
 	g.PUT("/conversations/:id/disappearing", s.setDisappearing)
+	s.registerReveal(g)
 	g.POST("/conversations/:id/leave", s.leave)
 	g.GET("/conversations/:id/messages", s.history)
 	g.POST("/conversations/:id/messages", s.send, send)
