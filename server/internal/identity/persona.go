@@ -40,10 +40,17 @@ func (h *Handlers) suggest(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	ctx := c.Request().Context()
 	out := make([]Suggestion, 0, 3)
-	for tries := 0; len(out) < 3 && tries < 20; tries++ {
-		a := NewAlias()
-		if taken, err := h.aliasTaken(h.DB.WithContext(c.Request().Context()), req.CityID, a); err != nil {
+	seen := map[string]bool{}
+	// Clean two-word names first; a number is added only once those keep colliding.
+	for tries := 0; len(out) < 3 && tries < 40; tries++ {
+		a := NewAlias(tries >= 15)
+		if seen[a] || h.Aliases.mightBeTaken(ctx, req.CityID, a) {
+			continue
+		}
+		seen[a] = true
+		if taken, err := h.aliasTaken(h.DB.WithContext(ctx), req.CityID, a); err != nil {
 			return err
 		} else if !taken {
 			out = append(out, Suggestion{Alias: a, AvatarSeed: NewAvatarSeed()})
@@ -124,6 +131,7 @@ func (h *Handlers) createPersona(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	h.Aliases.add(ctx, cityKey(req.CityID, req.Alias))
 	return h.ownPersona(c, persona.ID)
 }
 
@@ -246,8 +254,9 @@ func (h *Handlers) changeAlias(c echo.Context) error {
 	}
 	pid := httpx.PrincipalFrom(c).PersonaID
 	now := h.now()
+	var p model.Persona
+	var oldAlias string
 	err = h.DB.WithContext(c.Request().Context()).Transaction(func(tx *gorm.DB) error {
-		var p model.Persona
 		if err := tx.First(&p, "id = ?", pid).Error; err != nil {
 			return err
 		}
@@ -263,6 +272,7 @@ func (h *Handlers) changeAlias(c echo.Context) error {
 		if p.AliasChangedAt != nil {
 			from = *p.AliasChangedAt
 		}
+		oldAlias = p.Alias
 		if err := tx.Create(&model.PersonaAliasHistory{PersonaID: p.ID, Alias: p.Alias, UsedFrom: from, UsedTo: now}).Error; err != nil {
 			return err
 		}
@@ -274,6 +284,7 @@ func (h *Handlers) changeAlias(c echo.Context) error {
 		}
 		return err
 	}
+	h.Aliases.add(c.Request().Context(), cityKey(p.CityID, req.Alias), retiredKey(oldAlias))
 	return h.ownPersona(c, pid)
 }
 

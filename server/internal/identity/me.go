@@ -17,6 +17,8 @@ import (
 type Handlers struct {
 	DB  *gorm.DB
 	PII *pii.Pipeline
+	// Aliases speeds up alias uniqueness checks; nil falls back to the database alone.
+	Aliases *AliasIndex
 	// Visible reports whether viewer may see target; wired to the block check by the safety domain.
 	Visible func(ctx context.Context, viewer, target uuid.UUID) (bool, error)
 	Now     func() time.Time

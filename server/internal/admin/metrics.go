@@ -8,6 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 
+	"metro-buddy/server/internal/cache"
+	"metro-buddy/server/internal/identity"
 	"metro-buddy/server/internal/model"
 )
 
@@ -21,9 +23,10 @@ type Point struct {
 }
 
 type MetricsDTO struct {
-	Days   int                `json:"days"`
-	Series map[string][]Point `json:"series"`
-	Now    map[string]int64   `json:"now"`
+	Days   int                    `json:"days"`
+	Series map[string][]Point     `json:"series"`
+	Now    map[string]int64       `json:"now"`
+	Cache  map[string]cache.Stats `json:"cache"`
 	AICost struct {
 		TodayUSD float64            `json:"today_usd"`
 		ByUse    map[string]float64 `json:"by_purpose_usd"`
@@ -60,7 +63,7 @@ func (h *Handlers) metrics(c echo.Context) error {
 	tx := h.DB.WithContext(c.Request().Context())
 	now := h.now()
 	since := now.AddDate(0, 0, -days)
-	d := MetricsDTO{Days: days, Series: map[string][]Point{}, Now: map[string]int64{}}
+	d := MetricsDTO{Days: days, Series: map[string][]Point{}, Now: map[string]int64{}, Cache: map[string]cache.Stats{"profile_refs": identity.RefCacheStats()}}
 	d.Series["signups"] = h.series(tx, "users", "created_at", "COUNT(*)", since, "")
 	d.Series["active_sessions"] = h.series(tx, "analytics_events", "created_at", "COUNT(DISTINCT session_hash)", since, "")
 	d.Series["posts"] = h.series(tx, "posts", "created_at", "COUNT(*)", since, "is_prompt = ?", false)

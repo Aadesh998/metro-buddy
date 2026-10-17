@@ -12,8 +12,8 @@ import (
 )
 
 func TestAliasGeneratorOutputIsAlwaysValid(t *testing.T) {
-	for range 500 {
-		if a := identity.NewAlias(); !identity.ValidAlias(a) {
+	for i := range 500 {
+		if a := identity.NewAlias(i%2 == 0); !identity.ValidAlias(a) {
 			t.Fatalf("generator produced invalid alias %q", a)
 		}
 	}

@@ -18,7 +18,9 @@ import (
 	"metro-buddy/server/internal/attest"
 	"metro-buddy/server/internal/audit"
 	"metro-buddy/server/internal/auth"
+	"metro-buddy/server/internal/bloom"
 	"metro-buddy/server/internal/bowls"
+	"metro-buddy/server/internal/cache"
 	"metro-buddy/server/internal/chat"
 	"metro-buddy/server/internal/config"
 	"metro-buddy/server/internal/httpx"
@@ -76,6 +78,8 @@ type App struct {
 	Studio  *studio.Service
 	Triage  *safety.Triage
 	Attest  *attest.Service
+	Aliases *identity.AliasIndex
+	Cache   *cache.Bus
 	Jobs    *jobs.Runner
 }
 
@@ -107,6 +111,15 @@ func New(d *Deps) (*App, error) {
 	a.PII = &pii.Pipeline{DB: d.DB, Box: box, Audit: a.Audit,
 		Second: &pii.SecondPass{DB: d.DB, Redis: d.Redis, AI: a.AI, Log: d.Log}}
 	a.Metro = &metro.Service{DB: d.DB}
+	a.Cache = &cache.Bus{Redis: d.Redis, Log: d.Log}
+	// Tests change rows directly and assert on the result, so they read through the database.
+	if !d.Cfg.IsTest() {
+		if err := identity.EnableRefCache(d.DB, a.Cache, 50_000, time.Minute); err != nil {
+			return nil, err
+		}
+	}
+	// ~2.4 MB of Redis covers two million aliases at a 1% false-positive rate.
+	a.Aliases = &identity.AliasIndex{Filter: bloom.New(d.Redis, "bf:aliases", 2_000_000, 0.01)}
 	a.Media = newMedia(d.Cfg)
 
 	a.Jobs = &jobs.Runner{Redis: d.Redis, Log: d.Log}
@@ -214,7 +227,7 @@ func (a *App) routes() *echo.Echo {
 	(&metro.Handlers{Svc: a.Metro}).Register(v1.Group("", a.Limiter.Middleware(ratelimit.Rule{Name: "metro", Limit: 120, Window: time.Minute, Key: ratelimit.ByIP})))
 
 	authed := v1.Group("", a.Tokens.Middleware())
-	(&identity.Handlers{DB: a.DB, PII: a.PII, Visible: safety.Visible(a.DB)}).Register(authed, auth.RequirePersona)
+	(&identity.Handlers{DB: a.DB, PII: a.PII, Visible: safety.Visible(a.DB), Aliases: a.Aliases}).Register(authed, auth.RequirePersona)
 	a.Privacy = &privacy.Service{DB: a.DB, Box: a.Box, Store: a.Media.Store, Tokens: a.Tokens, Audit: a.Audit, Log: a.Log}
 	a.Privacy.Register(authed)
 	(&safety.Appeals{DB: a.DB, Box: a.Box, Limiter: a.Limiter}).Register(authed)
@@ -297,6 +310,12 @@ func (a *App) health(c echo.Context) error {
 func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "pii_vault_purge", time.Hour, a.PII.Purge)
 	go a.PII.Second.Run(ctx)
+	go a.Cache.Run(ctx)
+	go func() {
+		if err := a.Aliases.Warm(ctx, a.DB); err != nil {
+			a.Log.Warn("alias filter warm-up failed", "err", err.Error())
+		}
+	}()
 	go a.Triage.Run(ctx)
 	a.Jobs.Every(ctx, "hot_rank", 5*time.Minute, a.Bowls.RefreshHotRanks)
 	a.Jobs.Every(ctx, "daily_prompts", 30*time.Minute, a.Bowls.PostDailyPrompts)

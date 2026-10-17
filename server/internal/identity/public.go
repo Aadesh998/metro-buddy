@@ -65,17 +65,21 @@ func loadRows(tx *gorm.DB, ids []uuid.UUID) ([]personaRow, error) {
 }
 
 func LoadRefs(tx *gorm.DB, ids []uuid.UUID) (map[uuid.UUID]PersonaRef, error) {
-	rows, err := loadRows(tx, uniq(ids))
+	out, missing := cachedRefs(uniq(ids))
+	if len(missing) == 0 {
+		return out, nil
+	}
+	rows, err := loadRows(tx, missing)
 	if err != nil {
 		return nil, err
 	}
-	out := make(map[uuid.UUID]PersonaRef, len(rows))
 	for _, r := range rows {
+		ref := PersonaRef{ID: r.ID, Alias: r.Alias, AvatarSeed: r.AvatarSeed, Verified: r.VerifiedAt != nil, IsHost: r.IsHost}
 		if r.DeletedAt != nil {
-			out[r.ID] = DeletedRef(r.ID)
-			continue
+			ref = DeletedRef(r.ID)
 		}
-		out[r.ID] = PersonaRef{ID: r.ID, Alias: r.Alias, AvatarSeed: r.AvatarSeed, Verified: r.VerifiedAt != nil, IsHost: r.IsHost}
+		out[r.ID] = ref
+		refCache.Set(r.ID, ref)
 	}
 	for _, id := range ids {
 		if _, ok := out[id]; !ok {
