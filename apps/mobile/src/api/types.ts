@@ -198,3 +198,42 @@ export type Room = {
 };
 
 export type Notification = { id: UUID; kind: string; payload: Record<string, any>; read: boolean; created_at: string };
+
+export type StationRef = { id: UUID; name: string };
+
+export type CommutePlan = { id: UUID; from: StationRef; to: StationRef; depart_from: string; depart_to: string; weekdays: number[]; stops: number; active: boolean };
+
+export type TravelIntent = { id: UUID; from: StationRef; to: StationRef; depart_at: string; expires_at: string; mood: 'chatty' | 'quiet' | 'either'; status: string; from_plan: boolean };
+
+export type Match = {
+  id: UUID;
+  other: PersonaRef;
+  other_vibes: Vibe[];
+  score: number;
+  why: { chips: string[]; shared_vibes: string[]; overlap_count: number; minutes_apart: number };
+  segment_from: StationRef;
+  segment_to: StationRef;
+  other_mood: 'chatty' | 'quiet' | 'either';
+  my_status: 'pending' | 'accepted' | 'declined';
+  they_accepted: boolean;
+  status: 'proposed' | 'accepted' | 'declined' | 'expired';
+  expires_at: string;
+  conversation_id: UUID | null;
+  trip_id: UUID | null;
+};
+
+export type Trip = {
+  id: UUID;
+  status: 'planned' | 'met' | 'completed' | 'no_show' | 'cancelled';
+  meet_station: StationRef;
+  meet_platform: string;
+  meet_coach: string;
+  meet_at: string;
+  participants: { persona: PersonaRef; checked_in: boolean; no_show: boolean; is_me: boolean }[];
+  conversation_id: UUID | null;
+  shared: boolean;
+  share_url?: string;
+  feedback_given: boolean;
+};
+
+export type TrustedContact = { id: UUID; name: string; phone_masked: string };

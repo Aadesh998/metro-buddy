@@ -9,7 +9,8 @@ function report(e: unknown) {
 }
 
 export const queryClient = new QueryClient({
-  queryCache: new QueryCache({ onError: report }),
+  // Queries marked silent handle their own errors (e.g. a consent prompt instead of a toast).
+  queryCache: new QueryCache({ onError: (e, q) => !q.meta?.silent && report(e) }),
   mutationCache: new MutationCache({
     onError: (e, _v, _c, m) => {
       if (!m.options.onError) report(e);

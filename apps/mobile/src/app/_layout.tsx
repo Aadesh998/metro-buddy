@@ -74,6 +74,10 @@ function Navigation() {
         <Stack.Screen name="dm/new" options={{ presentation: 'modal' }} />
         <Stack.Screen name="inbox" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="notices" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="travel/plan" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="travel/preferences" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="settings/contacts" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="trip/[id]" options={{ animation: 'slide_from_right' }} />
       </Stack.Protected>
     </Stack>
   );

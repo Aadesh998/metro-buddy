@@ -1,6 +1,7 @@
 package httpx
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -45,6 +46,11 @@ type envelope struct {
 func ErrorHandler(log *slog.Logger) echo.HTTPErrorHandler {
 	return func(err error, c echo.Context) {
 		if c.Response().Committed {
+			return
+		}
+		// The client hung up; there's nobody to answer and nothing went wrong on our side.
+		if errors.Is(err, context.Canceled) {
+			c.Response().WriteHeader(499)
 			return
 		}
 		he := toError(err)

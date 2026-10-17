@@ -61,8 +61,8 @@ type Trip struct {
 	MatchID        *uuid.UUID `gorm:"type:uuid;uniqueIndex"`
 	CrewID         *uuid.UUID `gorm:"type:uuid;index"`
 	MeetStationID  uuid.UUID  `gorm:"type:uuid;not null"`
-	MeetPlatform   string     `gorm:"size:40"`
-	MeetCoach      string     `gorm:"size:20"`
+	MeetPlatform   string     `gorm:"size:160"`
+	MeetCoach      string     `gorm:"size:60"`
 	MeetAt         time.Time  `gorm:"not null;index"`
 	Status         TripStatus `gorm:"size:12;not null;index;default:planned"`
 	ShareToken     *string    `gorm:"size:32;uniqueIndex"`

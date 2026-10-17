@@ -15,6 +15,15 @@ concurrency:
 jobs:
   server:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: metro
+          POSTGRES_PASSWORD: metro
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U metro" --health-interval 2s --health-retries 15
     defaults:
       run:
         working-directory: server
@@ -28,6 +37,10 @@ jobs:
           cache-dependency-path: server/go.sum
       - run: go vet ./...
       - run: go test -race ./...
+      - name: go test (Postgres)
+        run: go test -p 2 ./...
+        env:
+          TEST_POSTGRES_URL: postgres://metro:metro@localhost:5432/postgres?sslmode=disable
       - run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
       - run: go build ./cmd/server
 
