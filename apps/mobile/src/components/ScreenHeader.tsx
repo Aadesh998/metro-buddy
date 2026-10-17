@@ -14,10 +14,11 @@ export function ScreenHeader({ title, right }: { title?: string; right?: ReactNo
       <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')} className="h-10 w-10 items-center justify-center">
         <ChevronLeft color={colors.ink} size={26} />
       </Pressable>
-      <Text variant="heading" numberOfLines={1} className="flex-1 text-center">
+      <Text variant="heading" numberOfLines={1} className="flex-1 px-1 text-center">
         {title ?? ''}
       </Text>
-      <View className="h-10 w-10 items-center justify-center">{right}</View>
+      {/* Grows for text actions ("Read all" in German is wider than an icon); icons stay centred in 40px. */}
+      <View className="h-10 min-w-10 max-w-[40%] items-center justify-center">{right}</View>
     </View>
   );
 }
