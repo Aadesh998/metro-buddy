@@ -3,6 +3,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { Platform } from 'react-native';
 
 import { api, ApiError, refreshSession, toSession } from '@/api/client';
+import { clearOutbox } from '@/features/chat/outbox';
+import { unregisterPush } from '@/lib/push';
 import { queryClient } from '@/lib/query';
 import { getSession, loadStoredRefreshToken, onSessionChange, primeSession, setSession } from '@/lib/session';
 
@@ -81,6 +83,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    await unregisterPush();
+    await clearOutbox();
     const s = getSession();
     if (s?.refreshToken) {
       await api('POST', '/v1/auth/logout', { refresh_token: s.refreshToken }, { auth: false }).catch(() => {});

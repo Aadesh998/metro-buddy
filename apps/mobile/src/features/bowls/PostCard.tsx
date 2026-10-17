@@ -21,8 +21,9 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true }: { p
   const open = () => !full && router.push(`/post/${p.id}`);
   const deleted = p.author.alias === '[deleted]';
 
+  const Outer = full ? View : Pressable;
   return (
-    <Pressable onPress={open} disabled={full} className={`gap-2 bg-surface px-4 py-4 ${full ? '' : 'mb-2 active:bg-raised'}`}>
+    <Outer {...(full ? {} : { onPress: open })} className={`gap-2 bg-surface px-4 py-4 ${full ? '' : 'mb-2 active:bg-raised'}`}>
       {p.is_prompt ? (
         <View className="flex-row items-center gap-1.5">
           <Pin size={13} color={colors.accent} />
@@ -30,7 +31,12 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true }: { p
         </View>
       ) : null}
       <View className="flex-row items-center gap-2">
-        <Pressable onPress={() => !deleted && !p.is_mine && router.push(`/u/${p.author.id}`)} hitSlop={6}>
+        <Pressable
+          onPress={() => !deleted && !p.is_mine && router.push(`/u/${p.author.id}`)}
+          hitSlop={6}
+          accessibilityRole="button"
+          accessibilityLabel={`${p.author.alias}'s profile`}
+        >
           <Avatar seed={p.author.avatar_seed} size={28} deleted={deleted} />
         </Pressable>
         <View className="flex-1">
@@ -98,6 +104,6 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true }: { p
           <Text className="text-sm">{p.comment_count}</Text>
         </View>
       </View>
-    </Pressable>
+    </Outer>
   );
 });

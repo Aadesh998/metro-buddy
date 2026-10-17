@@ -65,6 +65,15 @@ function Navigation() {
         <Stack.Screen name="bowl/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="post/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="compose" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="chat/[id]/index" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="chat/[id]/info" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="groups/new" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="groups/join" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="rooms/index" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="rooms/new" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="dm/new" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="inbox" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="notices" options={{ animation: 'slide_from_right' }} />
       </Stack.Protected>
     </Stack>
   );

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { ChevronRight, Database, LifeBuoy, LogOut, ShieldBan, UserPen } from 'lucide-react-native';
+import { ChevronRight, Database, Gavel, LifeBuoy, LogOut, ShieldBan, UserPen } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -50,6 +50,7 @@ export default function MeTab() {
           <SettingsRow icon={<ShieldBan color={colors.ink} size={20} />} label="Blocked & muted" onPress={() => router.push('/settings/blocked')} />
           <SettingsRow icon={<LifeBuoy color={colors.mint} size={20} />} label="Safety Center" onPress={() => router.push('/safety')} />
           <SettingsRow icon={<Database color={colors.ink} size={20} />} label="Privacy & your data" onPress={() => router.push('/settings/privacy')} />
+          <SettingsRow icon={<Gavel color={colors.ink} size={20} />} label="Account notices & appeals" onPress={() => router.push('/notices')} />
         </View>
 
         <View className="overflow-hidden rounded-2xl border border-line bg-surface">

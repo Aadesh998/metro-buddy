@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { MoreHorizontal } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
 
@@ -9,6 +9,7 @@ import { Avatar } from '@/components/Avatar';
 import { EmptyState } from '@/components/EmptyState';
 import { PersonaName } from '@/components/PersonaBadge';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Screen } from '@/components/ui/Screen';
 import { Text } from '@/components/ui/Text';
@@ -49,6 +50,11 @@ export default function PersonaProfile() {
               <Chip key={i} label={INTENTS.find((x) => x.key === i)?.label ?? i} />
             ))}
           </View>
+          <Button
+            title="Send message request"
+            className="w-full"
+            onPress={() => router.push({ pathname: '/dm/new', params: { persona: p.id, alias: p.alias, seed: p.avatar_seed } })}
+          />
           <View className="mt-2 w-full gap-2">
             <Text variant="caption" className="uppercase tracking-wider">
               Vibes

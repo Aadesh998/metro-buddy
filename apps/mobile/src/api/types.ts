@@ -125,3 +125,76 @@ export type Comment = {
 };
 
 export type FeedPage = { items: Post[]; next_cursor: string; pinned?: Post | null };
+
+export type MessageKind = 'text' | 'image' | 'system' | 'meet_point';
+
+export type Message = {
+  id: UUID;
+  conversation_id: UUID;
+  sender: PersonaRef | null;
+  is_mine: boolean;
+  kind: MessageKind;
+  body: string;
+  media: MediaItem[];
+  reply_to_id: UUID | null;
+  deleted: boolean;
+  pii_hidden: boolean;
+  created_at: string;
+  expires_at: string | null;
+  show_support?: boolean;
+  // Client-only state for optimistic sends.
+  local?: 'sending' | 'failed';
+};
+
+export type ConversationKind = 'dm' | 'group' | 'crew' | 'travel' | 'discussion';
+
+export type Conversation = {
+  id: UUID;
+  kind: ConversationKind;
+  title: string | null;
+  topic?: string;
+  members: PersonaRef[];
+  member_count: number;
+  my_role: 'member' | 'admin' | 'owner';
+  last_message: Message | null;
+  last_message_at: string | null;
+  unread: number;
+  muted_until: string | null;
+  starts_at?: string;
+  ends_at?: string;
+  closed: boolean;
+  slow_mode_sec: number;
+  disappear_after_sec: number | null;
+  invite_code?: string;
+  bowl_id?: UUID;
+  match_id?: UUID;
+  crew_id?: UUID;
+  reveal_levels?: Record<string, string>;
+};
+
+export type DMRequest = {
+  id: UUID;
+  from: PersonaRef;
+  to: PersonaRef;
+  intro: string;
+  context_type: string;
+  status: string;
+  conversation_id: UUID | null;
+  created_at: string;
+  expires_at: string;
+};
+
+export type Room = {
+  id: UUID;
+  title: string;
+  topic: string;
+  bowl_id: UUID | null;
+  starts_at: string;
+  ends_at: string;
+  live: boolean;
+  member_count: number;
+  joined: boolean;
+  slow_mode_sec: number;
+};
+
+export type Notification = { id: UUID; kind: string; payload: Record<string, any>; read: boolean; created_at: string };
