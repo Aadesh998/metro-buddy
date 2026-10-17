@@ -98,3 +98,14 @@ The APK lands in `.local/builds/`. It needs:
 - `.local/secrets/release.keystore` and `release.keystore.password`. **Back these up.** Every update must be signed with the same key, and Google sign-in is registered to its SHA-1 (`4D:33:D1:60:1F:77:24:9A:BF:51:E0:47:66:73:C9:CA:AD:67:D2:B1`).
 
 For adb on the command line: `source scripts/android-env.sh`.
+
+## Brand artwork and avatars (Gemini, offline)
+
+Generated once on a developer machine and committed as plain images; the app never calls Gemini and no key ships.
+
+- Key: `.local/secrets/gemini.key` (git-ignored), or `GEMINI_API_KEY` in the environment.
+- `scripts/gen-avatars.py [ids…]`: the 20 illustrated avatars (`img-m01`…`img-m10`, `img-f01`…`img-f10`) → `apps/mobile/assets/avatars/`.
+- `scripts/gen-brand.py candidates`: logo ideas → `.local/brand/`. The chosen one is saved as `apps/mobile/assets/brand/source.png`.
+- `scripts/build-brand.py`: builds every icon from that one source (app icon, Android adaptive and monochrome icons, light/dark splash, favicons, admin and website SVG logo, link preview image). Re-run it after changing the source.
+
+Run them with the project Python: `.local/toolchain/py/bin/python scripts/<name>.py` (needs `pillow` and `vtracer` installed there).
