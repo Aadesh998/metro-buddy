@@ -99,7 +99,7 @@ func New(d *Deps) (*App, error) {
 	}
 	a.Tokens = &auth.Tokens{DB: d.DB, Secret: d.Cfg.JWTSecret, Audit: a.Audit}
 	a.OTP = &auth.OTP{
-		DB: d.DB, Redis: d.Redis, Limiter: a.Limiter, SMS: d.SMS, Box: box, Audit: a.Audit,
+		DB: d.DB, Redis: d.Redis, Limiter: a.Limiter, SMS: d.SMS, Box: box, Audit: a.Audit, Log: d.Log,
 		Pepper: d.Cfg.PhonePepper, CodeKey: d.Cfg.JWTSecret,
 		DevCode: d.Cfg.OTPDevCode, AllowDev: d.Cfg.IsDev(),
 	}

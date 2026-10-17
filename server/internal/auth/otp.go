@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -57,6 +58,7 @@ type OTP struct {
 	Redis    *redis.Client
 	Limiter  *ratelimit.Limiter
 	SMS      sms.Sender
+	Log      *slog.Logger
 	Box      *secure.Box
 	Audit    *audit.Recorder
 	Pepper   []byte
@@ -120,8 +122,16 @@ func (o *OTP) Request(ctx context.Context, phone, ip string) error {
 	if _, err := pipe.Exec(ctx); err != nil {
 		return err
 	}
-	return o.SMS.SendOTP(ctx, e164, code)
+	if err := o.SMS.SendOTP(ctx, e164, code); err != nil {
+		if o.Log != nil {
+			o.Log.Error("otp sms failed", "err", err.Error())
+		}
+		return ErrSMSUnavailable
+	}
+	return nil
 }
+
+var ErrSMSUnavailable = httpx.E(http.StatusServiceUnavailable, "sms_unavailable", "We couldn't send the code right now. Try again in a few minutes.")
 
 var verifyScript = redis.NewScript(`
 local code = redis.call('HGET', KEYS[1], 'code')

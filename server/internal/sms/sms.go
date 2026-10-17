@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -39,14 +41,24 @@ type MSG91 struct {
 
 func digitsOnly(e164 string) string { return strings.TrimPrefix(e164, "+") }
 
+// ErrNotConfigured means the provider has no credentials; callers surface it instead of
+// pretending a message went out.
+var ErrNotConfigured = errors.New("sms provider not configured")
+
 func (m MSG91) SendOTP(ctx context.Context, e164, code string) error {
+	if m.AuthKey == "" || m.OTPTemplateID == "" {
+		return ErrNotConfigured
+	}
 	q := url.Values{"template_id": {m.OTPTemplateID}, "mobile": {digitsOnly(e164)}, "otp": {code}}
 	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, "https://control.msg91.com/api/v5/otp?"+q.Encode(), nil)
 	req.Header.Set("authkey", m.AuthKey)
-	return do(req)
+	return doMSG91(req)
 }
 
 func (m MSG91) SendSOS(ctx context.Context, e164, alias, link string) error {
+	if m.AuthKey == "" || m.SOSFlowID == "" {
+		return ErrNotConfigured
+	}
 	body, _ := json.Marshal(map[string]any{
 		"template_id": m.SOSFlowID,
 		"recipients":  []map[string]string{{"mobiles": digitsOnly(e164), "alias": alias, "link": link}},
@@ -54,7 +66,25 @@ func (m MSG91) SendSOS(ctx context.Context, e164, alias, link string) error {
 	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, "https://control.msg91.com/api/v5/flow/", bytes.NewReader(body))
 	req.Header.Set("authkey", m.AuthKey)
 	req.Header.Set("Content-Type", "application/json")
-	return do(req)
+	return doMSG91(req)
+}
+
+// MSG91 reports most failures (bad key, template, DLT) as HTTP 200 with {"type":"error"}.
+func doMSG91(req *http.Request) error {
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("sms provider unreachable")
+	}
+	defer resp.Body.Close()
+	var body struct {
+		Type    string `json:"type"`
+		Message string `json:"message"`
+	}
+	_ = json.NewDecoder(io.LimitReader(resp.Body, 64<<10)).Decode(&body)
+	if resp.StatusCode >= 300 || body.Type == "error" {
+		return fmt.Errorf("sms provider rejected the message (%d)", resp.StatusCode)
+	}
+	return nil
 }
 
 func do(req *http.Request) error {
