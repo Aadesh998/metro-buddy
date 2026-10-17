@@ -60,15 +60,23 @@ export function useRoom<V>(id: string) {
     queryFn: () => get<Room<V>>(`/v1/games/rooms/${id}`),
     refetchInterval: (query) => (query.state.data?.status === 'playing' ? 4000 : 8000),
   });
-  useEffect(
-    () =>
-      on('game.updated', (d: { room_id: string; version: number }) => {
-        if (d.room_id !== id) return;
-        const cur = qc.getQueryData<Room>(gameKeys.room(id));
-        if (!cur || cur.version < d.version) qc.invalidateQueries({ queryKey: gameKeys.room(id) });
-      }),
-    [id, qc],
-  );
+  // Pings come several times a second while someone draws; refetch at most every 400ms.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const off = on('game.updated', (d: { room_id: string; version: number }) => {
+      if (d.room_id !== id) return;
+      const cur = qc.getQueryData<Room>(gameKeys.room(id));
+      if ((cur && cur.version >= d.version) || timer) return;
+      timer = setTimeout(() => {
+        timer = null;
+        qc.invalidateQueries({ queryKey: gameKeys.room(id) });
+      }, 400);
+    });
+    return () => {
+      off();
+      if (timer) clearTimeout(timer);
+    };
+  }, [id, qc]);
   return q;
 }
 

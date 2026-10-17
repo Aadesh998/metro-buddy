@@ -1,1 +1,27 @@
-export default {};
+export default {
+  next: 'Next',
+  startsWith: 'Starts with {letter}',
+  placeholder: 'A word starting with {letter}',
+  send: 'Send word',
+  thinking: '{name} is thinking…',
+  you: 'You',
+  out: 'Out',
+  livesLeft_one: '{count} life left',
+  livesLeft_other: '{count} lives left',
+  attempts: 'Attempt {n} of {max}',
+  used: '{n}/{max} words',
+  chain: 'The chain',
+  empty: 'No words yet. The first one starts with {letter}.',
+  winner: '{name} is the last one standing!',
+  youWon: 'You’re the last one standing!',
+  chainDone: 'The chain is complete. Highest score wins.',
+  playedBy: '{word}, played by {name}',
+  refusal: {
+    letter: 'Must start with {letter}',
+    used: 'Already used',
+    unknown: 'Not in our word list',
+    letters: 'Letters a to z only',
+    short: 'At least 3 letters',
+    long: 'That word is too long',
+  },
+};

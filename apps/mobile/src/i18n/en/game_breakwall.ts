@@ -1,1 +1,20 @@
-export default {};
+export default {
+  round: 'Round {n}/{max}',
+  getReady: 'Get ready',
+  play: 'Go!',
+  roundResults: 'Round results',
+  finalStandings: 'Final standings',
+  score: 'Score',
+  balls: 'Balls',
+  time: 'Time',
+  dragHint: 'Drag anywhere on the wall to move the paddle',
+  outOfBalls: 'Out of balls',
+  cleared: 'Wall cleared! +{n} bonus',
+  timeUp: 'Time’s up',
+  waiting: 'Waiting for the others…',
+  thisRound: 'This round',
+  total: 'Total',
+  done: 'Done',
+  playing: 'Playing',
+  canvas: 'Brick wall. Drag to move the paddle.',
+};

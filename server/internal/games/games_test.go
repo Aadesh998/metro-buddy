@@ -57,16 +57,19 @@ func TestPrivateRoomByCodeAndSudoku(t *testing.T) {
 	if v.Solution != nil {
 		t.Fatal("solution leaked during play")
 	}
-	empty := -1
+	// Pick the empty cell with the fewest candidates, then try those: each wrong one costs a shared mistake.
+	empty, cands := -1, []int{}
 	for i, g := range v.Givens {
-		if g == 0 {
-			empty = i
-			break
+		if g != 0 {
+			continue
+		}
+		c := sudokuCandidates(v.Givens, i)
+		if empty < 0 || len(c) < len(cands) {
+			empty, cands = i, c
 		}
 	}
-	// Find the right value by elimination: wrong answers count as mistakes.
 	right := 0
-	for val := 1; val <= 9; val++ {
+	for _, val := range cands {
 		resp := env.Do(http.MethodPost, "/v1/games/rooms/"+id+"/move", a.AccessToken, map[string]any{"cell": empty, "value": val})
 		if resp.Code != http.StatusNoContent {
 			t.Fatalf("move: %d %s", resp.Code, resp.Body)
@@ -100,4 +103,21 @@ func TestPublicListBySize(t *testing.T) {
 			t.Errorf("size %q: got %d rooms", size, len(list.Items))
 		}
 	}
+}
+
+func sudokuCandidates(g [81]int8, i int) []int {
+	used := map[int8]bool{}
+	r, c := i/9, i%9
+	for k := 0; k < 9; k++ {
+		used[g[r*9+k]] = true
+		used[g[k*9+c]] = true
+		used[g[(r/3*3+k/3)*9+c/3*3+k%3]] = true
+	}
+	out := []int{}
+	for v := 1; v <= 9; v++ {
+		if !used[int8(v)] {
+			out = append(out, v)
+		}
+	}
+	return out
 }

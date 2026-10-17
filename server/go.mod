@@ -16,6 +16,7 @@ require (
 	github.com/labstack/echo/v4 v4.16.0
 	github.com/livekit/protocol v1.52.1
 	github.com/livekit/server-sdk-go/v2 v2.19.0
+	github.com/notnil/chess v1.10.0
 	github.com/pquerna/otp v1.5.0
 	github.com/redis/go-redis/v9 v9.23.0
 	golang.org/x/crypto v0.58.0

@@ -1,0 +1,23 @@
+[
+  {"id": "food", "name": "Food", "words": ["samosa", "biryani", "dosa", "pani puri", "paneer", "chole bhature", "idli", "pav bhaji", "momos", "paratha", "khichdi", "vada pav", "rajma", "poha", "dal"]},
+  {"id": "sweets", "name": "Sweets", "words": ["jalebi", "gulab jamun", "rasgulla", "ladoo", "kheer", "barfi", "halwa", "kulfi", "ice cream", "chocolate", "cake", "peda", "rasmalai", "soan papdi", "gajar halwa"]},
+  {"id": "drinks", "name": "Drinks", "words": ["chai", "coffee", "lassi", "nimbu pani", "coconut water", "buttermilk", "milkshake", "sugarcane juice", "badam milk", "orange juice", "cold coffee", "jaljeera", "hot chocolate", "mango shake", "green tea"]},
+  {"id": "city", "name": "Places in a city", "words": ["hospital", "mall", "park", "library", "temple", "post office", "bank", "police station", "cinema", "stadium", "bus stop", "market", "school", "museum", "petrol pump"]},
+  {"id": "metro", "name": "Metro things", "words": ["token", "smart card", "escalator", "platform", "turnstile", "ladies coach", "map", "announcement", "doors", "handle", "security check", "interchange", "ticket counter", "lift", "last train"]},
+  {"id": "animals", "name": "Animals", "words": ["elephant", "tiger", "peacock", "monkey", "cow", "camel", "parrot", "snake", "dog", "cat", "lion", "giraffe", "crocodile", "rabbit", "horse"]},
+  {"id": "sports", "name": "Sports", "words": ["cricket", "football", "kabaddi", "badminton", "hockey", "tennis", "chess", "wrestling", "swimming", "boxing", "basketball", "carrom", "table tennis", "volleyball", "archery"]},
+  {"id": "genres", "name": "Movie genres", "words": ["comedy", "horror", "romance", "action", "thriller", "cartoon", "mystery", "musical", "science fiction", "fantasy", "drama", "documentary", "superhero", "western", "adventure"]},
+  {"id": "jobs", "name": "Jobs", "words": ["doctor", "teacher", "pilot", "farmer", "chef", "engineer", "police officer", "tailor", "driver", "nurse", "artist", "shopkeeper", "postman", "electrician", "barber"]},
+  {"id": "school", "name": "School", "words": ["blackboard", "chalk", "homework", "exam", "uniform", "lunch box", "principal", "assembly", "eraser", "notebook", "school bag", "recess", "report card", "sports day", "pencil"]},
+  {"id": "weather", "name": "Weather", "words": ["rain", "thunder", "fog", "heatwave", "rainbow", "storm", "snow", "humidity", "drizzle", "cyclone", "sunshine", "hail", "cloud", "breeze", "monsoon"]},
+  {"id": "festivals", "name": "Festivals", "words": ["diwali", "holi", "eid", "christmas", "navratri", "pongal", "onam", "raksha bandhan", "durga puja", "ganesh chaturthi", "lohri", "baisakhi", "new year", "janmashtami", "makar sankranti"]},
+  {"id": "home", "name": "Things at home", "words": ["fridge", "pressure cooker", "ceiling fan", "sofa", "mirror", "pillow", "television", "broom", "bucket", "cupboard", "clock", "remote", "doormat", "mixer", "curtain"]},
+  {"id": "transport", "name": "Transport", "words": ["auto rickshaw", "bus", "train", "bicycle", "scooter", "taxi", "aeroplane", "boat", "tractor", "ambulance", "cycle rickshaw", "truck", "helicopter", "ferry", "e-rickshaw"]},
+  {"id": "fruits", "name": "Fruits and vegetables", "words": ["mango", "banana", "guava", "watermelon", "papaya", "lemon", "potato", "onion", "tomato", "brinjal", "cauliflower", "pomegranate", "grapes", "coconut", "lady finger"]},
+  {"id": "clothes", "name": "Clothes", "words": ["saree", "kurta", "jeans", "dupatta", "sweater", "raincoat", "cap", "sandals", "lehenga", "dhoti", "scarf", "jacket", "socks", "sherwani", "t-shirt"]},
+  {"id": "body", "name": "Body parts", "words": ["elbow", "nose", "knee", "eyebrow", "thumb", "ankle", "shoulder", "tongue", "ear", "chin", "heel", "neck", "wrist", "forehead", "toe"]},
+  {"id": "music", "name": "Music", "words": ["tabla", "guitar", "flute", "sitar", "drums", "harmonium", "violin", "piano", "microphone", "headphones", "dhol", "veena", "concert", "karaoke", "trumpet"]},
+  {"id": "tech", "name": "Phones and tech", "words": ["charger", "selfie", "wifi", "earphones", "password", "battery", "laptop", "emoji", "power bank", "keyboard", "screenshot", "camera", "video call", "app", "printer"]},
+  {"id": "nature", "name": "Nature", "words": ["river", "mountain", "beach", "forest", "desert", "waterfall", "island", "volcano", "cave", "lake", "valley", "sunrise", "moon", "star", "banyan tree"]},
+  {"id": "games", "name": "Games and toys", "words": ["ludo", "kite", "snakes and ladders", "marbles", "spinning top", "hide and seek", "puzzle", "teddy bear", "yo-yo", "balloon", "kho kho", "carrom", "gilli danda", "doll", "skipping rope"]}
+]
