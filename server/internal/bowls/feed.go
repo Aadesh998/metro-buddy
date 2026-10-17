@@ -84,7 +84,14 @@ func (h *Handlers) feed(c echo.Context) error {
 	} else if !ok {
 		return ErrNotMember
 	}
-	return h.servePosts(c, tx.Model(&model.Post{}).Where("posts.bowl_id = ?", b.ID))
+	var pinned *model.Post
+	if b.Kind == model.BowlCity && b.CityID != nil && c.QueryParam("cursor") == "" {
+		var err error
+		if pinned, err = h.pinnedPrompt(c.Request().Context(), *b.CityID); err != nil {
+			return err
+		}
+	}
+	return h.servePosts(c, tx.Model(&model.Post{}).Where("posts.bowl_id = ?", b.ID), pinned)
 }
 
 // home is the merged feed of every bowl the viewer joined.
@@ -92,16 +99,30 @@ func (h *Handlers) home(c echo.Context) error {
 	viewer := httpx.PrincipalFrom(c).PersonaID
 	q := h.DB.WithContext(c.Request().Context()).Model(&model.Post{}).
 		Where("posts.bowl_id IN (SELECT bowl_id FROM bowl_members WHERE persona_id = ?)", viewer)
-	return h.servePosts(c, q)
+	var pinned *model.Post
+	if c.QueryParam("cursor") == "" {
+		var persona model.Persona
+		if err := h.DB.WithContext(c.Request().Context()).Select("city_id").First(&persona, "id = ?", viewer).Error; err != nil {
+			return err
+		}
+		var err error
+		if pinned, err = h.pinnedPrompt(c.Request().Context(), persona.CityID); err != nil {
+			return err
+		}
+	}
+	return h.servePosts(c, q, pinned)
 }
 
-func (h *Handlers) servePosts(c echo.Context, q *gorm.DB) error {
+func (h *Handlers) servePosts(c echo.Context, q *gorm.DB, pinned *model.Post) error {
 	req, err := httpx.Bind[feedQuery](c)
 	if err != nil {
 		return err
 	}
 	viewer := httpx.PrincipalFrom(c).PersonaID
 	q = q.Where("posts.status = ?", model.ContentVisible).Scopes(safety.Hidden(viewer, "posts.author_persona_id"))
+	if pinned != nil {
+		q = q.Where("posts.id <> ?", pinned.ID)
+	}
 	limit := db.ClampLimit(req.Limit)
 	var rows []model.Post
 	var key func(p model.Post) string
@@ -117,7 +138,7 @@ func (h *Handlers) servePosts(c echo.Context, q *gorm.DB) error {
 		}
 		var next string
 		rows, next = db.Trim(rows, l, func(p model.Post) db.Cursor { return db.Cursor{CreatedAt: p.CreatedAt, ID: p.ID} })
-		return h.respondPosts(c, rows, next)
+		return h.respondPosts(c, rows, next, pinned)
 	case "top":
 		if d, ok := windows[req.Window]; ok {
 			q = q.Where("posts.created_at > ?", h.now().Add(-d))
@@ -141,7 +162,7 @@ func (h *Handlers) servePosts(c echo.Context, q *gorm.DB) error {
 		rows = rows[:limit]
 		next = key(rows[len(rows)-1])
 	}
-	return h.respondPosts(c, rows, next)
+	return h.respondPosts(c, rows, next, pinned)
 }
 
 func keyset(q *gorm.DB, col, cursor string) (*gorm.DB, error) {
@@ -155,12 +176,21 @@ func keyset(q *gorm.DB, col, cursor string) (*gorm.DB, error) {
 	return q.Where(fmt.Sprintf("(%s < ? OR (%s = ? AND posts.id < ?))", col, col), v, v, id), nil
 }
 
-func (h *Handlers) respondPosts(c echo.Context, rows []model.Post, next string) error {
-	out, err := h.PostDTOs(c.Request().Context(), httpx.PrincipalFrom(c).PersonaID, rows)
+func (h *Handlers) respondPosts(c echo.Context, rows []model.Post, next string, pinned *model.Post) error {
+	ctx, viewer := c.Request().Context(), httpx.PrincipalFrom(c).PersonaID
+	out, err := h.PostDTOs(ctx, viewer, rows)
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, map[string]any{"items": out, "next_cursor": next})
+	var pin *PostDTO
+	if pinned != nil {
+		ps, err := h.PostDTOs(ctx, viewer, []model.Post{*pinned})
+		if err != nil {
+			return err
+		}
+		pin = &ps[0]
+	}
+	return c.JSON(http.StatusOK, map[string]any{"items": out, "next_cursor": next, "pinned": pin})
 }
 
 // RefreshHotRanks recomputes hot_rank for recent posts; older posts have decayed out of hot anyway.

@@ -29,7 +29,7 @@ T036,P1,F13,Feed ranking,Backend,Feed endpoints Hot/New/Top; hot score cron ever
 T037,P1,F10,Bowl discovery & join,Mobile,"Bowls tab: discover, joined list, bowl screen",Join/leave reflects immediately,Must,2,T033,Todo,,,,,Not tested,,,,
 T038,P1,F11,Posts,Mobile,"Composer: text, image, poll, flair; PII preview warning",User sees masked preview before posting,Must,2,T034,Todo,,,,,Not tested,,,,
 T039,P1,F12,Comments & votes,Mobile,"Post detail with threaded comments, votes, OP badge",FlashList renders 500 comments smoothly,Must,2,T035,Todo,,,,,Not tested,,,,
-T040,P1,F15,Daily prompts,Backend,Daily prompt scheduler per city + pinned prompt post,One prompt per city per day,Should,1,T034,Todo,,,,,Not tested,,,,
+T040,P1,F15,Daily prompts,Backend,Daily prompt scheduler per city + pinned prompt post,One prompt per city per day,Should,1,T034,Done,,2026-10-17,2026-10-17,"30-prompt rotation by IST day, per-city system persona 'Metro Buddy', unique (city,day), job every 30 min, pinned on city bowl + home feed; tested",Not tested,,,,
 T041,P1,F70,Admin console,Admin,"Admin console shell, RBAC (moderator, ts_lead, admin), login",Moderators cannot access vault,Must,2,T011,Todo,,,,,Not tested,,,,
 T042,P1,F51,Moderation queue,Admin,"Moderation queue: cases, content preview, actions (remove, warn, suspend, ban), audit",Every action writes moderation_action + audit_log,Must,3,"T041,T020",Todo,,,,,Not tested,,,,
 T043,P1,F55,Grievance & appeals,Backend,Grievance tickets + appeals with SLA timers,Ack within 24h tracked; overdue alerts,Must,1,T042,Todo,,,,,Not tested,,,,

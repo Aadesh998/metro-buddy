@@ -187,4 +187,5 @@ func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "pii_vault_purge", time.Hour, a.PII.Purge)
 	go a.PII.Second.Run(ctx)
 	a.Jobs.Every(ctx, "hot_rank", 5*time.Minute, a.Bowls.RefreshHotRanks)
+	a.Jobs.Every(ctx, "daily_prompts", 30*time.Minute, a.Bowls.PostDailyPrompts)
 }
