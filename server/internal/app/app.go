@@ -12,6 +12,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
+	"metro-buddy/server/internal/ai"
 	"metro-buddy/server/internal/audit"
 	"metro-buddy/server/internal/auth"
 	"metro-buddy/server/internal/config"
@@ -45,6 +46,7 @@ type App struct {
 	Tokens  *auth.Tokens
 	OTP     *auth.OTP
 	PII     *pii.Pipeline
+	AI      *ai.Client
 	Metro   *metro.Service
 	Safety  *safety.Handlers
 	Jobs    *jobs.Runner
@@ -74,7 +76,9 @@ func New(d *Deps) (*App, error) {
 		Pepper: d.Cfg.PhonePepper, CodeKey: d.Cfg.JWTSecret,
 		DevCode: d.Cfg.OTPDevCode, AllowDev: d.Cfg.IsDev(),
 	}
-	a.PII = &pii.Pipeline{DB: d.DB, Box: box, Audit: a.Audit}
+	a.AI = &ai.Client{APIKey: d.Cfg.AnthropicKey, DB: d.DB, Log: d.Log}
+	a.PII = &pii.Pipeline{DB: d.DB, Box: box, Audit: a.Audit,
+		Second: &pii.SecondPass{DB: d.DB, Redis: d.Redis, AI: a.AI, Log: d.Log}}
 	a.Metro = &metro.Service{DB: d.DB}
 	a.Jobs = &jobs.Runner{Redis: d.Redis, Log: d.Log}
 	a.Echo = a.routes()
@@ -157,4 +161,5 @@ func (a *App) health(c echo.Context) error {
 // StartJobs runs background work; kept out of New so tests drive jobs explicitly.
 func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "pii_vault_purge", time.Hour, a.PII.Purge)
+	go a.PII.Second.Run(ctx)
 }

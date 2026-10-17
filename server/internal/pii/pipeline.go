@@ -15,12 +15,11 @@ import (
 const VaultTTL = 90 * 24 * time.Hour
 
 type Pipeline struct {
-	DB    *gorm.DB
-	Box   *secure.Box
-	Audit *audit.Recorder
-	// Called after commit for content that should get the async LLM second pass.
-	OnStored func(ct model.ContentType, id uuid.UUID)
-	Now      func() time.Time
+	DB     *gorm.DB
+	Box    *secure.Box
+	Audit  *audit.Recorder
+	Second *SecondPass
+	Now    func() time.Time
 }
 
 func (p *Pipeline) now() time.Time {
@@ -30,13 +29,16 @@ func (p *Pipeline) now() time.Time {
 	return time.Now()
 }
 
-// Process masks raw UGC and, inside tx, records what was masked and vaults the raw
-// text when masking changed it. The returned masked text is the only version to store.
+// AfterCommit queues the LLM second pass; call it once the content row is committed.
+func (p *Pipeline) AfterCommit(ctx context.Context, ct model.ContentType, id uuid.UUID) {
+	p.Second.Enqueue(ctx, ct, id)
+}
+
+// Process masks raw UGC and, inside tx, vaults the encrypted raw text and records what was
+// masked. Raw is vaulted even when regex finds nothing, because the async LLM pass may mask
+// more later. The returned masked text is the only version to store in content tables.
 func (p *Pipeline) Process(tx *gorm.DB, ct model.ContentType, id uuid.UUID, raw string, opt Options) (Result, error) {
 	r := Mask(raw, opt)
-	if r.Flags == 0 {
-		return r, nil
-	}
 	if err := p.vault(tx, ct, id, raw); err != nil {
 		return r, err
 	}
@@ -53,19 +55,6 @@ func (p *Pipeline) vault(tx *gorm.DB, ct model.ContentType, id uuid.UUID, raw st
 		ContentType: ct, ContentID: id, RawEnc: p.Box.SealString(raw),
 		KeyVersion: p.Box.KeyVersion(), ExpiresAt: p.now().Add(VaultTTL),
 	}).Error
-}
-
-// Vault keeps raw text of content that the LLM pass will inspect even when regex found nothing,
-// so a later LLM mask can still be audited.
-func (p *Pipeline) VaultRaw(tx *gorm.DB, ct model.ContentType, id uuid.UUID, raw string) error {
-	var n int64
-	if err := tx.Model(&model.PIIVault{}).Where("content_type = ? AND content_id = ?", ct, id).Count(&n).Error; err != nil {
-		return err
-	}
-	if n > 0 {
-		return nil
-	}
-	return p.vault(tx, ct, id, raw)
 }
 
 func (p *Pipeline) Purge(ctx context.Context) error {

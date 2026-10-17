@@ -19,7 +19,7 @@ func newPipeline(t *testing.T) *Pipeline {
 	return &Pipeline{DB: gdb, Box: box, Audit: audit.New(gdb, slog.New(slog.NewTextHandler(io.Discard, nil)), []byte("p"))}
 }
 
-func TestProcessVaultsEncryptedRawOnlyWhenMasked(t *testing.T) {
+func TestProcessVaultsEncryptedRawAndRecordsDetections(t *testing.T) {
 	p := newPipeline(t)
 	id := model.NewID()
 	r, err := p.Process(p.DB, model.CTPost, id, "call 9876543210", Options{})
@@ -40,9 +40,9 @@ func TestProcessVaultsEncryptedRawOnlyWhenMasked(t *testing.T) {
 	clean := model.NewID()
 	p.Process(p.DB, model.CTPost, clean, "just a rant", Options{})
 	var n int64
-	p.DB.Model(&model.PIIVault{}).Where("content_id = ?", clean).Count(&n)
+	p.DB.Model(&model.PIIDetection{}).Where("content_id = ?", clean).Count(&n)
 	if n != 0 {
-		t.Fatal("clean text vaulted")
+		t.Fatal("clean text produced detections")
 	}
 }
 
