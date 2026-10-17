@@ -14,6 +14,7 @@ import (
 
 	"metro-buddy/server/internal/admin"
 	"metro-buddy/server/internal/ai"
+	"metro-buddy/server/internal/analytics"
 	"metro-buddy/server/internal/audit"
 	"metro-buddy/server/internal/auth"
 	"metro-buddy/server/internal/bowls"
@@ -204,6 +205,8 @@ func (a *App) routes() *echo.Echo {
 	a.Chat = &chat.Service{DB: a.DB, PII: a.PII, Media: a.Media, Hub: a.Hub, Limiter: a.Limiter}
 	a.Chat.Register(social)
 	a.Notify.Register(authed)
+	authed.POST("/events", (&analytics.Handlers{DB: a.DB, Pepper: a.Cfg.IPPepper}).Track,
+		a.Limiter.Middleware(ratelimit.Rule{Name: "events", Limit: 120, Window: time.Minute}))
 	a.wireNotifications()
 	receipts := &chat.Receipts{Service: a.Chat, Redis: a.Redis}
 	a.Hub.OnInbound = receipts.HandleInbound
