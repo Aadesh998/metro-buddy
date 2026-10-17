@@ -26,7 +26,7 @@ func (p *Pipeline) now() time.Time {
 	if p.Now != nil {
 		return p.Now()
 	}
-	return time.Now()
+	return time.Now().UTC()
 }
 
 // AfterCommit queues the LLM second pass; call it once the content row is committed.

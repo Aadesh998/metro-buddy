@@ -33,7 +33,7 @@ func (h *Handlers) now() time.Time {
 	if h.Now != nil {
 		return h.Now()
 	}
-	return time.Now()
+	return time.Now().UTC()
 }
 
 func (h *Handlers) Register(g *echo.Group) {

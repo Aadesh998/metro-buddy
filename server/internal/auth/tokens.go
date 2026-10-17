@@ -48,7 +48,7 @@ func (t *Tokens) now() time.Time {
 	if t.Now != nil {
 		return t.Now()
 	}
-	return time.Now()
+	return time.Now().UTC()
 }
 
 // Every login starts a new family, so a token stolen before login can never be rotated into this session.

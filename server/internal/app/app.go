@@ -20,6 +20,7 @@ import (
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/identity"
 	"metro-buddy/server/internal/jobs"
+	"metro-buddy/server/internal/media"
 	"metro-buddy/server/internal/metro"
 	"metro-buddy/server/internal/model"
 	"metro-buddy/server/internal/pii"
@@ -51,6 +52,7 @@ type App struct {
 	Metro   *metro.Service
 	Safety  *safety.Handlers
 	Bowls   *bowls.Handlers
+	Media   *media.Service
 	Jobs    *jobs.Runner
 }
 
@@ -82,6 +84,7 @@ func New(d *Deps) (*App, error) {
 	a.PII = &pii.Pipeline{DB: d.DB, Box: box, Audit: a.Audit,
 		Second: &pii.SecondPass{DB: d.DB, Redis: d.Redis, AI: a.AI, Log: d.Log}}
 	a.Metro = &metro.Service{DB: d.DB}
+	a.Media = newMedia(d.Cfg)
 	a.Jobs = &jobs.Runner{Redis: d.Redis, Log: d.Log}
 	a.Echo = a.routes()
 	return a, nil
@@ -96,6 +99,21 @@ func newSMS(cfg *config.Config, log *slog.Logger) sms.Sender {
 		s = sms.Fallback{Primary: s, Secondary: sms.Twilio{AccountSID: cfg.TwilioSID, AuthToken: cfg.TwilioToken, From: cfg.TwilioFrom}, Log: log}
 	}
 	return s
+}
+
+func newMedia(cfg *config.Config) *media.Service {
+	var store media.Store = media.NewMemory(cfg.PublicBaseURL)
+	if cfg.R2Bucket != "" {
+		store = media.NewR2(cfg.R2AccountID, cfg.R2AccessKey, cfg.R2SecretKey, cfg.R2Bucket)
+	}
+	var scanner media.Scanner = media.ReviewAll{}
+	switch {
+	case cfg.NSFWEndpoint != "":
+		scanner = media.HTTPScanner{Endpoint: cfg.NSFWEndpoint}
+	case !cfg.IsProd():
+		scanner = media.ClearAll{}
+	}
+	return &media.Service{Store: store, Scanner: scanner}
 }
 
 func (a *App) routes() *echo.Echo {
@@ -139,8 +157,10 @@ func (a *App) routes() *echo.Echo {
 	social := authed.Group("", auth.RequirePersona)
 	a.Safety = &safety.Handlers{DB: a.DB, Audit: a.Audit, Limiter: a.Limiter}
 	a.Safety.Register(social)
-	a.Bowls = &bowls.Handlers{DB: a.DB, PII: a.PII, Limiter: a.Limiter}
+	a.Bowls = &bowls.Handlers{DB: a.DB, PII: a.PII, Media: a.Media, Limiter: a.Limiter}
 	a.Bowls.Register(social)
+	social.POST("/uploads", a.Media.CreateUpload, a.Limiter.Middleware(ratelimit.Rule{Name: "uploads", Limit: 30, Window: time.Hour, ByTier: true}))
+	a.Media.DevRoutes(e)
 
 	return e
 }
@@ -166,4 +186,5 @@ func (a *App) health(c echo.Context) error {
 func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "pii_vault_purge", time.Hour, a.PII.Purge)
 	go a.PII.Second.Run(ctx)
+	a.Jobs.Every(ctx, "hot_rank", 5*time.Minute, a.Bowls.RefreshHotRanks)
 }

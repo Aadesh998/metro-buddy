@@ -1,6 +1,7 @@
 package bowls
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strings"
@@ -13,6 +14,7 @@ import (
 
 	"metro-buddy/server/internal/db"
 	"metro-buddy/server/internal/httpx"
+	"metro-buddy/server/internal/media"
 	"metro-buddy/server/internal/model"
 	"metro-buddy/server/internal/pii"
 	"metro-buddy/server/internal/ratelimit"
@@ -21,7 +23,12 @@ import (
 type Handlers struct {
 	DB      *gorm.DB
 	PII     *pii.Pipeline
+	Media   *media.Service
 	Limiter *ratelimit.Limiter
+	// OnUGC lets the safety domain watch new text for distress signals; never punitive.
+	OnUGC func(ctx context.Context, persona uuid.UUID, text string)
+	// OnReply notifies the persona whose post or comment got a reply.
+	OnReply func(ctx context.Context, to, postID, commentID uuid.UUID)
 	// Publish fans out realtime events (wired by the realtime gateway); nil-safe.
 	Publish func(personaIDs []uuid.UUID, event string, payload any)
 	Now     func() time.Time
@@ -31,10 +38,11 @@ func (h *Handlers) now() time.Time {
 	if h.Now != nil {
 		return h.Now()
 	}
-	return time.Now()
+	return time.Now().UTC()
 }
 
 func (h *Handlers) Register(g *echo.Group) {
+	g.GET("/feed", h.home)
 	g.GET("/bowls", h.list)
 	g.GET("/bowls/joined", h.joined)
 	g.GET("/bowls/:id", h.get)
