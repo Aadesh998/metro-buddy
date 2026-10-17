@@ -6,6 +6,7 @@ require (
 	github.com/alicebob/miniredis/v2 v2.40.0
 	github.com/aws/aws-sdk-go-v2 v1.47.3
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.9
+	github.com/aws/aws-sdk-go-v2/service/rekognition v1.60.3
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.114.3
 	github.com/coder/websocket v1.8.15
 	github.com/glebarez/sqlite v1.11.0
@@ -19,6 +20,7 @@ require (
 	github.com/redis/go-redis/v9 v9.23.0
 	golang.org/x/crypto v0.58.0
 	golang.org/x/image v0.47.0
+	google.golang.org/protobuf v1.36.12
 	gorm.io/driver/postgres v1.6.3
 	gorm.io/gorm v1.31.2
 )
@@ -121,7 +123,6 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20260803160001-6ac0973c030d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260803160001-6ac0973c030d // indirect
 	google.golang.org/grpc v1.83.2 // indirect
-	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.22.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect

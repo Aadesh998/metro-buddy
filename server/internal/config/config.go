@@ -39,6 +39,10 @@ type Config struct {
 	AnthropicKey  string
 	ExpoPushToken string
 
+	LivenessProvider string
+	AWSRegion        string
+	AWSAccessKey     string
+	AWSSecretKey     string
 	LiveKitURL       string
 	LiveKitAPIKey    string
 	LiveKitAPISecret string
@@ -77,6 +81,10 @@ func Load() (*Config, error) {
 
 		ExpoPushToken: os.Getenv("EXPO_ACCESS_TOKEN"),
 
+		LivenessProvider: os.Getenv("LIVENESS_PROVIDER"),
+		AWSRegion:        get("AWS_REGION", "ap-south-1"),
+		AWSAccessKey:     os.Getenv("AWS_ACCESS_KEY_ID"),
+		AWSSecretKey:     os.Getenv("AWS_SECRET_ACCESS_KEY"),
 		LiveKitURL:       get("LIVEKIT_URL", "ws://localhost:7880"),
 		LiveKitAPIKey:    get("LIVEKIT_API_KEY", "devkey"),
 		LiveKitAPISecret: get("LIVEKIT_API_SECRET", "secret"),

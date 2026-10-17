@@ -37,6 +37,7 @@ import (
 	"metro-buddy/server/internal/studio"
 	"metro-buddy/server/internal/travel"
 	"metro-buddy/server/internal/trust"
+	"metro-buddy/server/internal/verify"
 	"metro-buddy/server/internal/web"
 )
 
@@ -231,6 +232,14 @@ func (a *App) routes() *echo.Echo {
 	a.Studio = &studio.Service{DB: a.DB, Live: a.Live, Hub: a.Hub, Notify: a.Notify, PII: a.PII, Audit: a.Audit, Limiter: a.Limiter, AI: a.AI, Redis: a.Redis, Log: a.Log}
 	a.Studio.Register(social, e)
 	a.Safety.OnReport = a.Studio.OnReport
+	v := &verify.Service{DB: a.DB, Redis: a.Redis, Audit: a.Audit, Limiter: a.Limiter, Provider: a.Cfg.LivenessProvider, Region: a.Cfg.AWSRegion}
+	switch {
+	case a.Cfg.LivenessProvider == "rekognition":
+		v.Liveness = verify.NewRekognition(a.Cfg.AWSRegion, a.Cfg.AWSAccessKey, a.Cfg.AWSSecretKey)
+	case !a.Cfg.IsProd():
+		v.Liveness, v.Provider = verify.Dev{}, "dev"
+	}
+	v.Register(authed)
 	authed.POST("/events", (&analytics.Handlers{DB: a.DB, Pepper: a.Cfg.IPPepper}).Track,
 		a.Limiter.Middleware(ratelimit.Rule{Name: "events", Limit: 120, Window: time.Minute}))
 	a.wireNotifications()
