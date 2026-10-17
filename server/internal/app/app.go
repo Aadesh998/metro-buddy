@@ -113,6 +113,14 @@ func (a *App) routes() *echo.Echo {
 		}),
 	)
 
+	if a.Cfg.IsDev() {
+		// Lets the Expo web preview call the local API; native apps don't use CORS.
+		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowOrigins: []string{"http://localhost:8081", "http://localhost:19006", "http://localhost:4173"},
+			AllowHeaders: []string{echo.HeaderAuthorization, echo.HeaderContentType},
+		}))
+	}
+
 	e.GET("/healthz", a.health)
 
 	v1 := e.Group("/v1")
