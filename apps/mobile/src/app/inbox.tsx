@@ -47,7 +47,7 @@ export default function InboxScreen() {
         right={
           q.data?.unread ? (
             <Pressable onPress={() => read.mutate({ all: true })} hitSlop={8}>
-              <Text className="text-xs font-semibold text-brand">{t('safety.inbox.readAll')}</Text>
+              <Text numberOfLines={1} className="text-xs font-semibold text-brand">{t('safety.inbox.readAll')}</Text>
             </Pressable>
           ) : null
         }

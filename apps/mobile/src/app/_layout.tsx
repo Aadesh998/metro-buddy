@@ -1,4 +1,5 @@
 import "../global.css";
+import "@/lib/interop";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
