@@ -1,4 +1,4 @@
-.PHONY: install build build-server build-admin build-mobile dev-server dev-admin dev-mobile
+.PHONY: install build build-server build-admin build-mobile check check-server check-admin check-mobile dev-server dev-admin dev-mobile
 
 install:
 	cd admin && npm ci
@@ -15,6 +15,17 @@ build-admin:
 
 build-mobile:
 	cd apps/mobile && npm run build
+
+check: check-server check-admin check-mobile
+
+check-server:
+	cd server && go vet ./... && go test -race ./... && go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+
+check-admin:
+	cd admin && npm run typecheck && npm run lint && npm run audit
+
+check-mobile:
+	cd apps/mobile && npm run typecheck && npm run lint && npm run audit
 
 dev-server:
 	cd server && go run ./cmd/server

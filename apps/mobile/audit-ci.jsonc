@@ -1,0 +1,9 @@
+{
+  "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
+  "high": true,
+  // No patched release exists yet; both are only reached through Expo CLI/config-plugin build tooling, not the app bundle.
+  "allowlist": [
+    "GHSA-vfj7-8cjw-p6xm",
+    "GHSA-86w9-cpqp-85rv"
+  ]
+}
