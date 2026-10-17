@@ -225,7 +225,7 @@ func (a *App) routes() *echo.Echo {
 	if a.Live == nil {
 		a.Live = studio.NewLiveKit(a.Cfg.LiveKitURL, a.Cfg.LiveKitAPIKey, a.Cfg.LiveKitAPISecret)
 	}
-	a.Studio = &studio.Service{DB: a.DB, Live: a.Live, Hub: a.Hub, Notify: a.Notify, PII: a.PII, Audit: a.Audit, Limiter: a.Limiter, Log: a.Log}
+	a.Studio = &studio.Service{DB: a.DB, Live: a.Live, Hub: a.Hub, Notify: a.Notify, PII: a.PII, Audit: a.Audit, Limiter: a.Limiter, AI: a.AI, Redis: a.Redis, Log: a.Log}
 	a.Studio.Register(social, e)
 	a.Safety.OnReport = a.Studio.OnReport
 	authed.POST("/events", (&analytics.Handlers{DB: a.DB, Pepper: a.Cfg.IPPepper}).Track,

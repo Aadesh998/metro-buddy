@@ -79,3 +79,9 @@ export function useEpisodeEvents(id: string, onReaction: (r: string) => void) {
     return () => offs.forEach((off) => off());
   }, [id, qc, onReaction]);
 }
+
+export type TopicIdeas = { ideas: { topic: string; hook: string }[]; themes: string[]; from_ai: boolean; updated_at: string };
+
+export function useTopicIdeas(enabled: boolean) {
+  return useQuery({ queryKey: ['topic-ideas'], queryFn: () => get<TopicIdeas>('/v1/studio/topic-ideas'), enabled, staleTime: 30 * 60_000 });
+}

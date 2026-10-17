@@ -11,9 +11,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
+	"metro-buddy/server/internal/ai"
 	"metro-buddy/server/internal/audit"
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/identity"
@@ -53,6 +55,8 @@ type Service struct {
 	PII     *pii.Pipeline
 	Audit   *audit.Recorder
 	Limiter *ratelimit.Limiter
+	AI      *ai.Client
+	Redis   *redis.Client
 	Log     *slog.Logger
 	Now     func() time.Time
 }
@@ -67,6 +71,7 @@ func (s *Service) now() time.Time {
 func (s *Service) Register(g *echo.Group, e *echo.Echo) {
 	g.POST("/studio/host-application", s.apply)
 	g.GET("/studio/host-application", s.myApplication)
+	g.GET("/studio/topic-ideas", s.topicIdeas, s.Limiter.Middleware(ratelimit.Rule{Name: "topic_ideas", Limit: 20, Window: time.Hour}))
 	g.GET("/shows", s.listShows)
 	g.POST("/shows", s.createShow)
 	g.GET("/shows/:id", s.getShow)

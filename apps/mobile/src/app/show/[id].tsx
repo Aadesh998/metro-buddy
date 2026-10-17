@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Minus, MoreHorizontal, Plus } from 'lucide-react-native';
+import { Lightbulb, Minus, MoreHorizontal, Plus } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/Input';
 import { Text } from '@/components/ui/Text';
 import { useSafetySheet } from '@/features/safety/SafetySheet';
 import { EpisodeCard } from '@/features/studio/EpisodeCard';
-import { studioKeys, useFollow, useShow } from '@/features/studio/hooks';
+import { studioKeys, useFollow, useShow, useTopicIdeas } from '@/features/studio/hooks';
 import { useNow } from '@/lib/clock';
 import { colors } from '@/lib/theme';
 
@@ -41,11 +41,29 @@ function Scheduler({ show, now }: { show: Show; now: number }) {
       qc.invalidateQueries({ queryKey: studioKeys.schedule });
     },
   });
+  const [showIdeas, setShowIdeas] = useState(false);
+  const ideas = useTopicIdeas(showIdeas);
   const step = (d: number) => setMinutes((m) => Math.min(24 * 60 - 15, Math.max(0, m + d)));
   return (
     <View className="gap-3 rounded-2xl border border-line bg-surface p-4">
       <Text variant="heading">Schedule an episode</Text>
       <Input value={title} onChangeText={(t) => setTitle(t.slice(0, 80))} placeholder="Tonight’s topic" />
+      {showIdeas ? (
+        <View className="gap-2">
+          <Text variant="caption">{ideas.data?.from_ai ? 'Ideas based on what the city is talking about this week' : 'Ideas from this week’s busiest bowls'}</Text>
+          {(ideas.data?.ideas ?? []).map((i) => (
+            <Pressable key={i.topic} onPress={() => setTitle(i.topic.slice(0, 80))} className="gap-0.5 rounded-xl bg-raised p-3 active:opacity-70">
+              <Text variant="label">{i.topic}</Text>
+              <Text variant="caption">{i.hook}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : (
+        <Pressable onPress={() => setShowIdeas(true)} className="flex-row items-center gap-1.5 self-start" hitSlop={8}>
+          <Lightbulb size={15} color={colors.accent} />
+          <Text className="text-sm font-medium text-accent">Need a topic idea?</Text>
+        </Pressable>
+      )}
       <View className="flex-row flex-wrap gap-2">
         {[0, 1, 2, 3, 4, 5, 6].map((d) => (
           <Chip
