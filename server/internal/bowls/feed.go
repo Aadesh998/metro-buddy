@@ -91,6 +91,12 @@ func (h *Handlers) feed(c echo.Context) error {
 			return err
 		}
 	}
+	if pinned == nil && b.PinnedPostID != nil && c.QueryParam("cursor") == "" {
+		var p model.Post
+		if tx.Where("id = ? AND status = ?", *b.PinnedPostID, model.ContentVisible).Limit(1).Find(&p).RowsAffected == 1 {
+			pinned = &p
+		}
+	}
 	return h.servePosts(c, tx.Model(&model.Post{}).Where("posts.bowl_id = ?", b.ID), pinned)
 }
 

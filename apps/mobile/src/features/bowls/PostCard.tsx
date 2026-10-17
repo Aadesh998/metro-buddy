@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { EyeOff, ImageOff, MessageSquare, MoreHorizontal, Pin } from 'lucide-react-native';
+import { EyeOff, ImageOff, Lock, MessageSquare, MoreHorizontal, Pin, Shield } from 'lucide-react-native';
 import { memo } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -15,7 +15,7 @@ import { useVote } from './hooks';
 import { PollView } from './PollView';
 import { VoteBar } from './VoteBar';
 
-export const PostCard = memo(function PostCard({ p, full, showBowl = true }: { p: Post; full?: boolean; showBowl?: boolean }) {
+export const PostCard = memo(function PostCard({ p, full, showBowl = true, pinned, onMod }: { p: Post; full?: boolean; showBowl?: boolean; pinned?: boolean; onMod?: (p: Post) => void }) {
   const vote = useVote();
   const safety = useSafetySheet();
   const open = () => !full && router.push(`/post/${p.id}`);
@@ -24,10 +24,10 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true }: { p
   const Outer = full ? View : Pressable;
   return (
     <Outer {...(full ? {} : { onPress: open })} className={`gap-2 bg-surface px-4 py-4 ${full ? '' : 'mb-2 active:bg-raised'}`}>
-      {p.is_prompt ? (
+      {p.is_prompt || pinned ? (
         <View className="flex-row items-center gap-1.5">
           <Pin size={13} color={colors.accent} />
-          <Text className="text-xs font-semibold text-accent">Today’s prompt</Text>
+          <Text className="text-xs font-semibold text-accent">{p.is_prompt ? 'Today’s prompt' : 'Pinned by moderators'}</Text>
         </View>
       ) : null}
       <View className="flex-row items-center gap-2">
@@ -46,6 +46,12 @@ export const PostCard = memo(function PostCard({ p, full, showBowl = true }: { p
             {ago(p.created_at)}
           </Text>
         </View>
+        {p.locked ? <Lock size={14} color={colors.muted} accessibilityLabel="Comments closed" /> : null}
+        {onMod ? (
+          <Pressable onPress={() => onMod(p)} hitSlop={10} accessibilityLabel="Moderator tools">
+            <Shield size={18} color={colors.accent} />
+          </Pressable>
+        ) : null}
         {!p.is_mine ? (
           <Pressable
             onPress={() => safety.open({ type: 'post', id: p.id, personaId: deleted ? undefined : p.author.id, alias: p.author.alias })}

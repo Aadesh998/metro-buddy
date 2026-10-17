@@ -13,6 +13,7 @@ export type Me = {
   verified: boolean;
   policy_version: string;
   deletion_scheduled_at: string | null;
+  trust_tier: number;
 };
 
 export type Vibe = { slug: string; label_en: string; label_hi: string; category: string };
@@ -103,6 +104,7 @@ export type Post = {
   comment_count: number;
   pii_hidden: boolean;
   is_prompt: boolean;
+  locked: boolean;
   created_at: string;
   show_support?: boolean;
 };

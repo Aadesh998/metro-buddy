@@ -19,6 +19,7 @@ type Bowl struct {
 	CreatedByPersonaID *uuid.UUID     `gorm:"type:uuid"`
 	MemberCount        int            `gorm:"not null;default:0"`
 	RulesMD            string         `gorm:"type:text"`
+	PinnedPostID       *uuid.UUID     `gorm:"type:uuid"`
 }
 
 type BowlMember struct {
@@ -55,6 +56,7 @@ type Post struct {
 	CommentCount    int           `gorm:"not null;default:0"`
 	HotRank         float64       `gorm:"not null;default:0;index"`
 	IsPrompt        bool          `gorm:"not null;default:false"`
+	LockedAt        *time.Time
 }
 
 type Poll struct {

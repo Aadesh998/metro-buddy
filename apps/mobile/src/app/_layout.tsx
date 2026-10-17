@@ -63,6 +63,8 @@ function Navigation() {
         <Stack.Screen name="settings/profile" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="settings/privacy" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="bowl/[id]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="bowl/new" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="bowl/mod" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="post/[id]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="compose" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="chat/[id]/index" options={{ animation: 'slide_from_right' }} />

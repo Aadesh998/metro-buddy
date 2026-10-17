@@ -29,6 +29,8 @@ type Handlers struct {
 	OnUGC func(ctx context.Context, persona uuid.UUID, text string)
 	// OnReply notifies the persona whose post or comment got a reply.
 	OnReply func(ctx context.Context, to, postID, commentID uuid.UUID)
+	// OnBowlNotice tells a member about a bowl moderator's action against them.
+	OnBowlNotice func(ctx context.Context, to uuid.UUID, bowl, text string)
 	// Publish fans out realtime events (wired by the realtime gateway); nil-safe.
 	Publish func(personaIDs []uuid.UUID, event string, payload any)
 	Now     func() time.Time
@@ -49,6 +51,7 @@ func (h *Handlers) Register(g *echo.Group) {
 	g.POST("/bowls/:id/join", h.join)
 	g.DELETE("/bowls/:id/join", h.leave)
 	h.registerPosts(g)
+	h.registerManage(g)
 }
 
 type LineRef struct {

@@ -60,6 +60,8 @@ type meResponse struct {
 	Verified            bool             `json:"verified"`
 	PolicyVersion       string           `json:"policy_version"`
 	DeletionScheduledAt *time.Time       `json:"deletion_scheduled_at"`
+	// Own tier only, so the app can show what's unlocked. Never exposed to other users.
+	TrustTier int16 `json:"trust_tier"`
 }
 
 const DeletionGrace = 30 * 24 * time.Hour
@@ -82,6 +84,6 @@ func (h *Handlers) me(c echo.Context) error {
 	return c.JSON(http.StatusOK, meResponse{
 		Status: u.Status, HasPersona: p.PersonaID != uuid.Nil, Locale: u.Locale, Gender: u.Gender,
 		AgeVerified: u.BirthYear != nil, Onboarded: u.OnboardedAt != nil, CoreConsent: core,
-		Verified: u.VerifiedAt != nil, PolicyVersion: PolicyVersion, DeletionScheduledAt: del,
+		Verified: u.VerifiedAt != nil, PolicyVersion: PolicyVersion, DeletionScheduledAt: del, TrustTier: u.TrustTier,
 	})
 }

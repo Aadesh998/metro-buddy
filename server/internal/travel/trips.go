@@ -12,10 +12,10 @@ import (
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/identity"
 	"metro-buddy/server/internal/model"
-	"metro-buddy/server/internal/trust"
 	"metro-buddy/server/internal/notify"
 	"metro-buddy/server/internal/pii"
 	"metro-buddy/server/internal/safety"
+	"metro-buddy/server/internal/trust"
 )
 
 const (

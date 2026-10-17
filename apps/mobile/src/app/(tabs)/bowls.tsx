@@ -14,6 +14,7 @@ import { BowlCard } from '@/features/bowls/BowlCard';
 import { useBowlSearch, useFeed, useJoinedBowls, useSuggestedBowls, type Sort } from '@/features/bowls/hooks';
 import { PostCard } from '@/features/bowls/PostCard';
 import { SortTabs } from '@/features/bowls/SortTabs';
+import { useMe } from '@/features/me/hooks';
 import { colors } from '@/lib/theme';
 
 function ForYou({ onDiscover }: { onDiscover: () => void }) {
@@ -56,6 +57,7 @@ function ForYou({ onDiscover }: { onDiscover: () => void }) {
 }
 
 function Discover() {
+  const me = useMe();
   const [q, setQ] = useState('');
   const suggested = useSuggestedBowls();
   const search = useBowlSearch(q);
@@ -71,7 +73,16 @@ function Discover() {
         keyExtractor={(b) => b.id}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
         ItemSeparatorComponent={() => <View className="h-2" />}
-        ListHeaderComponent={!q ? <Text variant="caption" className="mb-2 uppercase tracking-wider">Suggested for you</Text> : null}
+        ListHeaderComponent={
+          !q ? (
+            <View className="gap-3">
+              {(me.data?.trust_tier ?? 0) >= 2 ? <Button title="Start a bowl" kind="secondary" onPress={() => router.push('/bowl/new')} /> : null}
+              <Text variant="caption" className="mb-2 uppercase tracking-wider">
+                Suggested for you
+              </Text>
+            </View>
+          ) : null
+        }
         renderItem={({ item }) => <BowlCard b={item} />}
         ListEmptyComponent={q.length >= 2 && !search.isPending ? <Text className="py-8 text-center text-muted">No bowls match “{q}”.</Text> : null}
       />

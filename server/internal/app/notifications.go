@@ -63,6 +63,10 @@ func (a *App) wireNotifications() {
 		a.Notify.Notify(ctx, to, model.NotifReply, model.JSONMap{"post_id": postID.String(), "comment_id": commentID.String()},
 			notify.Content{Title: "New reply", Body: "Someone replied to you", Link: "metrobuddy://post/" + postID.String()}, true)
 	}
+	a.Bowls.OnBowlNotice = func(ctx context.Context, to uuid.UUID, _ string, text string) {
+		a.Notify.Notify(ctx, to, model.NotifModNotice, model.JSONMap{"text": text},
+			notify.Content{Title: "Bowl moderators", Body: text, Link: "metrobuddy://notices"}, true)
+	}
 	a.Admin.NotifyPersona = func(persona uuid.UUID, kind model.NotificationKind, payload model.JSONMap) {
 		content := notify.Content{Title: "A note from Metro Buddy", Body: "There's an update about your account. Tap for details.", Link: "metrobuddy://notices"}
 		if kind == model.NotifHostDecision {

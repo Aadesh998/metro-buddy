@@ -1,6 +1,6 @@
 import { FlashList } from '@shopify/flash-list';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronDown, ChevronUp, PenSquare } from 'lucide-react-native';
+import { ChevronDown, ChevronUp, PenSquare, Shield } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { Pressable, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,8 +9,10 @@ import { EmptyState } from '@/components/EmptyState';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
+import type { Post } from '@/api/types';
 import { BowlIcon } from '@/features/bowls/BowlCard';
 import { useBowl, useFeed, useJoin, type Sort } from '@/features/bowls/hooks';
+import { ModSheet } from '@/features/bowls/ModSheet';
 import { PostCard } from '@/features/bowls/PostCard';
 import { SortTabs } from '@/features/bowls/SortTabs';
 import { colors } from '@/lib/theme';
@@ -22,6 +24,8 @@ export default function BowlScreen() {
   const [sort, setSort] = useState<Sort>('hot');
   const [rules, setRules] = useState(false);
   const feed = useFeed(id, sort);
+  const [modding, setModding] = useState<Post | null>(null);
+  const pinnedId = feed.data?.pages[0]?.pinned?.id;
   const posts = useMemo(() => {
     const pages = feed.data?.pages ?? [];
     const pinned = pages[0]?.pinned;
@@ -29,6 +33,7 @@ export default function BowlScreen() {
     return pinned ? [pinned, ...items] : items;
   }, [feed.data]);
   const b = bowl.data;
+  const isMod = b?.role === 'owner' || b?.role === 'moderator';
 
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-bg">
@@ -45,7 +50,7 @@ export default function BowlScreen() {
       <FlashList
         data={posts}
         keyExtractor={(p) => p.id}
-        renderItem={({ item }) => <PostCard p={item} showBowl={false} />}
+        renderItem={({ item }) => <PostCard p={item} showBowl={false} pinned={item.id === pinnedId && !item.is_prompt} onMod={isMod ? setModding : undefined} />}
         onEndReached={() => feed.hasNextPage && !feed.isFetchingNextPage && feed.fetchNextPage()}
         refreshControl={<RefreshControl refreshing={feed.isRefetching} onRefresh={() => void feed.refetch()} tintColor={colors.accent} />}
         ListHeaderComponent={
@@ -72,7 +77,15 @@ export default function BowlScreen() {
                   {rules ? <Text className="mt-2 text-sm leading-6 text-muted">{b.rules_md}</Text> : null}
                 </Pressable>
               ) : null}
-              <View className="flex-row justify-end">
+              <View className="flex-row items-center justify-between">
+                {isMod ? (
+                  <Pressable onPress={() => router.push({ pathname: '/bowl/mod', params: { id } })} className="flex-row items-center gap-1.5" hitSlop={8}>
+                    <Shield size={15} color={colors.accent} />
+                    <Text className="text-sm font-medium text-accent">Mod tools</Text>
+                  </Pressable>
+                ) : (
+                  <View />
+                )}
                 <SortTabs value={sort} onChange={setSort} />
               </View>
             </View>
@@ -80,6 +93,7 @@ export default function BowlScreen() {
         }
         ListEmptyComponent={feed.isPending ? null : <EmptyState title="No posts yet" body={b?.joined ? 'Start the conversation.' : 'Join to post here.'} />}
       />
+      <ModSheet bowlId={id} pinnedId={pinnedId} owner={b?.role === 'owner'} post={modding} onClose={() => setModding(null)} />
     </SafeAreaView>
   );
 }

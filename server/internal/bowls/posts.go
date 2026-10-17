@@ -220,6 +220,7 @@ type PostDTO struct {
 	CommentCount int                 `json:"comment_count"`
 	PIIHidden    bool                `json:"pii_hidden"`
 	IsPrompt     bool                `json:"is_prompt"`
+	Locked       bool                `json:"locked"`
 	CreatedAt    time.Time           `json:"created_at"`
 	// Set only on the author's own create response when the text suggests they may be at risk.
 	ShowSupport bool `json:"show_support,omitempty"`
@@ -271,7 +272,7 @@ func (h *Handlers) PostDTOs(ctx context.Context, viewer uuid.UUID, posts []model
 			ID: p.ID, Bowl: BowlRef{ID: b.ID, Slug: b.Slug, Name: b.Name}, Author: refs[p.AuthorPersonaID],
 			IsMine: p.AuthorPersonaID == viewer, Type: p.Type, Title: p.Title, Body: p.BodyMasked, Flair: p.Flair,
 			Media: h.Media.DTOs(ctx, p.Media), Poll: polls[p.ID], Score: p.Score, MyVote: myVote[p.ID],
-			CommentCount: p.CommentCount, PIIHidden: p.PIIFlags != 0, IsPrompt: p.IsPrompt, CreatedAt: p.CreatedAt,
+			CommentCount: p.CommentCount, PIIHidden: p.PIIFlags != 0, IsPrompt: p.IsPrompt, Locked: p.LockedAt != nil, CreatedAt: p.CreatedAt,
 		})
 	}
 	return out, nil

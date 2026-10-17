@@ -50,6 +50,14 @@ func (h *Handlers) createComment(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	if post.LockedAt != nil {
+		return ErrLocked
+	}
+	if m, err := membership(h.DB.WithContext(ctx), post.BowlID, p.PersonaID); err != nil {
+		return err
+	} else if m != nil && m.MutedUntil != nil && h.now().Before(*m.MutedUntil) {
+		return ErrMuted
+	}
 	cm := model.Comment{PostID: post.ID, AuthorPersonaID: p.PersonaID, Status: model.ContentVisible}
 	cm.ID = model.NewID()
 	var parentAuthor *uuid.UUID
