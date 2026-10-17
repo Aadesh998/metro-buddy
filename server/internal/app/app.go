@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 
 	"metro-buddy/server/internal/config"
+	"metro-buddy/server/internal/httpx"
 )
 
 type Deps struct {
@@ -25,7 +26,21 @@ func NewServer(d *Deps) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
-	e.Use(middleware.Recover())
+	e.Validator = httpx.NewValidator()
+	e.HTTPErrorHandler = httpx.ErrorHandler(d.Log)
+	e.Use(
+		httpx.RequestIDMiddleware(),
+		httpx.AccessLog(d.Log),
+		httpx.Recover(d.Log),
+		middleware.BodyLimit("1M"),
+		middleware.SecureWithConfig(middleware.SecureConfig{
+			XSSProtection:      "0",
+			ContentTypeNosniff: "nosniff",
+			XFrameOptions:      "DENY",
+			HSTSMaxAge:         31536000,
+			ReferrerPolicy:     "no-referrer",
+		}),
+	)
 
 	e.GET("/healthz", health(d))
 	return e

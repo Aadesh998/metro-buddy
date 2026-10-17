@@ -13,11 +13,12 @@ import (
 	"metro-buddy/server/internal/app"
 	"metro-buddy/server/internal/config"
 	"metro-buddy/server/internal/db"
+	"metro-buddy/server/internal/logx"
 	"metro-buddy/server/internal/redisx"
 )
 
 func main() {
-	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	log := logx.New(os.Stdout, slog.LevelInfo)
 	if err := run(log); err != nil {
 		log.Error("fatal", "err", err)
 		os.Exit(1)
