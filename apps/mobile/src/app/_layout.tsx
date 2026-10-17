@@ -99,6 +99,10 @@ function Navigation() {
           options={{ animation: "slide_from_right" }}
         />
         <Stack.Screen
+          name="game/[id]"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
           name="connections"
           options={{ animation: "slide_from_right" }}
         />

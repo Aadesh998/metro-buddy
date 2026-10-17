@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router/tabs';
-import { Coffee, MessageCircle, Radio, TrainFront, UserRound } from 'lucide-react-native';
+import { Coffee, MessageCircle, Radio, TrainFront, UserRound, Gamepad2 } from 'lucide-react-native';
 import { useEffect } from 'react';
 
 import { useConversations, useRequests } from '@/features/chat/hooks';
@@ -45,6 +45,7 @@ export default function TabsLayout() {
         name="chats"
         options={{ title: t('common.tabs.chats'), tabBarBadge: badge, tabBarBadgeStyle: { backgroundColor: colors.accent, color: colors.accentInk }, tabBarIcon: ({ color, size }) => <MessageCircle color={color} size={size} /> }}
       />
+      <Tabs.Screen name="games" options={{ title: t('games.tab'), tabBarIcon: ({ color, size }) => <Gamepad2 color={color} size={size} /> }} />
       <Tabs.Screen name="travel" options={{ title: t('common.tabs.travel'), tabBarIcon: ({ color, size }) => <TrainFront color={color} size={size} /> }} />
       <Tabs.Screen name="studio" options={{ title: t('common.tabs.studio'), tabBarIcon: ({ color, size }) => <Radio color={color} size={size} /> }} />
       <Tabs.Screen name="me" options={{ title: t('common.tabs.me'), tabBarIcon: ({ color, size }) => <UserRound color={color} size={size} /> }} />
