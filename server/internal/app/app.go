@@ -185,6 +185,7 @@ func (a *App) routes() *echo.Echo {
 	a.Bowls.Register(social)
 	social.POST("/uploads", a.Media.CreateUpload, a.Limiter.Middleware(ratelimit.Rule{Name: "uploads", Limit: 30, Window: time.Hour, ByTier: true}))
 	a.Media.DevRoutes(e)
+	social.POST("/pii/preview", pii.PreviewHandler, a.Limiter.Middleware(ratelimit.Rule{Name: "pii_preview", Limit: 120, Window: time.Minute}))
 
 	return e
 }

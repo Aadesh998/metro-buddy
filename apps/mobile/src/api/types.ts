@@ -57,3 +57,71 @@ export type ReportReason =
   | 'underage'
   | 'impersonation'
   | 'other';
+
+export type BowlKind = 'city' | 'line' | 'station' | 'office_hub' | 'college' | 'topic';
+
+export type Bowl = {
+  id: UUID;
+  slug: string;
+  name: string;
+  description: string;
+  kind: BowlKind;
+  visibility: 'public' | 'members_only';
+  city_id: UUID | null;
+  line: { id: UUID; name: string; color: string } | null;
+  station: { id: UUID; name: string } | null;
+  member_count: number;
+  joined: boolean;
+  role: string | null;
+  rules_md?: string;
+  reason?: string;
+};
+
+export type MediaItem = { url?: string; w: number; h: number; pending: boolean };
+
+export type Poll = {
+  closes_at: string;
+  closed: boolean;
+  multi: boolean;
+  total: number;
+  options: { id: UUID; label: string; votes: number; mine: boolean }[];
+};
+
+export type Post = {
+  id: UUID;
+  bowl: { id: UUID; slug: string; name: string };
+  author: PersonaRef;
+  is_mine: boolean;
+  type: 'text' | 'image' | 'poll';
+  title: string;
+  body: string;
+  flair: string | null;
+  media: MediaItem[];
+  poll: Poll | null;
+  score: number;
+  my_vote: -1 | 0 | 1;
+  comment_count: number;
+  pii_hidden: boolean;
+  is_prompt: boolean;
+  created_at: string;
+  show_support?: boolean;
+};
+
+export type Comment = {
+  id: UUID;
+  post_id: UUID;
+  parent_id: UUID | null;
+  depth: number;
+  author: PersonaRef;
+  is_op: boolean;
+  is_mine: boolean;
+  body: string;
+  deleted: boolean;
+  score: number;
+  my_vote: -1 | 0 | 1;
+  pii_hidden: boolean;
+  created_at: string;
+  show_support?: boolean;
+};
+
+export type FeedPage = { items: Post[]; next_cursor: string; pinned?: Post | null };
