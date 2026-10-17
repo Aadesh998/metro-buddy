@@ -26,6 +26,7 @@ func NewServer(d *Deps) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
+	e.IPExtractor = echo.ExtractIPFromXFFHeader()
 	e.Validator = httpx.NewValidator()
 	e.HTTPErrorHandler = httpx.ErrorHandler(d.Log)
 	e.Use(
