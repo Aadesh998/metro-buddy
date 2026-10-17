@@ -3,3 +3,4 @@
 !.env.example
 .DS_Store
 .~lock.*#
+apps/mobile/play-service-account.json
