@@ -207,6 +207,13 @@ func (e *Env) Seeded() uuid.UUID {
 	return c.ID
 }
 
+// StationCity returns the seeded Delhi city id.
+func (e *Env) StationCity() uuid.UUID {
+	var c model.City
+	e.App.DB.First(&c, "code = ?", "DEL")
+	return c.ID
+}
+
 func (e *Env) StationID(name string) uuid.UUID {
 	e.T.Helper()
 	var s model.Station

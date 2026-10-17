@@ -34,6 +34,7 @@ import (
 	"metro-buddy/server/internal/safety"
 	"metro-buddy/server/internal/secure"
 	"metro-buddy/server/internal/sms"
+	"metro-buddy/server/internal/travel"
 	"metro-buddy/server/internal/web"
 )
 
@@ -66,6 +67,7 @@ type App struct {
 	Hub     *realtime.Hub
 	Chat    *chat.Service
 	Notify  *notify.Service
+	Travel  *travel.Service
 	Jobs    *jobs.Runner
 }
 
@@ -205,6 +207,10 @@ func (a *App) routes() *echo.Echo {
 	a.Chat = &chat.Service{DB: a.DB, PII: a.PII, Media: a.Media, Hub: a.Hub, Limiter: a.Limiter}
 	a.Chat.Register(social)
 	a.Notify.Register(authed)
+	a.Travel = &travel.Service{DB: a.DB, Redis: a.Redis, Metro: a.Metro, Chat: a.Chat, Notify: a.Notify, Limiter: a.Limiter,
+		Audit: a.Audit, Box: a.Box, SMS: a.SMS, BaseURL: a.Cfg.PublicBaseURL}
+	a.Travel.Register(social, authed)
+	e.GET("/trip/:token", a.Travel.SharePage)
 	authed.POST("/events", (&analytics.Handlers{DB: a.DB, Pepper: a.Cfg.IPPepper}).Track,
 		a.Limiter.Middleware(ratelimit.Rule{Name: "events", Limit: 120, Window: time.Minute}))
 	a.wireNotifications()
@@ -249,4 +255,7 @@ func (a *App) StartJobs(ctx context.Context) {
 	a.Jobs.Every(ctx, "dm_request_expiry", time.Hour, a.Chat.ExpireRequests)
 	a.Jobs.Every(ctx, "room_close", time.Minute, a.Chat.CloseExpiredRooms)
 	a.Jobs.Every(ctx, "inbox_purge", 6*time.Hour, a.Notify.Purge)
+	a.Jobs.Every(ctx, "plan_intents", time.Minute, a.Travel.SpawnPlanIntents)
+	a.Jobs.Every(ctx, "match_expiry", 5*time.Minute, a.Travel.ExpireMatches)
+	a.Jobs.Every(ctx, "trip_lifecycle", time.Minute, a.Travel.TripLifecycle)
 }

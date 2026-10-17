@@ -67,6 +67,7 @@ type Trip struct {
 	Status         TripStatus `gorm:"size:12;not null;index;default:planned"`
 	ShareToken     *string    `gorm:"size:32;uniqueIndex"`
 	ShareExpiresAt *time.Time
+	ReminderSentAt *time.Time
 }
 
 type TripParticipant struct {
