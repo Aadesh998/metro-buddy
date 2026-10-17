@@ -23,19 +23,20 @@ type createCommentRequest struct {
 }
 
 type CommentDTO struct {
-	ID        uuid.UUID           `json:"id"`
-	PostID    uuid.UUID           `json:"post_id"`
-	ParentID  *uuid.UUID          `json:"parent_id"`
-	Depth     int16               `json:"depth"`
-	Author    identity.PersonaRef `json:"author"`
-	IsOP      bool                `json:"is_op"`
-	IsMine    bool                `json:"is_mine"`
-	Body      string              `json:"body"`
-	Deleted   bool                `json:"deleted"`
-	Score     int                 `json:"score"`
-	MyVote    int16               `json:"my_vote"`
-	PIIHidden bool                `json:"pii_hidden"`
-	CreatedAt time.Time           `json:"created_at"`
+	ID          uuid.UUID           `json:"id"`
+	PostID      uuid.UUID           `json:"post_id"`
+	ParentID    *uuid.UUID          `json:"parent_id"`
+	Depth       int16               `json:"depth"`
+	Author      identity.PersonaRef `json:"author"`
+	IsOP        bool                `json:"is_op"`
+	IsMine      bool                `json:"is_mine"`
+	Body        string              `json:"body"`
+	Deleted     bool                `json:"deleted"`
+	Score       int                 `json:"score"`
+	MyVote      int16               `json:"my_vote"`
+	PIIHidden   bool                `json:"pii_hidden"`
+	CreatedAt   time.Time           `json:"created_at"`
+	ShowSupport bool                `json:"show_support,omitempty"`
 }
 
 func (h *Handlers) createComment(c echo.Context) error {
@@ -99,6 +100,7 @@ func (h *Handlers) createComment(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	out[0].ShowSupport = safety.Distress(req.Body)
 	return c.JSON(http.StatusCreated, out[0])
 }
 

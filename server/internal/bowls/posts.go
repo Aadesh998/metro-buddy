@@ -160,6 +160,7 @@ func (h *Handlers) createPost(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	out[0].ShowSupport = safety.Distress(req.Title + "\n" + req.Body)
 	return c.JSON(http.StatusCreated, out[0])
 }
 
@@ -220,6 +221,8 @@ type PostDTO struct {
 	PIIHidden    bool                `json:"pii_hidden"`
 	IsPrompt     bool                `json:"is_prompt"`
 	CreatedAt    time.Time           `json:"created_at"`
+	// Set only on the author's own create response when the text suggests they may be at risk.
+	ShowSupport bool `json:"show_support,omitempty"`
 }
 
 // PostDTOs batch-loads authors, bowls, votes and polls so a feed page is a fixed number of queries.

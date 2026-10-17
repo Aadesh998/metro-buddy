@@ -148,3 +148,24 @@ func TestImagePostStripsEXIFAndKeepsOrientation(t *testing.T) {
 		}
 	}
 }
+
+func TestDistressShowsSupportWithoutModeration(t *testing.T) {
+	f := setup(t)
+	var p bowls.PostDTO
+	f.post(f.a, map[string]any{"type": "text", "title": "Rough week", "body": "honestly I just want to die"}).Want(http.StatusCreated).JSON(&p)
+	if !p.ShowSupport {
+		t.Fatal("support not offered")
+	}
+	var cases int64
+	f.env.App.DB.Model(&model.ModerationCase{}).Count(&cases)
+	var got bowls.PostDTO
+	f.env.Do(http.MethodGet, "/v1/posts/"+p.ID.String(), f.b.AccessToken, nil).Want(http.StatusOK).JSON(&got)
+	if cases != 0 || got.ShowSupport || got.Body == "" {
+		t.Fatalf("distress must never be punitive or leak to readers: cases=%d %+v", cases, got)
+	}
+	var c bowls.CommentDTO
+	f.env.Do(http.MethodPost, "/v1/posts/"+p.ID.String()+"/comments", f.b.AccessToken, map[string]any{"body": "hang in there"}).Want(http.StatusCreated).JSON(&c)
+	if c.ShowSupport {
+		t.Fatal("false support prompt")
+	}
+}
