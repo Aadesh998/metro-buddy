@@ -33,6 +33,9 @@ func run(log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	if err := db.Migrate(gdb); err != nil {
+		return err
+	}
 	rdb, err := redisx.New(cfg.RedisURL)
 	if err != nil {
 		return err
