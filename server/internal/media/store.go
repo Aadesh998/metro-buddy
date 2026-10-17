@@ -28,13 +28,28 @@ type R2 struct {
 }
 
 func NewR2(accountID, accessKey, secret, bucket string) *R2 {
+	return NewS3(fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID), "auto", accessKey, secret, bucket)
+}
+
+// NewS3 talks to any S3-compatible store: Cloudflare R2, self-hosted MinIO, AWS S3.
+// The endpoint must be reachable by phones, since uploads and downloads use presigned URLs.
+func NewS3(endpoint, region, accessKey, secret, bucket string) *R2 {
 	c := s3.New(s3.Options{
-		Region:       "auto",
-		BaseEndpoint: aws.String(fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID)),
+		Region:       region,
+		BaseEndpoint: aws.String(endpoint),
 		Credentials:  credentials.NewStaticCredentialsProvider(accessKey, secret, ""),
 		UsePathStyle: true,
 	})
 	return &R2{client: c, presign: s3.NewPresignClient(c), bucket: bucket}
+}
+
+// EnsureBucket creates the bucket on first boot (MinIO starts empty).
+func (r *R2) EnsureBucket(ctx context.Context) error {
+	if _, err := r.client.HeadBucket(ctx, &s3.HeadBucketInput{Bucket: &r.bucket}); err == nil {
+		return nil
+	}
+	_, err := r.client.CreateBucket(ctx, &s3.CreateBucketInput{Bucket: &r.bucket})
+	return err
 }
 
 // The signature covers content type and length, so the client can't upload anything else.

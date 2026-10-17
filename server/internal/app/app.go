@@ -123,6 +123,9 @@ func New(d *Deps) (*App, error) {
 }
 
 func newSMS(cfg *config.Config, log *slog.Logger) sms.Sender {
+	if cfg.SMSProvider == "gateway" {
+		return sms.Gateway{URL: cfg.SMSGatewayURL, User: cfg.SMSGatewayUser, Password: cfg.SMSGatewayPassword}
+	}
 	if cfg.SMSProvider != "msg91" {
 		return sms.Dev{Log: log}
 	}
@@ -135,13 +138,22 @@ func newSMS(cfg *config.Config, log *slog.Logger) sms.Sender {
 
 func newMedia(cfg *config.Config) *media.Service {
 	var store media.Store = media.NewMemory(cfg.PublicBaseURL)
-	if cfg.R2Bucket != "" {
+	switch {
+	case cfg.S3Endpoint != "":
+		s3 := media.NewS3(cfg.S3Endpoint, cfg.S3Region, cfg.S3AccessKey, cfg.S3SecretKey, cfg.S3Bucket)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		if err := s3.EnsureBucket(ctx); err != nil {
+			slog.Default().Warn("s3 bucket check failed", "err", err.Error())
+		}
+		cancel()
+		store = s3
+	case cfg.R2Bucket != "":
 		store = media.NewR2(cfg.R2AccountID, cfg.R2AccessKey, cfg.R2SecretKey, cfg.R2Bucket)
 	}
 	var scanner media.Scanner = media.ReviewAll{}
 	switch {
 	case cfg.NSFWEndpoint != "":
-		scanner = media.HTTPScanner{Endpoint: cfg.NSFWEndpoint}
+		scanner = media.HTTPScanner{Endpoint: cfg.NSFWEndpoint, Token: cfg.NSFWToken}
 	case !cfg.IsProd():
 		scanner = media.ClearAll{}
 	}

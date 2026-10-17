@@ -30,14 +30,23 @@ type Config struct {
 	TwilioToken string
 	TwilioFrom  string
 
-	R2AccountID   string
-	R2AccessKey   string
-	R2SecretKey   string
-	R2Bucket      string
-	R2PublicURL   string
-	NSFWEndpoint  string
-	AnthropicKey  string
-	ExpoPushToken string
+	R2AccountID        string
+	R2AccessKey        string
+	R2SecretKey        string
+	R2Bucket           string
+	R2PublicURL        string
+	S3Endpoint         string
+	S3Region           string
+	S3AccessKey        string
+	S3SecretKey        string
+	S3Bucket           string
+	SMSGatewayURL      string
+	SMSGatewayUser     string
+	SMSGatewayPassword string
+	NSFWEndpoint       string
+	NSFWToken          string
+	AnthropicKey       string
+	ExpoPushToken      string
 
 	LivenessProvider string
 	PlayIntegrityPkg string
@@ -80,7 +89,17 @@ func Load() (*Config, error) {
 		R2Bucket:     os.Getenv("R2_BUCKET"),
 		R2PublicURL:  strings.TrimRight(os.Getenv("R2_PUBLIC_URL"), "/"),
 		NSFWEndpoint: os.Getenv("NSFW_ENDPOINT"),
-		AnthropicKey: os.Getenv("ANTHROPIC_API_KEY"),
+		NSFWToken:    os.Getenv("NSFW_TOKEN"),
+		S3Endpoint:   strings.TrimRight(os.Getenv("S3_ENDPOINT"), "/"),
+		S3Region:     get("S3_REGION", "us-east-1"),
+		S3AccessKey:  os.Getenv("S3_ACCESS_KEY"),
+		S3SecretKey:  os.Getenv("S3_SECRET_KEY"),
+		S3Bucket:     get("S3_BUCKET", "metro-buddy"),
+
+		SMSGatewayURL:      get("SMS_GATEWAY_URL", "https://api.sms-gate.app/3rdparty/v1/messages"),
+		SMSGatewayUser:     os.Getenv("SMS_GATEWAY_USER"),
+		SMSGatewayPassword: os.Getenv("SMS_GATEWAY_PASSWORD"),
+		AnthropicKey:       os.Getenv("ANTHROPIC_API_KEY"),
 
 		ExpoPushToken: os.Getenv("EXPO_ACCESS_TOKEN"),
 

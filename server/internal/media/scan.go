@@ -25,12 +25,16 @@ type Scanner interface {
 // HTTPScanner posts the image to a classifier that returns {"nsfw": 0..1}.
 type HTTPScanner struct {
 	Endpoint string
+	Token    string
 	Client   *http.Client
 }
 
 func (s HTTPScanner) Scan(ctx context.Context, img []byte) (Verdict, error) {
 	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, s.Endpoint, bytes.NewReader(img))
 	req.Header.Set("Content-Type", "image/jpeg")
+	if s.Token != "" {
+		req.Header.Set("Authorization", "Bearer "+s.Token)
+	}
 	c := s.Client
 	if c == nil {
 		c = &http.Client{Timeout: 15 * time.Second}
