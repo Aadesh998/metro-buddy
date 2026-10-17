@@ -62,6 +62,7 @@ func (s *Service) now() time.Time {
 
 func (s *Service) Register(g *echo.Group, authed *echo.Group) {
 	t := g.Group("", s.requireConsent)
+	s.registerCrews(t)
 	t.GET("/commute-plans", s.listPlans)
 	t.POST("/commute-plans", s.createPlan)
 	t.PATCH("/commute-plans/:id", s.patchPlan)

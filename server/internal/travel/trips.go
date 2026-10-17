@@ -74,6 +74,7 @@ type TripDTO struct {
 	Shared         bool             `json:"shared"`
 	ShareURL       string           `json:"share_url,omitempty"`
 	FeedbackGiven  bool             `json:"feedback_given"`
+	MatchID        *uuid.UUID       `json:"match_id"`
 }
 
 func (s *Service) tripDTO(tx *gorm.DB, viewer uuid.UUID, t *model.Trip) (*TripDTO, error) {
@@ -93,7 +94,7 @@ func (s *Service) tripDTO(tx *gorm.DB, viewer uuid.UUID, t *model.Trip) (*TripDT
 	if err != nil {
 		return nil, err
 	}
-	d := &TripDTO{ID: t.ID, Status: t.Status, MeetStation: st[t.MeetStationID], MeetPlatform: t.MeetPlatform, MeetCoach: t.MeetCoach, MeetAt: t.MeetAt}
+	d := &TripDTO{ID: t.ID, Status: t.Status, MeetStation: st[t.MeetStationID], MeetPlatform: t.MeetPlatform, MeetCoach: t.MeetCoach, MeetAt: t.MeetAt, MatchID: t.MatchID}
 	for _, p := range parts {
 		d.Participants = append(d.Participants, ParticipantDTO{Persona: refs[p.PersonaID], CheckedIn: p.CheckedInAt != nil, NoShow: p.NoShow, IsMe: p.PersonaID == viewer})
 	}

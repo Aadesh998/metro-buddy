@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/Input';
 import { Text } from '@/components/ui/Text';
 import { toast } from '@/components/ui/Toast';
 import { useMyPersona } from '@/features/me/hooks';
+import { StartCrew } from '@/features/travel/Crews';
 import { travelKeys, useTrip } from '@/features/travel/hooks';
 import { colors } from '@/lib/theme';
 
@@ -147,6 +148,7 @@ export default function TripScreen() {
           </Text>
         </View>
         {!active || me?.checked_in ? <Feedback trip={t} /> : null}
+        {t.match_id && (t.status === 'met' || t.status === 'completed') ? <StartCrew matchId={t.match_id} /> : null}
       </ScrollView>
       {persona ? (
         <StationPicker

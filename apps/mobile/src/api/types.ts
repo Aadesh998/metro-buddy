@@ -236,6 +236,7 @@ export type Trip = {
   shared: boolean;
   share_url?: string;
   feedback_given: boolean;
+  match_id: UUID | null;
 };
 
 export type TrustedContact = { id: UUID; name: string; phone_masked: string };
@@ -291,3 +292,17 @@ export type JoinGrant = { url: string; token: string; room: string; role: StageR
 export type RevealLevel = 'none' | 'first_name' | 'photo' | 'contact';
 export type RevealCard = { first_name: string; photo_url: string | null; contact: string };
 export type RevealState = { mine: RevealLevel; theirs: RevealLevel; mutual: RevealLevel; revealed: RevealCard; can_offer: RevealLevel[] };
+
+export type Crew = {
+  id: UUID;
+  name: string;
+  line: { id: UUID; name: string; color: string };
+  depart_at: string;
+  weekdays: number[];
+  members: PersonaRef[];
+  pending_invites: number;
+  conversation_id: UUID | null;
+  is_creator: boolean;
+};
+
+export type CrewInvite = { id: UUID; crew: Crew; from: PersonaRef; created_at: string };

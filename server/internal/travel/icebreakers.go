@@ -85,7 +85,6 @@ func timeOfDay(t time.Time) string {
 	}
 }
 
-
 func (s *Service) aiOpeners(ctx context.Context, m *model.Match, actor uuid.UUID) []string {
 	if !s.AI.Enabled() {
 		return nil

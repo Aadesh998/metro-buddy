@@ -16,6 +16,7 @@ import { Text } from '@/components/ui/Text';
 import { useMyPersona } from '@/features/me/hooks';
 import { useStations } from '@/features/metro/hooks';
 import { needsConsent, travelKeys, useActiveIntent, useActiveTrip, useMatches, usePlans } from '@/features/travel/hooks';
+import { CrewsSection } from '@/features/travel/Crews';
 import { MatchCard } from '@/features/travel/MatchCard';
 import { useNow } from '@/lib/clock';
 import { colors } from '@/lib/theme';
@@ -210,6 +211,7 @@ export default function TravelTab() {
         ) : (
           live.map((m) => <MatchCard key={m.id} m={m} />)
         )}
+        <CrewsSection />
         <View className="mt-2 flex-row items-center justify-between">
           <Text variant="heading">My commutes</Text>
           <Pressable onPress={() => router.push('/travel/plan')} hitSlop={10} accessibilityLabel="Add commute">
