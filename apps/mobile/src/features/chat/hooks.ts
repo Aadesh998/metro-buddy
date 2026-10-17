@@ -3,6 +3,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteD
 import { ApiError, get, post } from '@/api/client';
 import type { Conversation, DMRequest, Message, Room } from '@/api/types';
 import { toast } from '@/components/ui/Toast';
+import { uploadImage } from '@/features/bowls/upload';
 import { uuidv7 } from '@/lib/uuid';
 import { enqueue, flush, pendingFor } from './outbox';
 import { supportStore } from './store';
@@ -118,6 +119,18 @@ export function useSend(conversationId: string) {
     await enqueue({ conversation_id: conversationId, id, body, created_at: created });
     await flushOutbox(qc);
   };
+}
+
+// Images skip the offline outbox: they need an upload first, and stay hidden until scanned.
+export function useSendImage(conversationId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (asset: { uri: string; mimeType?: string; fileSize?: number }) => {
+      const key = await uploadImage(asset);
+      return post<Message>(`/v1/conversations/${conversationId}/messages`, { id: uuidv7(), media_key: key });
+    },
+    onSuccess: (m) => upsertMessage(qc, m),
+  });
 }
 
 export function useRequests(box: 'incoming' | 'outgoing') {

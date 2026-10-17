@@ -43,7 +43,9 @@ type Handlers struct {
 	OnHostApproved func(persona uuid.UUID)
 	EndEpisode     func(ctx context.Context, id uuid.UUID) error
 	Triage         func(caseID uuid.UUID)
-	OnOverdue      func(n int)
+	// OnCaseClosed lets domains refresh what clients see (e.g. a held image was released).
+	OnCaseClosed func(caseID uuid.UUID)
+	OnOverdue    func(n int)
 }
 
 func (h *Handlers) now() time.Time {

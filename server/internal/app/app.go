@@ -235,6 +235,7 @@ func (a *App) routes() *echo.Echo {
 	a.Hub.OnInbound = receipts.HandleInbound
 	a.Hub.OnPresence = receipts.OnPresence
 	a.PII.Second.OnUpdated = a.Chat.OnMaskUpdated
+	a.Admin.OnCaseClosed = a.Chat.OnCaseClosed
 	social.POST("/ws/ticket", func(c echo.Context) error { return a.Hub.IssueTicket(c, auth.SessionFamily(c)) },
 		a.Limiter.Middleware(ratelimit.Rule{Name: "ws_ticket", Limit: 60, Window: time.Minute}))
 	e.GET("/ws", a.Hub.Serve(context.Background()))

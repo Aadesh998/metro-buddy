@@ -1,10 +1,11 @@
 import { FlashList } from '@shopify/flash-list';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Clipboard from 'expo-clipboard';
+import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, Info, MoreHorizontal, Send } from 'lucide-react-native';
+import { ChevronLeft, ImagePlus, Info, MoreHorizontal, Send } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { del, post } from '@/api/client';
@@ -12,13 +13,14 @@ import type { Conversation, Message } from '@/api/types';
 import { SupportSheet } from '@/components/SupportSheet';
 import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
+import { toast } from '@/components/ui/Toast';
 import { useConversationTitle } from '@/features/chat/ConversationRow';
-import { chatKeys, useConversation, useMessages, useSend } from '@/features/chat/hooks';
+import { chatKeys, useConversation, useMessages, useSend, useSendImage } from '@/features/chat/hooks';
 import { MessageBubble } from '@/features/chat/MessageBubble';
 import { activeConversation, useOnline, useReceipts, useSupportSignal, useTyping } from '@/features/chat/store';
 import { useSafetySheet } from '@/features/safety/SafetySheet';
-import { send as frame } from '@/lib/realtime';
 import { useNow } from '@/lib/clock';
+import { send as frame } from '@/lib/realtime';
 import { colors } from '@/lib/theme';
 import { until } from '@/lib/time';
 
@@ -63,6 +65,7 @@ export default function ChatScreen() {
   const conv = useConversation(id);
   const msgs = useMessages(id);
   const send = useSend(id);
+  const sendImage = useSendImage(id);
   const safety = useSafetySheet();
   const receipts = useReceipts(id);
   const support = useSupportSignal();
@@ -122,6 +125,16 @@ export default function ChatScreen() {
     }
   }
 
+  async function pickImage() {
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.85 });
+    if (r.canceled) return;
+    const a = r.assets[0];
+    sendImage.mutate(
+      { uri: a.uri, mimeType: a.mimeType, fileSize: a.fileSize },
+      { onSuccess: (m) => m.media[0]?.pending && toast('Your photo will appear once our safety check finishes.', 'success'), onError: (e) => toast(e.message) },
+    );
+  }
+
   async function submit() {
     const body = text.trim();
     if (!body) return;
@@ -165,6 +178,11 @@ export default function ChatScreen() {
           </View>
         ) : c ? (
           <View className="flex-row items-end gap-2 border-t border-line bg-surface px-3 py-2">
+            {c.kind !== 'discussion' ? (
+              <Pressable onPress={pickImage} disabled={sendImage.isPending} className="h-10 w-9 items-center justify-center" accessibilityLabel="Send a photo">
+                {sendImage.isPending ? <ActivityIndicator color={colors.accent} /> : <ImagePlus size={20} color={colors.muted} />}
+              </Pressable>
+            ) : null}
             <TextInput
               value={text}
               onChangeText={onChange}

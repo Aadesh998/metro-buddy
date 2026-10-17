@@ -386,6 +386,11 @@ func (h *Handlers) actOnCase(c echo.Context) error {
 	if notify != nil && h.NotifyPersona != nil && req.Action != model.ActRestore {
 		h.NotifyPersona(*notify, model.NotifModNotice, model.JSONMap{"action": string(req.Action), "action_id": actionID.String(), "appealable": true})
 	}
+	if req.Action == model.ActRestore && h.OnCaseClosed != nil {
+		if id, err := uuid.Parse(c.Param("id")); err == nil {
+			h.OnCaseClosed(id)
+		}
+	}
 	return h.getCase(c)
 }
 
@@ -459,6 +464,9 @@ func (h *Handlers) applyAction(tx *gorm.DB, mc *model.ModerationCase, act *model
 		if err := setContent(model.ContentVisible); err != nil {
 			return err
 		}
+		if err := releaseMedia(tx, mc); err != nil {
+			return err
+		}
 		if userID != nil {
 			return tx.Model(&model.User{}).Where("id = ? AND status IN ?", *userID, []model.UserStatus{model.UserSuspended, model.UserBanned}).
 				Updates(map[string]any{"status": model.UserActive, "suspended_until": nil}).Error
@@ -494,7 +502,15 @@ type noteRequest struct {
 }
 
 func (h *Handlers) dismissCase(c echo.Context) error {
-	return h.closeCase(c, model.CaseDismissed, "case.dismiss")
+	if err := h.closeCase(c, model.CaseDismissed, "case.dismiss"); err != nil {
+		return err
+	}
+	if h.OnCaseClosed != nil {
+		if id, err := uuid.Parse(c.Param("id")); err == nil {
+			h.OnCaseClosed(id)
+		}
+	}
+	return nil
 }
 
 func (h *Handlers) escalateCase(c echo.Context) error {
@@ -526,6 +542,9 @@ func (h *Handlers) closeCase(c echo.Context, status model.CaseStatus, verb strin
 		}
 		if status == model.CaseDismissed {
 			if err := h.creditReporters(tx, mc, false); err != nil {
+				return err
+			}
+			if err := releaseMedia(tx, mc); err != nil {
 				return err
 			}
 		}
@@ -572,4 +591,32 @@ func (h *Handlers) retriage(c echo.Context) error {
 	}
 	h.Triage(id)
 	return c.NoContent(http.StatusAccepted)
+}
+
+// releaseMedia marks held images on the case's post or message as cleared, after a moderator
+// decided they are fine. Images are never shown before this or a clean automatic scan.
+func releaseMedia(tx *gorm.DB, mc *model.ModerationCase) error {
+	var table string
+	switch mc.TargetType {
+	case model.CTPost:
+		table = "posts"
+	case model.CTMessage:
+		table = "messages"
+	default:
+		return nil
+	}
+	var row struct{ Media model.MediaList }
+	if tx.Table(table).Select("media").Where("id = ?", mc.TargetID).Take(&row).Error != nil || len(row.Media) == 0 {
+		return nil
+	}
+	changed := false
+	for i := range row.Media {
+		if !row.Media[i].Cleared {
+			row.Media[i].Cleared, changed = true, true
+		}
+	}
+	if !changed {
+		return nil
+	}
+	return tx.Table(table).Where("id = ?", mc.TargetID).Update("media", row.Media).Error
 }

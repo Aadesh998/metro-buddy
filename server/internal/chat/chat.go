@@ -680,3 +680,26 @@ func (s *Service) OnMaskUpdated(ct model.ContentType, id uuid.UUID, masked strin
 	}
 	s.Hub.Publish(ctx, members, "message.updated", map[string]any{"id": id, "conversation_id": msg.ConversationID, "body": masked, "pii_hidden": true})
 }
+
+// OnCaseClosed re-sends a message whose held image a moderator released.
+func (s *Service) OnCaseClosed(caseID uuid.UUID) {
+	ctx := context.Background()
+	tx := s.DB.WithContext(ctx)
+	var mc model.ModerationCase
+	if tx.First(&mc, "id = ?", caseID).Error != nil || mc.TargetType != model.CTMessage {
+		return
+	}
+	var msg model.Message
+	if tx.First(&msg, "id = ?", mc.TargetID).Error != nil || len(msg.Media) == 0 {
+		return
+	}
+	members, err := memberIDs(tx, msg.ConversationID)
+	if err != nil {
+		return
+	}
+	dtos, err := s.messageDTOs(ctx, tx, uuid.Nil, []model.Message{msg})
+	if err != nil {
+		return
+	}
+	s.Hub.Publish(ctx, members, "message.updated", map[string]any{"id": msg.ID, "conversation_id": msg.ConversationID, "media": dtos[0].Media})
+}

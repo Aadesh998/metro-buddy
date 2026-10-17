@@ -42,8 +42,8 @@ export function RealtimeBridge() {
           });
         }
       }),
-      on('message.updated', (d: { id: string; conversation_id: string; body: string }) =>
-        patchMessage(qc, d.conversation_id, d.id, (x) => ({ ...x, body: d.body, pii_hidden: true })),
+      on('message.updated', (d: { id: string; conversation_id: string; body?: string; media?: Message['media'] }) =>
+        patchMessage(qc, d.conversation_id, d.id, (x) => (d.media ? { ...x, media: d.media } : { ...x, body: d.body ?? x.body, pii_hidden: true })),
       ),
       on('message.deleted', (d: { id: string; conversation_id: string }) =>
         patchMessage(qc, d.conversation_id, d.id, (x) => ({ ...x, deleted: true, body: '' })),
