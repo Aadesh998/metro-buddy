@@ -12,6 +12,10 @@ export default {
   sendViewOnce: 'Enviar para ver una vez',
   viewOnceNote: 'Podrán abrirla una vez y luego desaparece.',
   photoGone: 'Esta foto ya se abrió',
+  today: 'Hoy',
+  yesterday: 'Ayer',
+  takePhoto: 'Tomar una foto',
+  cameraDenied: 'Permite el acceso a la cámara en Ajustes para tomar una foto.',
   stickers: {
     chai: 'Pausa para el chai',
     lateAgain: 'Tarde otra vez',

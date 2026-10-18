@@ -1,9 +1,10 @@
 import { Tabs } from 'expo-router/tabs';
 import { Coffee, MessageCircle, Radio, TrainFront, UserRound, Gamepad2 } from 'lucide-react-native';
+import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
-import { Text as RNText } from 'react-native';
+import { Platform, Text as RNText } from 'react-native';
 
-import { useConversations, useRequests } from '@/features/chat/hooks';
+import { useConversations, useInbox, useRequests } from '@/features/chat/hooks';
 import { RealtimeBridge } from '@/features/chat/RealtimeBridge';
 import { useT } from '@/i18n';
 import { useNow } from '@/lib/clock';
@@ -11,12 +12,19 @@ import { fontFamily, useFontChoice } from '@/lib/fonts';
 import { listenForTaps, registerForPush } from '@/lib/push';
 import { colors } from '@/lib/theme';
 
+// The Chats tab counts chats with something new (like WhatsApp), not messages, so the number matches the
+// rows you see when you open it. Muted chats don't count; pending requests do.
 function useChatBadge() {
   const convs = useConversations();
   const reqs = useRequests('incoming');
+  const inbox = useInbox();
   const now = useNow();
-  const n = (convs.data ?? []).reduce((a, c) => a + (c.muted_until && Date.parse(c.muted_until) > now ? 0 : c.unread), 0) + (reqs.data?.length ?? 0);
-  return n > 0 ? (n > 99 ? '99+' : n) : undefined;
+  const chats = (convs.data ?? []).filter((c) => c.unread > 0 && !(c.muted_until && Date.parse(c.muted_until) > now)).length + (reqs.data?.length ?? 0);
+  const total = chats + (inbox.data?.unread ?? 0);
+  useEffect(() => {
+    if (Platform.OS !== 'web' && convs.data && inbox.data) Notifications.setBadgeCountAsync(total).catch(() => {});
+  }, [total, convs.data, inbox.data]);
+  return chats > 0 ? (chats > 99 ? '99+' : chats) : undefined;
 }
 
 // Everything that should run for the whole signed-in session lives here, under the tabs.

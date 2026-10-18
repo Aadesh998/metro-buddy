@@ -14,6 +14,10 @@ const chat: Messages['chat'] = {
   sendViewOnce: 'Enviar para ver uma vez',
   viewOnceNote: 'A pessoa pode abrir uma vez, depois ela some.',
   photoGone: 'Esta foto já foi aberta',
+  today: 'Hoje',
+  yesterday: 'Ontem',
+  takePhoto: 'Tirar foto',
+  cameraDenied: 'Permita o acesso à câmera nos Ajustes para tirar uma foto.',
   stickers: {
     chai: 'Pausa pro chai',
     lateAgain: 'Atrasado de novo',

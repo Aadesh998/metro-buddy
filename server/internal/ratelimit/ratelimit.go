@@ -35,6 +35,8 @@ type Rule struct {
 	ByTier bool
 	// Auth/OTP rules deny when Redis is unavailable instead of letting traffic through.
 	FailClosed bool
+	// Requests the handler rejects (e.g. a match that already lapsed) don't use up the budget.
+	RefundOnError bool
 }
 
 var tierMultiplier = []float64{1, 2, 4, 8}
@@ -90,8 +92,12 @@ type Result struct {
 }
 
 func (l *Limiter) Allow(ctx context.Context, key string, limit int, window time.Duration) (Result, error) {
+	return l.allow(ctx, key, limit, window, model.NewID().String())
+}
+
+func (l *Limiter) allow(ctx context.Context, key string, limit int, window time.Duration, member string) (Result, error) {
 	now := l.now().UnixMilli()
-	res, err := slidingWindow.Run(ctx, l.rdb, []string{"rl:" + key}, now, window.Milliseconds(), limit, model.NewID().String()).Int64Slice()
+	res, err := slidingWindow.Run(ctx, l.rdb, []string{"rl:" + key}, now, window.Milliseconds(), limit, member).Int64Slice()
 	if err != nil {
 		return Result{}, err
 	}
@@ -105,7 +111,8 @@ func (l *Limiter) Middleware(r Rule) echo.MiddlewareFunc {
 	}
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			res, err := l.Allow(c.Request().Context(), r.Name+":"+key(c), r.limitFor(c), r.Window)
+			k, member := r.Name+":"+key(c), model.NewID().String()
+			res, err := l.allow(c.Request().Context(), k, r.limitFor(c), r.Window, member)
 			if err != nil {
 				l.log.Error("rate limiter unavailable", "rule", r.Name, "err", err.Error())
 				if r.FailClosed {
@@ -121,7 +128,11 @@ func (l *Limiter) Middleware(r Rule) echo.MiddlewareFunc {
 				c.Response().Header().Set("Retry-After", strconv.Itoa(max(secs, 1)))
 				return httpx.TooMany()
 			}
-			return next(c)
+			err = next(c)
+			if r.RefundOnError && (err != nil || c.Response().Status >= 400) {
+				l.rdb.ZRem(context.WithoutCancel(c.Request().Context()), "rl:"+k, member)
+			}
+			return err
 		}
 	}
 }

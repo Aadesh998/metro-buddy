@@ -283,13 +283,17 @@ func (s *Service) conversationDTO(ctx context.Context, tx *gorm.DB, viewer uuid.
 		}
 		d.LastMessage = &ds[0]
 	}
-	d.Unread, err = unreadCount(tx, c.ID, me)
+	d.Unread, err = unreadCount(tx, c.ID, me, s.now())
 	return d, err
 }
 
-func unreadCount(tx *gorm.DB, convID uuid.UUID, me *model.ConversationMember) (int64, error) {
-	q := tx.Model(&model.Message{}).Where("conversation_id = ? AND (sender_persona_id IS NULL OR sender_persona_id <> ?) AND status = ?",
-		convID, me.PersonaID, model.ContentVisible)
+// unreadCount counts only what the member will actually see as new in the thread: other people's live
+// messages, not system notices, not ones from blocked people and not ones that have already disappeared.
+func unreadCount(tx *gorm.DB, convID uuid.UUID, me *model.ConversationMember, now time.Time) (int64, error) {
+	q := tx.Model(&model.Message{}).Where("conversation_id = ? AND sender_persona_id IS NOT NULL AND sender_persona_id <> ? AND status = ? AND kind NOT IN ?",
+		convID, me.PersonaID, model.ContentVisible, []model.MessageKind{model.MsgSystem, model.MsgIcebreaker}).
+		Where("expires_at IS NULL OR expires_at > ?", now).
+		Scopes(safety.ExcludeBlocked(me.PersonaID, "sender_persona_id"))
 	if me.LastReadMessageID != nil {
 		q = q.Where("created_at > (SELECT created_at FROM messages WHERE id = ?)", *me.LastReadMessageID)
 	} else {

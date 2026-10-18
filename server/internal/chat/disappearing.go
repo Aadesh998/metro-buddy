@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 
 	"metro-buddy/server/internal/httpx"
 	"metro-buddy/server/internal/identity"
@@ -103,9 +104,14 @@ func (s *Service) PurgeExpired(ctx context.Context) error {
 				}
 			}
 		}
-		// Read pointers may reference purged rows; clear them so they don't dangle.
-		tx.Model(&model.ConversationMember{}).Where("last_read_message_id IN ?", ids).Update("last_read_message_id", nil)
-		tx.Model(&model.ConversationMember{}).Where("last_delivered_message_id IN ?", ids).Update("last_delivered_message_id", nil)
+		// Read pointers may reference purged rows. Step them back to the newest surviving message at or before
+		// that point, so unread counts stay right; with nothing left before it the pointer clears and every
+		// surviving message (all newer) counts from the join time, which is also right.
+		for _, col := range []string{"last_read_message_id", "last_delivered_message_id"} {
+			tx.Model(&model.ConversationMember{}).Where(col+" IN ?", ids).
+				Update(col, gorm.Expr(`(SELECT m2.id FROM messages m2 WHERE m2.conversation_id = conversation_members.conversation_id AND m2.id NOT IN ?
+					AND m2.created_at <= (SELECT p.created_at FROM messages p WHERE p.id = conversation_members.`+col+`) ORDER BY m2.created_at DESC LIMIT 1)`, ids))
+		}
 		if err := tx.Unscoped().Where("id IN ?", ids).Delete(&model.Message{}).Error; err != nil {
 			return err
 		}

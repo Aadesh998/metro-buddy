@@ -14,6 +14,31 @@ function time(iso: string) {
   return new Date(iso).toLocaleTimeString(dateLocale(), { hour: 'numeric', minute: '2-digit' });
 }
 
+export function sameDay(a: string, b: string) {
+  return new Date(a).toDateString() === new Date(b).toDateString();
+}
+
+// A centred "Today" / "Yesterday" / "Fri, 17 Oct" pill above the first message of each day.
+export function DaySeparator({ iso }: { iso: string }) {
+  const { t } = useT();
+  const d = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+  const label =
+    d.toDateString() === today.toDateString()
+      ? t('chat.today')
+      : d.toDateString() === yesterday.toDateString()
+        ? t('chat.yesterday')
+        : d.toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short', ...(d.getFullYear() !== today.getFullYear() && { year: 'numeric' }) });
+  return (
+    <View className="my-3 items-center" accessibilityRole="header">
+      <View className="rounded-full bg-raised px-3 py-1">
+        <Text className="text-xs font-semibold text-muted">{label}</Text>
+      </View>
+    </View>
+  );
+}
+
 export const MessageBubble = memo(function MessageBubble({
   m,
   showSender,

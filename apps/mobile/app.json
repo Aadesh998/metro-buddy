@@ -28,9 +28,6 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "in.metrobuddy.app",
-      "blockedPermissions": [
-        "android.permission.CAMERA"
-      ],
       "googleServicesFile": "./google-services.json"
     },
     "web": {
@@ -57,7 +54,7 @@
         "expo-image-picker",
         {
           "photosPermission": "Metro Buddy needs your photos only when you choose to attach one to a post.",
-          "cameraPermission": false,
+          "cameraPermission": "Metro Buddy uses the camera only when you choose to take a photo to send in a chat.",
           "microphonePermission": false
         }
       ],

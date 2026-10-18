@@ -14,6 +14,10 @@ const chat: Messages['chat'] = {
   sendViewOnce: 'एक बार देखने के लिए भेजें',
   viewOnceNote: 'वे इसे एक बार खोल सकते हैं, फिर यह चली जाएगी।',
   photoGone: 'यह फ़ोटो पहले ही खोली जा चुकी है',
+  today: 'आज',
+  yesterday: 'कल',
+  takePhoto: 'फ़ोटो खींचें',
+  cameraDenied: 'फ़ोटो खींचने के लिए सेटिंग्स में कैमरा की अनुमति दें।',
   stickers: {
     chai: 'चाय ब्रेक',
     lateAgain: 'फिर लेट',

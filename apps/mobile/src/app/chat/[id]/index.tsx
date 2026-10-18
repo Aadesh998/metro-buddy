@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Clipboard from 'expo-clipboard';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowDown, Check, ChevronLeft, ImagePlus, Keyboard as KeyboardIcon, Pencil, Smile, X, Info, MoreHorizontal, Send } from 'lucide-react-native';
+import { ArrowDown, Camera, Check, ChevronLeft, ImagePlus, Keyboard as KeyboardIcon, Pencil, Smile, X, Info, MoreHorizontal, Send } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Keyboard, Pressable, View } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
@@ -19,7 +19,7 @@ import { toast } from '@/components/ui/Toast';
 import { useConversationTitle } from '@/features/chat/ConversationRow';
 import { ExpressionPanel } from '@/features/chat/ExpressionPanel';
 import { chatKeys, useConversation, useEditMessage, useMessages, useOpenViewOnce, useSend, useSendImage, useSendSticker } from '@/features/chat/hooks';
-import { MessageBubble } from '@/features/chat/MessageBubble';
+import { DaySeparator, MessageBubble, sameDay } from '@/features/chat/MessageBubble';
 import { ViewOnceViewer } from '@/features/chat/ViewOnceViewer';
 import { activeConversation, useOnline, useReceipts, useSupportSignal, useTyping } from '@/features/chat/store';
 import { useSafetySheet } from '@/features/safety/SafetySheet';
@@ -173,8 +173,17 @@ export default function ChatScreen() {
 
   async function pickImage() {
     const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.85 });
-    if (r.canceled) return;
-    const a = r.assets[0];
+    if (!r.canceled) confirmPhoto(r.assets[0]);
+  }
+
+  async function takePhoto() {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) return toast(t('chat.cameraDenied'));
+    const r = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.85 });
+    if (!r.canceled) confirmPhoto(r.assets[0]);
+  }
+
+  function confirmPhoto(a: ImagePicker.ImagePickerAsset) {
     const go = (viewOnce: boolean) =>
       sendImage.mutate(
         { asset: { uri: a.uri, mimeType: a.mimeType, fileSize: a.fileSize }, viewOnce },
@@ -221,17 +230,24 @@ export default function ChatScreen() {
               data={ordered}
               keyExtractor={(m) => m.id}
               maintainVisibleContentPosition={{ startRenderingFromBottom: true, autoscrollToBottomThreshold: 0.15, animateAutoScrollToBottom: true }}
-              renderItem={({ item, index }) => (
-                <MessageBubble
-                  m={item}
-                  showSender={isGroup && ordered[index - 1]?.sender?.id !== item.sender?.id}
-                  seen={item.id === seenId}
-                  onLongPress={onLongPress}
-                  onRetry={(m) => send(m.body)}
-                  onPickOpener={setText}
-                  onOpenViewOnce={openPhoto}
-                />
-              )}
+              renderItem={({ item, index }) => {
+                const prev = ordered[index - 1];
+                const newDay = !prev || !sameDay(prev.created_at, item.created_at);
+                return (
+                  <>
+                    {newDay ? <DaySeparator iso={item.created_at} /> : null}
+                    <MessageBubble
+                      m={item}
+                      showSender={isGroup && (newDay || prev?.sender?.id !== item.sender?.id)}
+                      seen={item.id === seenId}
+                      onLongPress={onLongPress}
+                      onRetry={(m) => send(m.body)}
+                      onPickOpener={setText}
+                      onOpenViewOnce={openPhoto}
+                    />
+                  </>
+                );
+              }}
               onStartReached={() => msgs.hasNextPage && !msgs.isFetchingNextPage && msgs.fetchNextPage()}
               onStartReachedThreshold={0.3}
               onScroll={(e) => {
@@ -283,6 +299,11 @@ export default function ChatScreen() {
               {c.kind !== 'discussion' && !editing ? (
                 <Pressable onPress={pickImage} disabled={sendImage.isPending} className="h-10 w-9 items-center justify-center" accessibilityLabel={t('chat.sendPhoto')}>
                   {sendImage.isPending ? <ActivityIndicator color={colors.brand} /> : <ImagePlus size={20} color={colors.muted} />}
+                </Pressable>
+              ) : null}
+              {c.kind !== 'discussion' && !editing ? (
+                <Pressable onPress={takePhoto} disabled={sendImage.isPending} className="h-10 w-9 items-center justify-center" accessibilityLabel={t('chat.takePhoto')}>
+                  <Camera size={20} color={colors.muted} />
                 </Pressable>
               ) : null}
               <Pressable

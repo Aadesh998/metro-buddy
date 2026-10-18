@@ -14,7 +14,7 @@ import { TabHeader } from '@/components/TabHeader';
 import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
 import { ConversationRow } from '@/features/chat/ConversationRow';
-import { useConversations, useRequests, useRespond } from '@/features/chat/hooks';
+import { useConversations, useInbox, useRequests, useRespond } from '@/features/chat/hooks';
 import { useSafetySheet } from '@/features/safety/SafetySheet';
 import { useT, type Key } from '@/i18n';
 import { colors } from '@/lib/theme';
@@ -57,6 +57,7 @@ export default function ChatsTab() {
   const convs = useConversations();
   const incoming = useRequests('incoming');
   const count = incoming.data?.length ?? 0;
+  const inboxUnread = useInbox().data?.unread ?? 0;
 
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-bg">
@@ -66,6 +67,11 @@ export default function ChatsTab() {
           <View className="flex-row gap-2">
             <Pressable onPress={() => router.push('/inbox')} className="h-10 w-10 items-center justify-center rounded-full bg-raised" accessibilityLabel={t('chat.notifications')}>
               <Inbox size={18} color={colors.ink} />
+              {inboxUnread > 0 ? (
+                <View className="absolute -right-1 -top-1 min-w-[18px] items-center rounded-full bg-accent px-1">
+                  <Text className="text-[11px] font-bold text-accent-ink">{inboxUnread > 99 ? '99+' : inboxUnread}</Text>
+                </View>
+              ) : null}
             </Pressable>
             <Pressable onPress={() => setMenu(!menu)} className="h-10 w-10 items-center justify-center rounded-full bg-accent" accessibilityLabel={t('chat.newChat')}>
               <Plus size={20} color={colors.accentInk} />

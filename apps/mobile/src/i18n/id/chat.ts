@@ -14,6 +14,10 @@ const chat: Messages['chat'] = {
   sendViewOnce: 'Kirim sekali lihat',
   viewOnceNote: 'Dia bisa membukanya sekali, lalu hilang.',
   photoGone: 'Foto ini sudah dibuka',
+  today: 'Hari ini',
+  yesterday: 'Kemarin',
+  takePhoto: 'Ambil foto',
+  cameraDenied: 'Izinkan akses kamera di Pengaturan untuk mengambil foto.',
   stickers: {
     chai: 'Rehat chai',
     lateAgain: 'Telat lagi',

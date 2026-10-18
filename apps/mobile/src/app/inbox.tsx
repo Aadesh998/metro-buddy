@@ -1,16 +1,15 @@
 import { FlashList } from '@shopify/flash-list';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Bell, Gavel, Heart, MessageCircle, MessageSquareReply, Radio, ShieldAlert, TrainFront, UserPlus, Users } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { get, post } from '@/api/client';
-import type { Notification } from '@/api/types';
+import { post } from '@/api/client';
 import { EmptyState } from '@/components/EmptyState';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/ui/Text';
-import { chatKeys } from '@/features/chat/hooks';
+import { chatKeys, useInbox } from '@/features/chat/hooks';
 import { t, useT } from '@/i18n';
 import { linkToPath } from '@/lib/push';
 import { colors } from '@/lib/theme';
@@ -35,7 +34,7 @@ const meta: Record<string, { icon: React.ReactNode; text: (p: Record<string, any
 export default function InboxScreen() {
   const qc = useQueryClient();
   useT();
-  const q = useQuery({ queryKey: chatKeys.inbox, queryFn: () => get<{ items: Notification[]; unread: number }>('/v1/notifications') });
+  const q = useInbox();
   const read = useMutation({
     mutationFn: (body: { ids?: string[]; all?: boolean }) => post('/v1/notifications/read', body),
     onSuccess: () => qc.invalidateQueries({ queryKey: chatKeys.inbox }),

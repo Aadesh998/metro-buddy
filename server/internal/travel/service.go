@@ -72,7 +72,7 @@ func (s *Service) Register(g *echo.Group, authed *echo.Group) {
 	t.DELETE("/travel-intents/:id", s.cancelIntent)
 	t.GET("/matches", s.listMatches)
 	t.POST("/matches/refresh", s.refreshMatches, s.Limiter.Middleware(ratelimit.Rule{Name: "match_refresh", Limit: 20, Window: time.Hour}))
-	t.POST("/matches/:id/accept", s.acceptMatch, s.Limiter.Middleware(ratelimit.Rule{Name: "match_requests", Limit: 10, Window: 24 * time.Hour, ByTier: true}))
+	t.POST("/matches/:id/accept", s.acceptMatch, s.Limiter.Middleware(ratelimit.Rule{Name: "match_requests", Limit: 10, Window: 24 * time.Hour, ByTier: true, RefundOnError: true}))
 	t.POST("/matches/:id/decline", s.declineMatch)
 	s.registerTrips(g)
 	s.registerSafety(g, authed)
@@ -386,6 +386,14 @@ func (s *Service) newIntent(ctx context.Context, in *model.TravelIntent) error {
 		if len(old) > 0 {
 			if err := tx.Model(&model.TravelIntent{}).Where("persona_id = ? AND status = ?", in.PersonaID, model.IntentActive).
 				Update("status", model.IntentCancelled).Error; err != nil {
+				return err
+			}
+			oldIDs := make([]uuid.UUID, len(old))
+			for i := range old {
+				oldIDs[i] = old[i].ID
+			}
+			if err := tx.Model(&model.Match{}).Where("(intent_a_id IN ? OR intent_b_id IN ?) AND status = ?", oldIDs, oldIDs, model.MatchProposed).
+				Update("status", model.MatchExpired).Error; err != nil {
 				return err
 			}
 		}

@@ -134,6 +134,15 @@ func (s *Service) Match(ctx context.Context, in *model.TravelIntent) ([]model.Ma
 		return nil, err
 	}
 	lineNames := s.lineNames(tx, in.LineIDs)
+	// Someone whose leaving time has passed but who is still searching is waiting on the platform, i.e.
+	// leaving now. Without this, restarting a search pushed you 20+ minutes away from people already there.
+	departs := func(t time.Time) time.Time {
+		if t.Before(now) {
+			return now
+		}
+		return t
+	}
+	mine := departs(in.DepartAt)
 
 	var results []scored
 	for _, c := range cands {
@@ -141,7 +150,8 @@ func (s *Service) Match(ctx context.Context, in *model.TravelIntent) ([]model.Ma
 		if o == nil || blocked[o.persona.ID] || o.persona.UserID == me.persona.UserID {
 			continue
 		}
-		if d := c.DepartAt.Sub(in.DepartAt); d > MaxDelta || d < -MaxDelta {
+		theirs := departs(c.DepartAt)
+		if d := theirs.Sub(mine); d > MaxDelta || d < -MaxDelta {
 			continue
 		}
 		if !Compatible(me.person, o.person) {
@@ -155,9 +165,9 @@ func (s *Service) Match(ctx context.Context, in *model.TravelIntent) ([]model.Ma
 		if ratio < MinOverlap {
 			continue
 		}
-		tf := TimeFit(in.DepartAt, c.DepartAt)
+		tf := TimeFit(mine, theirs)
 		vj, shared := Jaccard(me.vibes, o.vibes)
-		mins := int(abs(c.DepartAt.Sub(in.DepartAt)).Minutes())
+		mins := int(abs(theirs.Sub(mine)).Minutes())
 		why := model.MatchWhy{OverlapCount: len(seg), MinutesApart: mins}
 		for _, l := range lineNames {
 			why.Chips = append(why.Chips, "Same "+l)
@@ -186,6 +196,7 @@ func (s *Service) Match(ctx context.Context, in *model.TravelIntent) ([]model.Ma
 	}
 
 	var out []model.Match
+	var carried []model.Match
 	for _, r := range results {
 		var existing int64
 		tx.Model(&model.Match{}).Where("(intent_a_id = ? AND intent_b_id = ?) OR (intent_a_id = ? AND intent_b_id = ?)",
@@ -193,13 +204,38 @@ func (s *Service) Match(ctx context.Context, in *model.TravelIntent) ([]model.Ma
 		if existing > 0 {
 			continue
 		}
+		// Stopping and restarting a search makes new intents, so look at this pair's last match in the
+		// same window: a "no" sticks, and a "yes" carries over instead of being silently lost.
+		var prev model.Match
+		hasPrev := tx.Where("(persona_a_id = ? AND persona_b_id = ?) OR (persona_a_id = ? AND persona_b_id = ?)",
+			in.PersonaID, r.other.persona.ID, r.other.persona.ID, in.PersonaID).
+			Order("created_at DESC").Limit(1).Find(&prev).RowsAffected == 1 && prev.CreatedAt.After(now.Add(-IntentTTL))
+		if hasPrev && prev.Status == model.MatchDeclined {
+			continue
+		}
+		aStatus, bStatus := model.SidePending, model.SidePending
+		if hasPrev && prev.Status == model.MatchExpired {
+			for _, side := range []struct {
+				persona uuid.UUID
+				status  model.MatchSideStatus
+			}{{prev.PersonaAID, prev.AStatus}, {prev.PersonaBID, prev.BStatus}} {
+				if side.status != model.SideAccepted {
+					continue
+				}
+				if side.persona == in.PersonaID {
+					aStatus = model.SideAccepted
+				} else {
+					bStatus = model.SideAccepted
+				}
+			}
+		}
 		exp := in.ExpiresAt
 		if r.other.intent.ExpiresAt.Before(exp) {
 			exp = r.other.intent.ExpiresAt
 		}
 		m := model.Match{IntentAID: in.ID, IntentBID: r.other.intent.ID, PersonaAID: in.PersonaID, PersonaBID: r.other.persona.ID,
 			Score: r.score, Why: r.why, OverlapFromStationID: r.segment[0], OverlapToStationID: r.segment[len(r.segment)-1],
-			AStatus: model.SidePending, BStatus: model.SidePending, Status: model.MatchProposed, ExpiresAt: exp}
+			AStatus: aStatus, BStatus: bStatus, Status: model.MatchProposed, ExpiresAt: exp}
 		if err := tx.Create(&m).Error; err != nil {
 			if errors.Is(err, gorm.ErrDuplicatedKey) {
 				continue
@@ -207,6 +243,20 @@ func (s *Service) Match(ctx context.Context, in *model.TravelIntent) ([]model.Ma
 			return nil, err
 		}
 		out = append(out, m)
+		if aStatus == model.SideAccepted || bStatus == model.SideAccepted {
+			carried = append(carried, m)
+		}
+	}
+	// The other person sees new proposals appear live; a carried-over "yes" is re-sent as a request.
+	for _, m := range out {
+		s.Chat.Hub.Publish(ctx, []uuid.UUID{m.PersonaBID}, "match.new", map[string]any{"match_id": m.ID})
+	}
+	for i := range carried {
+		actor := carried[i].PersonaAID
+		if carried[i].AStatus != model.SideAccepted {
+			actor = carried[i].PersonaBID
+		}
+		s.afterAccept(ctx, actor, &carried[i], nil)
 	}
 	return out, nil
 }
@@ -389,6 +439,12 @@ func (s *Service) acceptMatch(c echo.Context) error {
 		}
 		if m.Status != model.MatchProposed || !s.now().Before(m.ExpiresAt) {
 			return httpx.Conflict("this match is no longer available")
+		}
+		var live int64
+		tx.Model(&model.TravelIntent{}).Where("id IN ? AND status = ? AND expires_at > ?", []uuid.UUID{m.IntentAID, m.IntentBID}, model.IntentActive, s.now()).Count(&live)
+		if live < 2 {
+			tx.Model(m).Update("status", model.MatchExpired)
+			return httpx.Conflict("this person has stopped looking for a buddy")
 		}
 		if b, err := safety.IsBlocked(ctx, tx, m.PersonaAID, m.PersonaBID); err != nil || b {
 			return httpx.NotFound()

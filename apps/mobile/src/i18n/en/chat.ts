@@ -12,6 +12,10 @@ export default {
   sendViewOnce: 'Send as view once',
   viewOnceNote: 'They can open it once, then it’s gone.',
   photoGone: 'This photo has already been opened',
+  today: 'Today',
+  yesterday: 'Yesterday',
+  takePhoto: 'Take a photo',
+  cameraDenied: 'Allow camera access in Settings to take a photo.',
   stickers: {
     chai: 'Chai break',
     lateAgain: 'Late again',

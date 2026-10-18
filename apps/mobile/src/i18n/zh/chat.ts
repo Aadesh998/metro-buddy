@@ -14,6 +14,10 @@ const chat: Messages['chat'] = {
   sendViewOnce: '以“仅看一次”发送',
   viewOnceNote: '对方只能打开一次，之后就会消失。',
   photoGone: '这张照片已经被打开过了',
+  today: '今天',
+  yesterday: '昨天',
+  takePhoto: '拍照',
+  cameraDenied: '请在设置中允许访问相机后再拍照。',
   stickers: {
     chai: '茶歇时间',
     lateAgain: '又迟到了',

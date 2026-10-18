@@ -14,6 +14,10 @@ const chat: Messages['chat'] = {
   sendViewOnce: 'Отправить одноразово',
   viewOnceNote: 'Его можно открыть один раз, потом оно исчезнет.',
   photoGone: 'Это фото уже открыли',
+  today: 'Сегодня',
+  yesterday: 'Вчера',
+  takePhoto: 'Сделать фото',
+  cameraDenied: 'Разрешите доступ к камере в настройках, чтобы сделать фото.',
   stickers: {
     chai: 'Перерыв на чай',
     lateAgain: 'Опять опаздываю',

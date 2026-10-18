@@ -14,6 +14,10 @@ const chat: Messages['chat'] = {
   sendViewOnce: '1回だけ表示で送信',
   viewOnceNote: '相手が1回開くと消えます。',
   photoGone: 'この写真はすでに開封されています',
+  today: '今日',
+  yesterday: '昨日',
+  takePhoto: '写真を撮る',
+  cameraDenied: '写真を撮るには、設定でカメラへのアクセスを許可してください。',
   stickers: {
     chai: 'チャイ休憩',
     lateAgain: 'また遅刻',

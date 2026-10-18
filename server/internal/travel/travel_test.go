@@ -230,3 +230,68 @@ func TestCommutePlansStorePathAndNeedConsent(t *testing.T) {
 		t.Fatalf("%s", r.Body)
 	}
 }
+
+func TestStopAndRestartKeepsTheSameBuddyAndTheirYes(t *testing.T) {
+	w := setup(t)
+	a, b := w.user("9000000001", "man"), w.user("9000000002", "man")
+	w.travelNow(a, "Rajiv Chowk", "Millennium City Centre Gurugram", 0).Want(http.StatusCreated)
+	var bIntent struct{ ID string }
+	w.travelNow(b, "Central Secretariat", "Saket", 5).Want(http.StatusCreated).JSON(&bIntent)
+	m := w.matches(a)[0]
+	w.env.Do(http.MethodPost, "/v1/matches/"+m.ID.String()+"/accept", a.AccessToken, nil).Want(http.StatusOK)
+
+	// b stops and starts again: a is still recommended, already saying yes, and b can accept.
+	w.env.Do(http.MethodDelete, "/v1/travel-intents/"+bIntent.ID, b.AccessToken, nil).Want(http.StatusNoContent)
+	w.travelNow(b, "Central Secretariat", "Saket", 5).Want(http.StatusCreated)
+	ms := w.matches(b)
+	if len(ms) != 1 {
+		t.Fatalf("after restart %+v", ms)
+	}
+	var res travel.MatchDTO
+	w.env.Do(http.MethodPost, "/v1/matches/"+ms[0].ID.String()+"/accept", b.AccessToken, nil).Want(http.StatusOK).JSON(&res)
+	// One tap from b is enough: a's earlier yes carried over to the new match.
+	if res.Status != model.MatchAccepted || res.ConversationID == nil {
+		t.Fatalf("a's yes was lost on restart: %+v", res)
+	}
+}
+
+func TestDeclineSticksAcrossRestart(t *testing.T) {
+	w := setup(t)
+	a, b := w.user("9000000001", "man"), w.user("9000000002", "man")
+	w.travelNow(a, "Rajiv Chowk", "Millennium City Centre Gurugram", 0).Want(http.StatusCreated)
+	w.travelNow(b, "Central Secretariat", "Saket", 5).Want(http.StatusCreated)
+	m := w.matches(b)[0]
+	w.env.Do(http.MethodPost, "/v1/matches/"+m.ID.String()+"/decline", b.AccessToken, nil).Want(http.StatusNoContent)
+	w.travelNow(b, "Central Secretariat", "Saket", 5).Want(http.StatusCreated)
+	if ms := w.matches(b); len(ms) != 0 {
+		t.Fatalf("declined person came back: %+v", ms)
+	}
+}
+
+func TestStillSearchingAfterLeavingTimeCountsAsLeavingNow(t *testing.T) {
+	w := setup(t)
+	a, b := w.user("9000000001", "man"), w.user("9000000002", "man")
+	w.travelNow(a, "Rajiv Chowk", "Millennium City Centre Gurugram", 0).Want(http.StatusCreated)
+	// a said "now" 30 minutes ago and is still on the platform looking.
+	w.env.App.DB.Model(&model.TravelIntent{}).Where("persona_id = ?", a.PersonaID).Update("depart_at", time.Now().UTC().Add(-30*time.Minute))
+	w.travelNow(b, "Central Secretariat", "Saket", 0).Want(http.StatusCreated)
+	if ms := w.matches(b); len(ms) != 1 {
+		t.Fatalf("waiting person not matched: %+v", ms)
+	}
+}
+
+func TestFailedAcceptsDoNotUseUpTheDailyLimit(t *testing.T) {
+	w := setup(t)
+	a, b := w.user("9000000001", "man"), w.user("9000000002", "man")
+	w.travelNow(a, "Rajiv Chowk", "Millennium City Centre Gurugram", 0).Want(http.StatusCreated)
+	var bIntent struct{ ID string }
+	w.travelNow(b, "Central Secretariat", "Saket", 5).Want(http.StatusCreated).JSON(&bIntent)
+	stale := w.matches(a)[0]
+	w.env.Do(http.MethodDelete, "/v1/travel-intents/"+bIntent.ID, b.AccessToken, nil).Want(http.StatusNoContent)
+	for range 12 {
+		w.env.Do(http.MethodPost, "/v1/matches/"+stale.ID.String()+"/accept", a.AccessToken, nil).Want(http.StatusConflict)
+	}
+	w.travelNow(b, "Central Secretariat", "Saket", 5).Want(http.StatusCreated)
+	fresh := w.matches(a)[0]
+	w.env.Do(http.MethodPost, "/v1/matches/"+fresh.ID.String()+"/accept", a.AccessToken, nil).Want(http.StatusOK)
+}

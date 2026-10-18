@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 
 import { ApiError, get, patch, post } from '@/api/client';
-import type { Conversation, DMRequest, Message, Room } from '@/api/types';
+import type { Conversation, DMRequest, Message, Notification, Room } from '@/api/types';
 import { toast } from '@/components/ui/Toast';
 import { uploadImage } from '@/features/bowls/upload';
 import { uuidv7 } from '@/lib/uuid';
@@ -25,6 +25,10 @@ export function useConversations() {
     queryKey: chatKeys.conversations,
     queryFn: () => get<{ items: Conversation[] }>('/v1/conversations?limit=100').then((r) => r.items),
   });
+}
+
+export function useInbox() {
+  return useQuery({ queryKey: chatKeys.inbox, queryFn: () => get<{ items: Notification[]; unread: number }>('/v1/notifications') });
 }
 
 export function useConversation(id: string) {

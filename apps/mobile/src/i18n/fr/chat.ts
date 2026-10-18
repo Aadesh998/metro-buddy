@@ -14,6 +14,10 @@ const chat: Messages['chat'] = {
   sendViewOnce: 'Envoyer en vue unique',
   viewOnceNote: 'La photo ne s’ouvre qu’une fois, puis elle disparaît.',
   photoGone: 'Cette photo a déjà été ouverte',
+  today: 'Aujourd’hui',
+  yesterday: 'Hier',
+  takePhoto: 'Prendre une photo',
+  cameraDenied: 'Autorise l’accès à l’appareil photo dans les Réglages pour prendre une photo.',
   stickers: {
     chai: 'Pause chai',
     lateAgain: 'Encore en retard',
