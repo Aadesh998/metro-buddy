@@ -20,3 +20,6 @@ google-services.json
 GoogleService-Info.plist
 *firebase-adminsdk*.json
 service-account*.json
+
+# Instagram reel workspace: assets, renders and a copy of the ElevenLabs/Gemini keys
+instagram-reel/
